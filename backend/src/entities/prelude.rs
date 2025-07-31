@@ -3,5 +3,5 @@
 pub use super::challenges::Entity as Challenges;
 pub use super::completion::Entity as Completion;
 pub use super::reward::Entity as Reward;
-pub use super::trade::Entity as Trade;
+pub use super::transaction::Entity as Transaction;
 pub use super::user::Entity as User;

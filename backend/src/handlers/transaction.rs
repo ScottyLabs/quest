@@ -4,47 +4,49 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 #[derive(Deserialize, ToSchema)]
-pub struct CreateTradeRequest {
+pub struct CreateTransactionRequest {
     pub reward_name: String,
     pub count: i32,
 }
 
 #[derive(Serialize, ToSchema)]
-pub struct CreateTradeResponse {
+pub struct CreateTransactionResponse {
     pub success: bool,
     pub message: String,
-    pub trade: Option<TradeResponse>,
+    pub transaction: Option<TransactionResponse>,
 }
 
 #[derive(Serialize, ToSchema)]
-pub struct TradeResponse {
+pub struct TransactionResponse {
+    pub transaction_id: String,
     pub reward_name: String,
     pub count: i32,
     pub total_cost: i32,
+    pub status: String,
 }
 
 #[utoipa::path(
     post,
-    path = "/api/trade",
-    request_body = CreateTradeRequest,
+    path = "/api/transaction",
+    request_body = CreateTransactionRequest,
     responses(
-        (status = 200, description = "Trade processed", body = CreateTradeResponse),
+        (status = 200, description = "Transaction processed", body = CreateTransactionResponse),
         (status = 500, description = "Internal server error")
     ),
-    tag = "trades"
+    tag = "transactions"
 )]
 #[axum::debug_handler]
-pub async fn create_trade(
+pub async fn create_transaction(
     State(state): State<AppState>,
     Extension(claims): Extension<AuthClaims>,
-    Json(payload): Json<CreateTradeRequest>,
-) -> Result<Json<CreateTradeResponse>, StatusCode> {
+    Json(payload): Json<CreateTransactionRequest>,
+) -> Result<Json<CreateTransactionResponse>, StatusCode> {
     // Validate count is positive
     if payload.count <= 0 {
-        return Ok(Json(CreateTradeResponse {
+        return Ok(Json(CreateTransactionResponse {
             success: false,
             message: "Count must be positive".to_string(),
-            trade: None,
+            transaction: None,
         }));
     }
 
@@ -58,39 +60,40 @@ pub async fn create_trade(
     let reward = match reward {
         Some(reward) => reward,
         None => {
-            return Ok(Json(CreateTradeResponse {
+            return Ok(Json(CreateTransactionResponse {
                 success: false,
                 message: "Reward not found".to_string(),
-                trade: None,
+                transaction: None,
             }));
         }
     };
 
     // Check if there's enough stock
     if payload.count > reward.stock {
-        return Ok(Json(CreateTradeResponse {
+        return Ok(Json(CreateTransactionResponse {
             success: false,
             message: "Insufficient stock".to_string(),
-            trade: None,
+            transaction: None,
         }));
     }
 
-    // Get user's current trade count for this reward and check trade limit
-    let current_trades = state
-        .trade_service
-        .get_user_trade_counts(&claims.sub)
+    // Get user's current total count for this reward and check trade limit
+    let current_totals = state
+        .transaction_service
+        .get_user_total_counts(&claims.sub)
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    let current_count = current_trades
+    let current_count = current_totals
         .get(&payload.reward_name)
         .copied()
         .unwrap_or(0);
+
     if current_count + payload.count > reward.trade_limit {
-        return Ok(Json(CreateTradeResponse {
+        return Ok(Json(CreateTransactionResponse {
             success: false,
             message: "Would exceed trade limit".to_string(),
-            trade: None,
+            transaction: None,
         }));
     }
 
@@ -99,7 +102,9 @@ pub async fn create_trade(
         state
             .completion_service
             .get_user_total_coins_earned(&claims.sub),
-        state.trade_service.get_user_total_coins_spent(&claims.sub)
+        state
+            .transaction_service
+            .get_user_total_coins_spent(&claims.sub)
     )
     .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
@@ -107,27 +112,29 @@ pub async fn create_trade(
     let total_cost = reward.cost * payload.count;
 
     if total_cost > available_coins {
-        return Ok(Json(CreateTradeResponse {
+        return Ok(Json(CreateTransactionResponse {
             success: false,
             message: "Insufficient coins".to_string(),
-            trade: None,
+            transaction: None,
         }));
     }
 
-    // Create the trade
-    let trade = state
-        .trade_service
-        .create_trade(&claims.sub, &payload.reward_name, payload.count)
+    // Create the transaction
+    let transaction = state
+        .transaction_service
+        .create_transaction(&claims.sub, &payload.reward_name, payload.count)
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    Ok(Json(CreateTradeResponse {
+    Ok(Json(CreateTransactionResponse {
         success: true,
-        message: "Trade successful".to_string(),
-        trade: Some(TradeResponse {
-            reward_name: trade.reward_name,
-            count: trade.count,
+        message: "Transaction successful".to_string(),
+        transaction: Some(TransactionResponse {
+            transaction_id: transaction.id.to_string(),
+            reward_name: transaction.reward_name,
+            count: transaction.count,
             total_cost,
+            status: transaction.status,
         }),
     }))
 }

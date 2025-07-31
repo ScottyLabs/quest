@@ -17,7 +17,7 @@ export function ChallengeCategory({ categoryId, user }: CategoryProps) {
 	const colors = colorClasses[categoryId];
 
 	return (
-		<div>
+		<div className={colors.secondary}>
 			<h1 className={colors.text}>{categoryLabels[categoryId]}</h1>
 			<p>
 				Welcome to the {categoryLabels[categoryId]} challenges, {user.name}.

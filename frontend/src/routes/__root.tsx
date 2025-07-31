@@ -12,8 +12,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 function Root() {
 	return (
 		<>
-			<Navbar />
 			<Outlet />
+			<Navbar />
 		</>
 	);
 }

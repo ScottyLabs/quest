@@ -2,15 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ChallengeCategory } from "@/components/category";
 import { requireAuth } from "@/lib/auth";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/challenges/1")({
 	beforeLoad: async ({ context }) => {
 		return await requireAuth(context.baseUrl);
 	},
-	component: Challenges,
+	component: RouteComponent,
 });
 
-function Challenges() {
+function RouteComponent() {
 	const { user } = Route.useRouteContext();
 
-	return <ChallengeCategory categoryId="all" user={user} />;
+	return <ChallengeCategory categoryId="the-essentials" user={user} />;
 }

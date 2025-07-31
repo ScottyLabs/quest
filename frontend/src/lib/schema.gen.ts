@@ -409,6 +409,7 @@ export interface components {
         };
         UserProfileResponse: {
             dorm?: string | null;
+            groups: string[];
             name: string;
             /** Format: int32 */
             scotty_coins: number;

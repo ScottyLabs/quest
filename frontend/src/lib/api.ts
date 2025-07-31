@@ -37,24 +37,9 @@ export function createGatewayClient(baseUrl: string, client: string) {
         window.location.href = loginUrl;
     }
 
-    async function isAuthenticated() {
-        try {
-            const response = await fetch(`${baseUrl}/api/auth/status`, { credentials: "include" });
-            if (!response.ok) return false;
-
-            const data = await response.json();
-
-            return data.authenticated || false;
-        } catch (error) {
-            console.error("Error checking authentication:", error);
-            return false;
-        }
-    }
-
     return {
         $api: createQueryClient({ baseUrl }),
         logout,
         login,
-        isAuthenticated,
     };
 }

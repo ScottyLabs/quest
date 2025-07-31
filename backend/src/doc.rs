@@ -75,6 +75,7 @@ impl Modify for SecurityAddon {
         description = "O-Quest API",
         license(
             name = "MIT OR Apache-2.0",
+            identifier = "MIT OR Apache-2.0"
         )
     )
 )]

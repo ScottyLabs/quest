@@ -1,5 +1,9 @@
 use crate::{AppState, AuthClaims};
-use axum::{Extension, Json, extract::State, http::StatusCode};
+use axum::{
+    Extension, Json,
+    extract::{Path, State},
+    http::StatusCode,
+};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -137,4 +141,76 @@ pub async fn create_transaction(
             status: transaction.status,
         }),
     }))
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct CancelTransactionResponse {
+    pub success: bool,
+    pub message: String,
+}
+
+#[utoipa::path(
+    delete,
+    path = "/api/transaction/{transaction_id}",
+    params(
+        ("transaction_id" = String, Path, description = "ID of the transaction to cancel")
+    ),
+    responses(
+        (status = 200, description = "Transaction cancellation processed", body = CancelTransactionResponse),
+        (status = 403, description = "Cannot cancel this transaction"),
+        (status = 404, description = "Transaction not found"),
+        (status = 500, description = "Internal server error")
+    ),
+    tag = "transactions"
+)]
+#[axum::debug_handler]
+pub async fn cancel_transaction(
+    State(state): State<AppState>,
+    Extension(claims): Extension<AuthClaims>,
+    Path(transaction_id): Path<String>,
+) -> Result<Json<CancelTransactionResponse>, StatusCode> {
+    // Get the transaction to verify ownership and status
+    let transaction = state
+        .transaction_service
+        .get_transaction_by_id(&transaction_id)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    let transaction = match transaction {
+        Some(transaction) => transaction,
+        None => {
+            return Ok(Json(CancelTransactionResponse {
+                success: false,
+                message: "Transaction not found".to_string(),
+            }));
+        }
+    };
+
+    // Check if user owns this transaction
+    if transaction.user_id != claims.sub {
+        return Err(StatusCode::FORBIDDEN);
+    }
+
+    // Check if transaction can be cancelled (only incomplete transactions)
+    if transaction.status != "incomplete" {
+        return Ok(Json(CancelTransactionResponse {
+            success: false,
+            message: "Cannot cancel completed transactions".to_string(),
+        }));
+    }
+
+    // Delete the transaction
+    let deleted = state
+        .transaction_service
+        .delete_transaction(&transaction_id)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    let (success, message) = if deleted {
+        (true, "Transaction cancelled successfully".to_string())
+    } else {
+        (false, "Failed to cancel transaction".to_string())
+    };
+
+    Ok(Json(CancelTransactionResponse { success, message }))
 }

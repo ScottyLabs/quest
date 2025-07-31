@@ -6,12 +6,41 @@ import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 
 import { ApiProvider, useApi } from "@/lib/api-context";
-import { routeTree } from "@/routeTree.gen";
+import { type FileRoutesByFullPath, routeTree } from "@/routeTree.gen";
 import "@/main.css";
+
+type ValidPath = keyof FileRoutesByFullPath;
+
+const pageOrder: ValidPath[] = [
+	"/profile",
+	"/leaderboard",
+	"/",
+	"/challenges/1",
+	"/challenges/2",
+	"/challenges/3",
+	"/challenges/4",
+	"/challenges/5",
+	"/challenges/6",
+	"/trade",
+	"/about",
+];
 
 const queryClient = new QueryClient();
 const router = createRouter({
 	routeTree,
+	defaultViewTransition: {
+		// Create a slide-left/slide-right transition based on the order of pages
+		types: ({ fromLocation, toLocation }) => {
+			const from = pageOrder.indexOf(fromLocation?.pathname as ValidPath);
+			const to = pageOrder.indexOf(toLocation?.pathname as ValidPath);
+
+			if (from === -1 || to === -1) {
+				return ["fade"];
+			}
+
+			return [to > from ? "slide-left" : "slide-right"];
+		},
+	},
 	context: { baseUrl: "" },
 });
 

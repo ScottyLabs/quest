@@ -7,6 +7,7 @@
     "scripts": {
         "dev": "vite",
         "build": "tsc && vite build",
+        "generate-api": "openapi-typescript https://api.quest.scottylabs.org/openapi.json -o src/lib/schema.gen.ts",
         "preview": "vite preview",
         "tauri": "tauri"
     },
@@ -17,6 +18,8 @@
         "@tauri-apps/api": "^2",
         "@tauri-apps/plugin-opener": "^2",
         "@vitejs/plugin-react-oxc": "^0.3.0",
+        "openapi-fetch": "^0.14.0",
+        "openapi-react-query": "^0.5.0",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
         "tailwindcss": "^4.1.11"
@@ -27,6 +30,7 @@
         "@tauri-apps/cli": "^2",
         "@types/react": "^18.3.1",
         "@types/react-dom": "^18.3.1",
+        "openapi-typescript": "^7.8.0",
         "typescript": "~5.6.2",
         "vite": "npm:rolldown-vite@latest"
     }

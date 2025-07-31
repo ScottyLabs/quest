@@ -207,3 +207,86 @@ pub async fn update_journal_entry(
 
     Ok(Json(JournalEntryResponse { entry }))
 }
+
+#[derive(Serialize, ToSchema)]
+pub struct DeletePhotoResponse {
+    pub success: bool,
+    pub message: String,
+}
+
+#[utoipa::path(
+    delete,
+    path = "/api/journal/{challenge_name}/photo",
+    params(
+        ("challenge_name" = String, Path, description = "Name of the challenge")
+    ),
+    responses(
+        (status = 200, description = "Photo deletion processed", body = DeletePhotoResponse),
+        (status = 404, description = "Journal entry not found"),
+        (status = 500, description = "Internal server error")
+    ),
+    tag = "journal"
+)]
+#[axum::debug_handler]
+pub async fn delete_journal_photo(
+    State(state): State<AppState>,
+    Extension(claims): Extension<AuthClaims>,
+    Path(challenge_name): Path<String>,
+) -> Result<Json<DeletePhotoResponse>, StatusCode> {
+    // Get the completion to check if it exists and has a photo
+    let completion = state
+        .completion_service
+        .get_user_completion_with_challenge(&claims.sub, &challenge_name)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    let (completion, _challenge) = match completion {
+        Some((completion, challenge)) => (completion, challenge),
+        None => {
+            return Ok(Json(DeletePhotoResponse {
+                success: false,
+                message: "Journal entry not found".to_string(),
+            }));
+        }
+    };
+
+    // Check if there's actually a photo to delete
+    let s3_link = match &completion.s3_link {
+        Some(link) => link,
+        None => {
+            return Ok(Json(DeletePhotoResponse {
+                success: false,
+                message: "No photo to delete".to_string(),
+            }));
+        }
+    };
+
+    let s3_deleted = state
+        .storage_service
+        .delete_image(s3_link)
+        .await
+        .unwrap_or(false); // Continue if S3 delete fails
+
+    // Update completion to remove s3_link
+    let updated = state
+        .completion_service
+        .update_completion_photo(&claims.sub, &challenge_name, None)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    let (success, message) = match updated {
+        Some(_) => {
+            if s3_deleted {
+                (true, "Photo deleted successfully".to_string())
+            } else {
+                (
+                    true,
+                    "Photo removed from journal, S3 deletion failed".to_string(),
+                )
+            }
+        }
+        None => (false, "Failed to delete photo".to_string()),
+    };
+
+    Ok(Json(DeletePhotoResponse { success, message }))
+}

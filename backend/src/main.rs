@@ -123,6 +123,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .routes(routes!(
             handlers::journal::get_journal_entry,
             handlers::journal::update_journal_entry,
+            handlers::journal::delete_journal_photo,
         ))
         .merge(admin_routes)
         .layer(ServiceBuilder::new().layer(build_oauth2_resource_server().await))

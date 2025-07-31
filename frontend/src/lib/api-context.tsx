@@ -9,6 +9,21 @@ interface ApiContextValue {
 
 const ApiContext = createContext<ApiContextValue | null>(null);
 
+function getApiUrlFromDomain(): string {
+	const hostname = window.location.hostname;
+
+	if (hostname === "cmu.quest") {
+		return "https://api.cmu.quest";
+	}
+
+	if (hostname === "quest.scottylabs.org") {
+		return "https://api.quest.scottylabs.org";
+	}
+
+	// Default for dev
+	return "https://api.quest.scottylabs.org";
+}
+
 interface ApiProviderProps {
 	children: ReactNode;
 	baseUrl?: string;
@@ -17,21 +32,21 @@ interface ApiProviderProps {
 
 export function ApiProvider({
 	children,
-	baseUrl = "https://api.quest.scottylabs.org",
+	baseUrl,
 	serviceName = "quest",
 }: ApiProviderProps) {
+	const apiUrl = useMemo(() => {
+		return baseUrl || getApiUrlFromDomain();
+	}, [baseUrl]);
+
 	const client = useMemo(
-		() => createGatewayClient(baseUrl, serviceName),
-		[baseUrl, serviceName],
+		() => createGatewayClient(apiUrl, serviceName),
+		[apiUrl, serviceName],
 	);
 
 	const value = useMemo(
-		() => ({
-			client,
-			baseUrl,
-			serviceName,
-		}),
-		[client, baseUrl, serviceName],
+		() => ({ client, baseUrl: apiUrl, serviceName }),
+		[client, apiUrl, serviceName],
 	);
 
 	return <ApiContext.Provider value={value}>{children}</ApiContext.Provider>;
@@ -42,6 +57,7 @@ export function useApi() {
 	if (!context) {
 		throw new Error("useApi must be used within an ApiProvider");
 	}
+
 	return context;
 }
 

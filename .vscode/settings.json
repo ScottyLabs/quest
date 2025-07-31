@@ -1,0 +1,25 @@
+{
+    // Agrees with .editorconfig, but also applies to JSON files
+    "files.insertFinalNewline": true,
+    // Workarounds for not putting things in the root
+    "biome.lsp.bin": "o-quest/node_modules/.bin/biome",
+    "rust-analyzer.linkedProjects": [
+        "backend/Cargo.toml"
+    ],
+    // General editor settings
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.biome": "always",
+        "source.organizeImports.biome": "explicit"
+    },
+    "typescript.preferences.importModuleSpecifier": "non-relative",
+    "[html]": {
+        "editor.defaultFormatter": "vscode.html-language-features"
+    },
+    "[typescriptreact]": {
+        "editor.defaultFormatter": "biomejs.biome"
+    },
+    "[typescript]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
+    }
+}

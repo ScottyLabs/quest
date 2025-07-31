@@ -20,7 +20,8 @@ function Login() {
 
 	const handleLogin = () => {
 		if (from) {
-			login(from);
+			const redirectUri = new URL(from, window.location.origin);
+			login(redirectUri.toString());
 		} else {
 			login();
 		}

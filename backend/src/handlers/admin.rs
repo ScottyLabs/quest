@@ -1,7 +1,35 @@
-use crate::AppState;
+use crate::{AppState, entities::challenges};
 use axum::{Json, extract::State, http::StatusCode};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
+
+#[derive(Serialize, ToSchema)]
+pub struct AdminChallengesListResponse {
+    pub challenges: Vec<challenges::Model>,
+}
+
+#[utoipa::path(
+    get,
+    path = "/api/admin/challenges",
+    responses(
+        (status = 200, description = "All challenges retrieved successfully", body = AdminChallengesListResponse),
+        (status = 403, description = "Forbidden - Admin access required"),
+        (status = 500, description = "Internal server error")
+    ),
+    tag = "admin"
+)]
+#[axum::debug_handler]
+pub async fn get_all_challenges(
+    State(state): State<AppState>,
+) -> Result<Json<AdminChallengesListResponse>, StatusCode> {
+    let challenges = state
+        .challenge_service
+        .get_all_challenges()
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    Ok(Json(AdminChallengesListResponse { challenges }))
+}
 
 #[derive(Deserialize, ToSchema)]
 pub struct VerifyTransactionRequest {

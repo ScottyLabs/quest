@@ -20,8 +20,8 @@ pub struct Model {
 pub enum Relation {
     #[sea_orm(has_many = "super::completion::Entity")]
     Completion,
-    #[sea_orm(has_many = "super::trade::Entity")]
-    Trade,
+    #[sea_orm(has_many = "super::transaction::Entity")]
+    Transaction,
 }
 
 impl Related<super::completion::Entity> for Entity {
@@ -30,9 +30,9 @@ impl Related<super::completion::Entity> for Entity {
     }
 }
 
-impl Related<super::trade::Entity> for Entity {
+impl Related<super::transaction::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::Trade.def()
+        Relation::Transaction.def()
     }
 }
 
@@ -42,15 +42,6 @@ impl Related<super::challenges::Entity> for Entity {
     }
     fn via() -> Option<RelationDef> {
         Some(super::completion::Relation::User.def().rev())
-    }
-}
-
-impl Related<super::reward::Entity> for Entity {
-    fn to() -> RelationDef {
-        super::trade::Relation::Reward.def()
-    }
-    fn via() -> Option<RelationDef> {
-        Some(super::trade::Relation::User.def().rev())
     }
 }
 

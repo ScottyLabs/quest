@@ -6,14 +6,17 @@ use serde::{Deserialize, Serialize};
 #[derive(
     Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize, utoipa :: ToSchema,
 )]
-#[sea_orm(table_name = "trade")]
+#[sea_orm(table_name = "transaction")]
 pub struct Model {
-    #[sea_orm(primary_key, auto_increment = false, column_type = "Text")]
+    #[sea_orm(primary_key, auto_increment = false)]
+    pub id: Uuid,
+    #[sea_orm(column_type = "Text")]
     pub user_id: String,
-    #[sea_orm(primary_key, auto_increment = false, column_type = "Text")]
+    #[sea_orm(column_type = "Text")]
     pub reward_name: String,
-    pub timestamp: DateTime,
     pub count: i32,
+    pub timestamp: DateTime,
+    pub status: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -38,7 +38,9 @@ pub async fn get_profile(
         state
             .completion_service
             .get_user_total_coins_earned(&claims.sub),
-        state.trade_service.get_user_total_coins_spent(&claims.sub)
+        state
+            .transaction_service
+            .get_user_total_coins_spent(&claims.sub)
     )
     .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 

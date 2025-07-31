@@ -12,12 +12,15 @@ use utoipa_swagger_ui::SwaggerUi;
 mod doc;
 pub mod entities;
 mod handlers;
+mod middleware;
 mod services;
 
 use doc::ApiDoc;
+use middleware::admin;
 use services::{
     challenge::ChallengeService, completion::CompletionService, leaderboard::LeaderboardService,
-    reward::RewardService, storage::StorageService, trade::TradeService, user::UserService,
+    reward::RewardService, storage::StorageService, transaction::TransactionService,
+    user::UserService,
 };
 
 #[derive(Clone)]
@@ -26,7 +29,7 @@ struct AppState {
     challenge_service: ChallengeService,
     completion_service: CompletionService,
     reward_service: RewardService,
-    trade_service: TradeService,
+    transaction_service: TransactionService,
     leaderboard_service: LeaderboardService,
     storage_service: StorageService,
 }
@@ -91,10 +94,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         challenge_service: ChallengeService::new(db.clone()),
         completion_service: CompletionService::new(db.clone()),
         reward_service: RewardService::new(db.clone()),
-        trade_service: TradeService::new(db.clone()),
+        transaction_service: TransactionService::new(db.clone()),
         leaderboard_service: LeaderboardService::new(db.clone()),
         storage_service,
     };
+
+    let admin_routes = OpenApiRouter::new()
+        .routes(routes!(handlers::admin::verify_transaction))
+        .layer(axum::middleware::from_fn(admin::require_admin));
 
     let protected_routes = OpenApiRouter::new()
         .routes(routes!(
@@ -104,13 +111,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .routes(routes!(handlers::challenges::get_challenges,))
         .routes(routes!(handlers::rewards::get_rewards,))
         .routes(routes!(handlers::leaderboard::get_leaderboard,))
-        .routes(routes!(handlers::trade::create_trade,))
+        .routes(routes!(handlers::transaction::create_transaction))
         .routes(routes!(handlers::completion::create_completion,))
         .routes(routes!(handlers::journal::get_journal,))
         .routes(routes!(
             handlers::journal::get_journal_entry,
             handlers::journal::update_journal_entry,
         ))
+        .merge(admin_routes)
         .layer(ServiceBuilder::new().layer(build_oauth2_resource_server().await))
         .with_state(state);
 

@@ -19,22 +19,13 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(has_many = "super::trade::Entity")]
-    Trade,
+    #[sea_orm(has_many = "super::transaction::Entity")]
+    Transaction,
 }
 
-impl Related<super::trade::Entity> for Entity {
+impl Related<super::transaction::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::Trade.def()
-    }
-}
-
-impl Related<super::user::Entity> for Entity {
-    fn to() -> RelationDef {
-        super::trade::Relation::User.def()
-    }
-    fn via() -> Option<RelationDef> {
-        Some(super::trade::Relation::Reward.def().rev())
+        Relation::Transaction.def()
     }
 }
 

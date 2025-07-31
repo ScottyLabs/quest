@@ -57,7 +57,7 @@ impl LeaderboardService {
                     SELECT
                         t.user_id,
                         SUM(t.count * r.cost) as total_spent
-                    FROM trade t
+                    FROM transaction t
                     JOIN reward r ON t.reward_name = r.name
                     GROUP BY t.user_id
                 ) spent ON u.user_id = spent.user_id

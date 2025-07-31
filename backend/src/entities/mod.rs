@@ -5,5 +5,5 @@ pub mod prelude;
 pub mod challenges;
 pub mod completion;
 pub mod reward;
-pub mod trade;
+pub mod transaction;
 pub mod user;

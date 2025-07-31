@@ -13,6 +13,8 @@
     },
     "dependencies": {
         "@tailwindcss/vite": "^4.1.11",
+        "@tanstack/react-query": "^5.83.0",
+        "@tanstack/react-query-devtools": "^5.83.0",
         "@tanstack/react-router": "^1.130.8",
         "@tanstack/react-router-devtools": "^1.130.8",
         "@tauri-apps/api": "^2",
@@ -22,7 +24,8 @@
         "openapi-react-query": "^0.5.0",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
-        "tailwindcss": "^4.1.11"
+        "tailwindcss": "^4.1.11",
+        "vite-tsconfig-paths": "^5.1.4"
     },
     "devDependencies": {
         "@biomejs/biome": "^2.1.3",

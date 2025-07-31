@@ -14,6 +14,7 @@ pub struct UserProfileResponse {
     pub dorm: Option<String>,
     pub name: String,
     pub scotty_coins: i32,
+    pub groups: Vec<String>,
 }
 
 #[utoipa::path(
@@ -51,6 +52,7 @@ pub async fn get_profile(
         dorm: user.dorm,
         name: user.name,
         scotty_coins,
+        groups: claims.groups,
     }))
 }
 

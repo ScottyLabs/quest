@@ -2,7 +2,7 @@
     // Agrees with .editorconfig, but also applies to JSON files
     "files.insertFinalNewline": true,
     // Workarounds for not putting things in the root
-    "biome.lsp.bin": "o-quest/node_modules/.bin/biome",
+    "biome.lsp.bin": "frontend/node_modules/.bin/biome",
     "rust-analyzer.linkedProjects": [
         "backend/Cargo.toml"
     ],

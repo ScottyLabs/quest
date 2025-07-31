@@ -100,7 +100,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     let admin_routes = OpenApiRouter::new()
-        .routes(routes!(handlers::admin::verify_transaction))
+        .routes(routes!(
+            handlers::admin::verify_transaction,
+            handlers::admin::get_all_challenges,
+        ))
         .layer(axum::middleware::from_fn(admin::require_admin));
 
     let protected_routes = OpenApiRouter::new()

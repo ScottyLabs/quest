@@ -41,6 +41,7 @@ impl Modify for SecurityAddon {
         handlers::journal::get_journal_entry,
         handlers::journal::update_journal_entry,
         handlers::admin::verify_transaction,
+        handlers::admin::get_all_challenges,
     ),
     modifiers(&SecurityAddon),
     components(
@@ -61,6 +62,7 @@ impl Modify for SecurityAddon {
             handlers::journal::UpdateJournalRequest,
             handlers::admin::VerifyTransactionRequest,
             handlers::admin::VerifyTransactionResponse,
+            handlers::admin::AdminChallengesListResponse,
         )
     ),
     tags(

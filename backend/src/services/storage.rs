@@ -97,4 +97,19 @@ impl StorageService {
     ) -> Result<Option<String>, Box<dyn std::error::Error>> {
         self.get_presigned_image_url(s3_link, Some(2 * 3600)).await // 2 hours
     }
+
+    // Delete an image from S3
+    pub async fn delete_image(&self, s3_link: &str) -> Result<bool, Box<dyn std::error::Error>> {
+        if let Some(object_path) = s3_link.strip_prefix("s3://") {
+            let mut parts = object_path.splitn(2, '/');
+            let bucket = parts.next().ok_or("Invalid S3 link format")?;
+            let object_key = parts.next().ok_or("Invalid S3 link format")?;
+
+            let _response = self.client.delete_object(bucket, object_key).send().await?;
+
+            Ok(true)
+        } else {
+            Err("Invalid S3 link format".into())
+        }
+    }
 }

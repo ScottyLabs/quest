@@ -141,4 +141,30 @@ impl CompletionService {
             None => Ok(None),
         }
     }
+
+    // Update completion photo (for deleting photos)
+    pub async fn update_completion_photo(
+        &self,
+        user_id: &str,
+        challenge_name: &str,
+        s3_link: Option<String>,
+    ) -> Result<Option<completion::Model>, sea_orm::DbErr> {
+        // First find the completion
+        let completion = Completion::find()
+            .filter(completion::Column::UserId.eq(user_id))
+            .filter(completion::Column::ChallengeName.eq(challenge_name))
+            .one(&self.db)
+            .await?;
+
+        match completion {
+            Some(completion) => {
+                let mut active_completion: completion::ActiveModel = completion.into();
+                active_completion.s3_link = Set(s3_link);
+
+                let updated = active_completion.update(&self.db).await?;
+                Ok(Some(updated))
+            }
+            None => Ok(None),
+        }
+    }
 }

@@ -85,6 +85,19 @@ impl TransactionService {
             .await
     }
 
+    // Delete a transaction (for cancellation)
+    pub async fn delete_transaction(&self, transaction_id: &str) -> Result<bool, sea_orm::DbErr> {
+        let uuid = Uuid::parse_str(transaction_id)
+            .map_err(|_| sea_orm::DbErr::Custom("Invalid UUID".to_string()))?;
+
+        let result = Transaction::delete_many()
+            .filter(crate::entities::transaction::Column::Id.eq(uuid))
+            .exec(&self.db)
+            .await?;
+
+        Ok(result.rows_affected > 0)
+    }
+
     // Get transaction by ID (for admin verification)
     pub async fn get_transaction_by_id(
         &self,

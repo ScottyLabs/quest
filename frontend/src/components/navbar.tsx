@@ -1,8 +1,8 @@
-import { Link, useRouter } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 
 export function Navbar() {
-	const router = useRouter();
-	const currentPath = router.state.location.pathname;
+	const routerState = useRouterState();
+	const currentPath = routerState.location.pathname;
 
 	// Check if current path is a challenges route (/ or /challenges/*)
 	const isChallengesActive =

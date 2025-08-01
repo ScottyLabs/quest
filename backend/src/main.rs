@@ -1,7 +1,9 @@
+use axum::http::Method;
 use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
 use serde::{Deserialize, Serialize};
 use tokio::signal;
 use tower::ServiceBuilder;
+use tower_http::cors::CorsLayer;
 use tower_oauth2_resource_server::{
     layer::OAuth2ResourceServerLayer, server::OAuth2ResourceServer, tenant::TenantConfiguration,
 };
@@ -99,6 +101,27 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         storage_service,
     };
 
+    let cors = CorsLayer::new()
+        .allow_origin([
+            "https://cmu.quest".parse().unwrap(),
+            "https://quest.scottylabs.org".parse().unwrap(),
+            "http://localhost:1420".parse().unwrap(), // For development
+        ])
+        .allow_methods([
+            Method::GET,
+            Method::POST,
+            Method::PUT,
+            Method::DELETE,
+            Method::OPTIONS,
+        ])
+        .allow_headers([
+            axum::http::header::AUTHORIZATION,
+            axum::http::header::CONTENT_TYPE,
+            axum::http::header::ACCEPT,
+            axum::http::header::ORIGIN,
+        ])
+        .allow_credentials(true);
+
     let admin_routes = OpenApiRouter::new()
         .routes(routes!(
             handlers::admin::verify_transaction,
@@ -126,7 +149,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             handlers::journal::delete_journal_photo,
         ))
         .merge(admin_routes)
-        .layer(ServiceBuilder::new().layer(build_oauth2_resource_server().await))
+        .layer(
+            ServiceBuilder::new()
+                .layer(cors)
+                .layer(build_oauth2_resource_server().await),
+        )
         .with_state(state);
 
     let public_routes = OpenApiRouter::new()

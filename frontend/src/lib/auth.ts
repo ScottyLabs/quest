@@ -7,17 +7,12 @@ export interface AuthContext {
 	user: components["schemas"]["UserProfileResponse"];
 }
 
-// Create a fetch client for auth checks
-function createAuthFetchClient(baseUrl: string) {
-	return createFetchClient<paths>({
+// Auth middleware function
+export async function requireAuth(baseUrl: string) {
+	const fetchClient = createFetchClient<paths>({
 		baseUrl,
 		credentials: "include",
 	});
-}
-
-// Auth middleware function
-export async function requireAuth(baseUrl: string) {
-	const fetchClient = createAuthFetchClient(baseUrl);
 
 	try {
 		const { data, error } = await fetchClient.GET("/api/profile");
@@ -41,7 +36,10 @@ export async function requireAuth(baseUrl: string) {
 
 // Redirect if already authenticated
 export async function redirectIfAuthenticated(baseUrl: string) {
-	const fetchClient = createAuthFetchClient(baseUrl);
+	const fetchClient = createFetchClient<paths>({
+		baseUrl,
+		credentials: "include",
+	});
 
 	try {
 		const { data, error } = await fetchClient.GET("/api/profile");

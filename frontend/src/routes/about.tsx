@@ -5,5 +5,7 @@ export const Route = createFileRoute("/about")({
 });
 
 function About() {
-	return <div>Hello "/about"!</div>;
+	return (
+		<div className="[view-transition-name:main-content]">Hello "/about"!</div>
+	);
 }

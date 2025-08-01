@@ -28,7 +28,7 @@ function Login() {
 	};
 
 	return (
-		<div>
+		<div className="[view-transition-name:main-content]">
 			<h1 className="text-2xl">Login</h1>
 			<button type="button" onClick={handleLogin}>
 				Login

@@ -9,5 +9,7 @@ export const Route = createFileRoute("/trade")({
 });
 
 function RouteComponent() {
-	return <div>Hello "/trade"!</div>;
+	return (
+		<div className="[view-transition-name:main-content]">Hello "/trade"!</div>
+	);
 }

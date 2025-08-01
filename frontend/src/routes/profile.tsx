@@ -12,7 +12,7 @@ function RouteComponent() {
 	const { user } = Route.useRouteContext();
 
 	return (
-		<div>
+		<div className="[view-transition-name:main-content]">
 			<h1 className="text-challenge-1-selected">Hello, {user.name}</h1>
 			<p>Dorm: {user.dorm}</p>
 			<p>ScottyCoins: {user.scotty_coins}</p>

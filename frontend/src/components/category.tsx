@@ -18,10 +18,12 @@ export function ChallengeCategory({ categoryId, user }: CategoryProps) {
 
 	return (
 		<div className={colors.secondary}>
-			<h1 className={colors.text}>{categoryLabels[categoryId]}</h1>
-			<p>
-				Welcome to the {categoryLabels[categoryId]} challenges, {user.name}.
-			</p>
+			<div className="[view-transition-name:main-content]">
+				<h1 className={colors.text}>{categoryLabels[categoryId]}</h1>
+				<p>
+					Welcome to the {categoryLabels[categoryId]} challenges, {user.name}.
+				</p>
+			</div>
 
 			<div className="flex gap-2">
 				{categories.map((category) => (

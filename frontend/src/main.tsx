@@ -28,14 +28,15 @@ const pageOrder: ValidPath[] = [
 const queryClient = new QueryClient();
 const router = createRouter({
 	routeTree,
+	scrollRestoration: true,
 	defaultViewTransition: {
 		// Create a slide-left/slide-right transition based on the order of pages
 		types: ({ fromLocation, toLocation }) => {
 			const from = pageOrder.indexOf(fromLocation?.pathname as ValidPath);
 			const to = pageOrder.indexOf(toLocation?.pathname as ValidPath);
 
-			if (from === -1 || to === -1) {
-				return ["fade"];
+			if (to === -1 || from === -1 || to === from) {
+				return [];
 			}
 
 			return [to > from ? "slide-left" : "slide-right"];

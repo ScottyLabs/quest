@@ -9,5 +9,9 @@ export const Route = createFileRoute("/leaderboard")({
 });
 
 function RouteComponent() {
-	return <div>Hello "/leaderboard"!</div>;
+	return (
+		<div className="[view-transition-name:main-content]">
+			Hello "/leaderboard"!
+		</div>
+	);
 }

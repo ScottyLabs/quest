@@ -5,7 +5,7 @@ import type { paths } from "@/lib/schema.gen";
 
 interface FetchClientOptions {
 	baseUrl: string;
-	credentials?: "include" | "omit" | "same-origin";
+	credentials?: RequestCredentials;
 }
 
 function createQueryClient({

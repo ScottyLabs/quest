@@ -2,10 +2,10 @@ export const categories = [
 	{ id: "all", label: "All" },
 	{ id: "the-essentials", label: "The Essentials" },
 	{ id: "campus-of-bridges", label: "Campus of Bridges" },
-	{ id: "lets-eat", label: "Let's Eat" },
+	{ id: "lets-eat", label: "Let's Eat!" },
 	{ id: "cool-corners-of-carnegie", label: "Cool Corners of Carnegie" },
-	{ id: "minor-major-general", label: "Minor Major General" },
-	{ id: "off-campus", label: "Off Campus" },
+	{ id: "minor-major-general", label: "Minor-Major General" },
+	{ id: "off-campus-adventures", label: "Off-Campus Adventures" },
 ] as const;
 
 export type CategoryId = (typeof categories)[number]["id"];
@@ -53,7 +53,7 @@ export const colorClasses = {
 		selected: "bg-challenge-5-selected",
 		border: "border-challenge-5",
 	},
-	"off-campus": {
+	"off-campus-adventures": {
 		text: "text-challenge-6",
 		primary: "bg-challenge-6",
 		secondary: "bg-challenge-6-light",

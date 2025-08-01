@@ -101,27 +101,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         storage_service,
     };
 
-    let cors = CorsLayer::new()
-        .allow_origin([
-            "https://cmu.quest".parse().unwrap(),
-            "https://quest.scottylabs.org".parse().unwrap(),
-            "http://localhost:1420".parse().unwrap(), // For development
-        ])
-        .allow_methods([
-            Method::GET,
-            Method::POST,
-            Method::PUT,
-            Method::DELETE,
-            Method::OPTIONS,
-        ])
-        .allow_headers([
-            axum::http::header::AUTHORIZATION,
-            axum::http::header::CONTENT_TYPE,
-            axum::http::header::ACCEPT,
-            axum::http::header::ORIGIN,
-        ])
-        .allow_credentials(true);
-
     let admin_routes = OpenApiRouter::new()
         .routes(routes!(
             handlers::admin::verify_transaction,
@@ -151,7 +130,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .merge(admin_routes)
         .layer(
             ServiceBuilder::new()
-                .layer(cors)
+                .layer(build_cors_layer())
                 .layer(build_oauth2_resource_server().await),
         )
         .with_state(state);
@@ -184,6 +163,29 @@ async fn create_connection() -> Result<DatabaseConnection, DbErr> {
     // Set connection pool options here
 
     Database::connect(opt).await
+}
+
+fn build_cors_layer() -> CorsLayer {
+    CorsLayer::new()
+        .allow_origin([
+            "https://cmu.quest".parse().unwrap(),
+            "https://quest.scottylabs.org".parse().unwrap(),
+            "http://localhost:1420".parse().unwrap(),
+        ])
+        .allow_methods([
+            Method::GET,
+            Method::POST,
+            Method::PUT,
+            Method::DELETE,
+            Method::OPTIONS,
+        ])
+        .allow_headers([
+            axum::http::header::AUTHORIZATION,
+            axum::http::header::CONTENT_TYPE,
+            axum::http::header::ACCEPT,
+            axum::http::header::ORIGIN,
+        ])
+        .allow_credentials(true)
 }
 
 async fn build_oauth2_resource_server() -> OAuth2ResourceServerLayer<AuthClaims> {

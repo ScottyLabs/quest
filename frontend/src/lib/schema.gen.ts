@@ -259,7 +259,7 @@ export interface components {
             category: string;
             description: string;
             location: string;
-            maps_link: string;
+            maps_link?: string | null;
             more_info_link?: string | null;
             /** Format: int32 */
             scotty_coins: number;
@@ -351,7 +351,7 @@ export interface components {
             category: string;
             description: string;
             location: string;
-            maps_link: string;
+            maps_link?: string | null;
             more_info_link?: string | null;
             name: string;
             /** Format: int32 */

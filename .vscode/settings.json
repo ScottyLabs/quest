@@ -1,18 +1,19 @@
 {
 	// TanStack Router and openapi-typescript config
 	"files.watcherExclude": {
-		"**/routeTree.gen.ts": true,
-		"**/schema.gen.ts": true
+		"frontend/src/routeTree.gen.ts": true,
+		"frontend/src/lib/schema.gen.ts": true
 	},
 	"search.exclude": {
-		"**/routeTree.gen.ts": true,
-		"**/schema.gen.ts": true
+		"frontend/src/routeTree.gen.ts": true,
+		"frontend/src/lib/schema.gen.ts": true
 	},
 	"files.readonlyInclude": {
-		"**/routeTree.gen.ts": true,
-		"**/schema.gen.ts": true,
+		"frontend/src/routeTree.gen.ts": true,
+		"frontend/src/lib/schema.gen.ts": true,
 		"frontend/bun.lock": true,
-		"backend/Cargo.lock": true
+		"backend/Cargo.lock": true,
+		"backend/src/entities/*": true,
 	},
 	// Agrees with .editorconfig, but needed for JSON files
 	"files.insertFinalNewline": true,

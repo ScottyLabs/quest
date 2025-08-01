@@ -25,7 +25,7 @@ pub struct ChallengeDetails {
     pub category: String,
     pub location: String,
     pub scotty_coins: i32,
-    pub maps_link: String,
+    pub maps_link: Option<String>,
     pub tagline: String,
     pub description: String,
     pub more_info_link: Option<String>,

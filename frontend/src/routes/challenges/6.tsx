@@ -12,5 +12,5 @@ export const Route = createFileRoute("/challenges/6")({
 function RouteComponent() {
 	const { user } = Route.useRouteContext();
 
-	return <ChallengeCategory categoryId="off-campus" user={user} />;
+	return <ChallengeCategory categoryId="off-campus-adventures" user={user} />;
 }

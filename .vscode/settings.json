@@ -1,5 +1,20 @@
 {
-    // Agrees with .editorconfig, but also applies to JSON files
+    // TanStack Router and openapi-typescript config
+    "files.watcherExclude": {
+        "**/routeTree.gen.ts": true,
+        "**/schema.gen.ts": true,
+    },
+    "search.exclude": {
+        "**/routeTree.gen.ts": true,
+        "**/schema.gen.ts": true,
+    },
+    "files.readonlyInclude": {
+        "**/routeTree.gen.ts": true,
+        "**/schema.gen.ts": true,
+        "frontend/bun.lock": true,
+        "backend/Cargo.lock": true
+    },
+    // Agrees with .editorconfig, but needed for JSON files
     "files.insertFinalNewline": true,
     // Workarounds for not putting things in the root
     "biome.lsp.bin": "frontend/node_modules/.bin/biome",
@@ -7,12 +22,13 @@
         "backend/Cargo.toml"
     ],
     // General editor settings
+    "typescript.preferences.importModuleSpecifier": "non-relative",
     "editor.formatOnSave": true,
+    // Configure frontend formatters
     "editor.codeActionsOnSave": {
         "source.fixAll.biome": "always",
         "source.organizeImports.biome": "explicit"
     },
-    "typescript.preferences.importModuleSpecifier": "non-relative",
     "[html]": {
         "editor.defaultFormatter": "vscode.html-language-features"
     },

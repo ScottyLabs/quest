@@ -15,8 +15,8 @@ pub struct Model {
     #[sea_orm(column_type = "Text")]
     pub location: String,
     pub scotty_coins: i32,
-    #[sea_orm(column_type = "Text")]
-    pub maps_link: String,
+    #[sea_orm(column_type = "Text", nullable)]
+    pub maps_link: Option<String>,
     #[sea_orm(column_type = "Text")]
     pub tagline: String,
     #[sea_orm(column_type = "Text")]

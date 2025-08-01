@@ -10,10 +10,10 @@ use serde::{Deserialize, Serialize};
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false, column_type = "Text")]
     pub user_id: String,
-    #[sea_orm(column_type = "Text", nullable)]
-    pub dorm: Option<String>,
     #[sea_orm(column_type = "Text")]
     pub name: String,
+    #[sea_orm(column_type = "Text", nullable)]
+    pub dorm: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -9,19 +9,38 @@ interface ApiContextValue {
 
 const ApiContext = createContext<ApiContextValue | null>(null);
 
-function getApiUrlFromDomain(): string {
+function getApiConfig() {
 	const hostname = window.location.hostname;
+	const isDev = hostname === "localhost" || hostname === "127.0.0.1";
 
+	// Dev configuration
+	if (isDev) {
+		return {
+			apiUrl: "http://localhost:3000",
+			serviceName: "quest",
+		};
+	}
+
+	// Production configuration
 	if (hostname === "cmu.quest") {
-		return "https://api.cmu.quest";
+		return {
+			apiUrl: "https://api.cmu.quest",
+			serviceName: "quest",
+		};
 	}
 
 	if (hostname === "quest.scottylabs.org") {
-		return "https://api.quest.scottylabs.org";
+		return {
+			apiUrl: "https://api.quest.scottylabs.org",
+			serviceName: "quest",
+		};
 	}
 
-	// Default for dev
-	return "https://api.quest.scottylabs.org";
+	// Fallback to production
+	return {
+		apiUrl: "https://api.quest.scottylabs.org",
+		serviceName: "quest",
+	};
 }
 
 interface ApiProviderProps {
@@ -33,20 +52,23 @@ interface ApiProviderProps {
 export function ApiProvider({
 	children,
 	baseUrl,
-	serviceName = "quest",
+	serviceName,
 }: ApiProviderProps) {
-	const apiUrl = useMemo(() => {
-		return baseUrl || getApiUrlFromDomain();
-	}, [baseUrl]);
+	const config = useMemo(() => {
+		if (baseUrl && serviceName) {
+			return { apiUrl: baseUrl, serviceName };
+		}
+		return getApiConfig();
+	}, [baseUrl, serviceName]);
 
 	const client = useMemo(
-		() => createGatewayClient(apiUrl, serviceName),
-		[apiUrl, serviceName],
+		() => createGatewayClient(config.apiUrl, config.serviceName),
+		[config.apiUrl, config.serviceName],
 	);
 
 	const value = useMemo(
-		() => ({ client, baseUrl: apiUrl, serviceName }),
-		[client, apiUrl, serviceName],
+		() => ({ client, baseUrl: config.apiUrl, serviceName: config.serviceName }),
+		[client, config.apiUrl, config.serviceName],
 	);
 
 	return <ApiContext.Provider value={value}>{children}</ApiContext.Provider>;

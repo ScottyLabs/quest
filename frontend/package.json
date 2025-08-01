@@ -7,7 +7,7 @@
     "scripts": {
         "dev": "vite",
         "build": "tsc && vite build",
-        "generate-api": "openapi-typescript https://api.quest.scottylabs.org/openapi.json -o src/lib/schema.gen.ts",
+        "generate-api": "openapi-typescript http://localhost:3000/openapi.json -o src/lib/schema.gen.ts",
         "preview": "vite preview",
         "tauri": "tauri"
     },

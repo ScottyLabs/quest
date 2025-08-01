@@ -20,7 +20,9 @@
 	// Workarounds for not putting things in the root
 	"biome.lsp.bin": "frontend/node_modules/.bin/biome",
 	"rust-analyzer.linkedProjects": [
-		"backend/Cargo.toml"
+		"backend/Cargo.toml",
+		"backend/migration/Cargo.toml",
+		"frontend/src-tauri/Cargo.toml",
 	],
 	// General editor settings
 	"typescript.preferences.importModuleSpecifier": "non-relative",

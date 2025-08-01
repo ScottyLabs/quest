@@ -2,12 +2,25 @@
 
 ## API Client
 
-The frontend currently relies on the production auth gateway, which is tied to the production backend. This means the backend must be deployed before schema changes can be synced to the frontend.
+Each of the following instructions assume you are in this directory.
 
-1. After making changes to the OpenAPI spec in `backend`, ensure the deployment has completed.
-
-2. Then, re-generate the schema in `frontend` with:
+1. When developing `frontend` locally, ensure that you have also started `backend`:
 
 ```bash
+# in a new terminal window
+cd ../backend
+cargo run
+```
+
+2. If you make any update `backend` in any way that changes the OpenAPI spec, make sure to re-generate the schema in `frontend` with:
+
+```bash
+# this requires the backend to be running
 bun run generate-types
+```
+
+3. Start the frontend:
+
+```bash
+bun run dev
 ```

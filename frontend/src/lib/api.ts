@@ -32,6 +32,16 @@ export function createGatewayClient(baseUrl: string, client: string) {
     }
 
     async function login(redirectUri?: string) {
+        const isDev = window.location.hostname === "localhost";
+
+        if (isDev) {
+            // auth is mocked in development
+            const redirect = redirectUri || window.location.href;
+            window.location.href = redirect;
+
+            return;
+        }
+
         const redirect = redirectUri || window.location.href;
         const loginUrl = `${baseUrl}/oauth2/authorization/${client}?redirect_uri=${encodeURIComponent(redirect)}`;
         window.location.href = loginUrl;

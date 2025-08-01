@@ -2,21 +2,19 @@ use axum::http::Method;
 use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
 use serde::{Deserialize, Serialize};
 use tokio::signal;
-use tower::ServiceBuilder;
 use tower_http::cors::CorsLayer;
-use tower_oauth2_resource_server::{
-    layer::OAuth2ResourceServerLayer, server::OAuth2ResourceServer, tenant::TenantConfiguration,
-};
 use utoipa::OpenApi;
 use utoipa_axum::{router::OpenApiRouter, routes};
 use utoipa_swagger_ui::SwaggerUi;
 
+mod auth;
 mod doc;
 pub mod entities;
 mod handlers;
 mod middleware;
 mod services;
 
+use auth::{build_oauth2_resource_server, dev_auth_middleware};
 use doc::ApiDoc;
 use middleware::admin;
 use services::{
@@ -108,7 +106,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         ))
         .layer(axum::middleware::from_fn(admin::require_admin));
 
-    let protected_routes = OpenApiRouter::new()
+    let mut protected_routes = OpenApiRouter::new()
         .routes(routes!(
             handlers::user::get_profile,
             handlers::user::update_dorm,
@@ -128,12 +126,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             handlers::journal::delete_journal_photo,
         ))
         .merge(admin_routes)
-        .layer(
-            ServiceBuilder::new()
-                .layer(build_cors_layer())
-                .layer(build_oauth2_resource_server().await),
-        )
+        .layer(build_cors_layer())
         .with_state(state);
+
+    if cfg!(debug_assertions) && std::env::var("ENABLE_DEV_AUTH").is_ok() {
+        protected_routes = protected_routes.layer(axum::middleware::from_fn(dev_auth_middleware));
+    } else {
+        protected_routes = protected_routes.layer(build_oauth2_resource_server().await);
+    }
 
     let public_routes = OpenApiRouter::new()
         .routes(routes!(root))
@@ -186,26 +186,6 @@ fn build_cors_layer() -> CorsLayer {
             axum::http::header::ORIGIN,
         ])
         .allow_credentials(true)
-}
-
-async fn build_oauth2_resource_server() -> OAuth2ResourceServerLayer<AuthClaims> {
-    let oidc_issuer_url =
-        dotenvy::var("OIDC_ISSUER_URL").expect("OIDC_ISSUER_URL environment variable must be set");
-    let oidc_client_id =
-        dotenvy::var("OIDC_CLIENT_ID").expect("OIDC_CLIENT_ID environment variable must be set");
-
-    OAuth2ResourceServer::builder()
-        .add_tenant(
-            TenantConfiguration::builder(oidc_issuer_url)
-                .audiences(&[oidc_client_id])
-                .build()
-                .await
-                .expect("Failed to build tenant configuration"),
-        )
-        .build()
-        .await
-        .expect("Failed to build OAuth2 resource server")
-        .into_layer()
 }
 
 async fn shutdown_signal() {

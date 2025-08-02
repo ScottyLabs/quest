@@ -57,6 +57,25 @@ export async function requireAuth(baseUrl: string) {
 	}
 }
 
+export async function adminMiddleware(baseUrl: string) {
+	const authContext = await requireAuth(baseUrl);
+
+	// Check if user is in the admin group
+	if (
+		!authContext.user.groups.includes("O-Quest Admin") &&
+		window.location.pathname === "/verify"
+	) {
+		throw redirect({ to: "/trade" });
+	} else if (
+		authContext.user.groups.includes("O-Quest Admin") &&
+		window.location.pathname === "/trade"
+	) {
+		throw redirect({ to: "/verify" });
+	}
+
+	return authContext;
+}
+
 // Redirect if already authenticated
 export async function redirectIfAuthenticated(baseUrl: string) {
 	const fetchClient = createFetchClient<paths>({

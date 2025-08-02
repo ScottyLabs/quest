@@ -27,6 +27,9 @@
 	// General editor settings
 	"typescript.preferences.importModuleSpecifier": "non-relative",
 	"editor.formatOnSave": true,
+	"files.associations": {
+		"apple-app-site-association": "json"
+	},
 	// Configure frontend formatters
 	"editor.codeActionsOnSave": {
 		"source.fixAll.biome": "always",

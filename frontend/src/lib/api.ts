@@ -46,8 +46,6 @@ export function createGatewayClient(baseUrl: string, client: string) {
 
 		const loginUrl = `${baseUrl}/oauth2/authorization/${client}?redirect_uri=${encodeURIComponent(redirect)}`;
 
-		alert(`before login: ${loginUrl}`);
-
 		if ("__TAURI__" in window) {
 			// On mobile, we can't authenticate from within a WebView,
 			// so instead open the login URL in the system browser

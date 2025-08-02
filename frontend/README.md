@@ -47,6 +47,35 @@ storeFile=<absolute path to the key store file>
 bun tauri android build
 ```
 
+## Apple Development
+
+You first need to find the Apple development Team ID from Apple Developer.
+
+It must be set in:
+
+1. The value of `bundle -> iOS -> developmentTeam` in the `tauri.conf.json` file
+
+2. The value `$TEAM_ID.org.scottylabs.quest` for `applinks -> details -> 0 -> appIDs -> 0` in the `.well-known/apple-app-site-association` file
+
+If you are running a beta version of macOS, Tauri may be unable to find `Xcode-beta`. You need to point it to the correct application:
+
+```bash
+sudo xcode-select -s /Applications/Xcode-beta.app/Contents/Developer
+```
+
+You can verify it is working by listing the available simulators:
+
+```bash
+xcrun simctl list devices available
+```
+
+Use the following command to start development:
+
+```bash
+bun tauri ios dev --host # if testing on a physical device
+bun tauri ios dev # otherwise
+```
+
 ## Android Development
 
 You need a Chromium-based browser in order to debug the application when running in the Android emulator.

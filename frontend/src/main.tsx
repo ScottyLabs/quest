@@ -6,8 +6,11 @@ import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 
 import { ApiProvider, useApi } from "@/lib/api-context";
+import { setupDeepLinks } from "@/lib/deep-link";
 import { type FileRoutesByFullPath, routeTree } from "@/routeTree.gen";
 import "@/main.css";
+
+setupDeepLinks();
 
 type ValidPath = keyof FileRoutesByFullPath;
 

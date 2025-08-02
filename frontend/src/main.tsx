@@ -24,6 +24,7 @@ const pageOrder: ValidPath[] = [
 	"/challenges/4",
 	"/challenges/5",
 	"/challenges/6",
+	"/verify",
 	"/trade",
 	"/about",
 ];

@@ -16,7 +16,7 @@ function getApiConfig() {
 	// Dev configuration
 	if (isDev) {
 		return {
-			apiUrl: "http://localhost:3000",
+			baseUrl: "http://localhost:3000",
 			serviceName: "quest",
 		};
 	}
@@ -24,21 +24,21 @@ function getApiConfig() {
 	// Production configuration
 	if (hostname === "cmu.quest") {
 		return {
-			apiUrl: "https://api.cmu.quest",
+			baseUrl: "https://api.cmu.quest",
 			serviceName: "quest",
 		};
 	}
 
 	if (hostname === "quest.scottylabs.org") {
 		return {
-			apiUrl: "https://api.quest.scottylabs.org",
+			baseUrl: "https://api.quest.scottylabs.org",
 			serviceName: "quest",
 		};
 	}
 
 	// Fallback to production
 	return {
-		apiUrl: "https://api.quest.scottylabs.org",
+		baseUrl: "https://api.quest.scottylabs.org",
 		serviceName: "quest",
 	};
 }
@@ -56,19 +56,23 @@ export function ApiProvider({
 }: ApiProviderProps) {
 	const config = useMemo(() => {
 		if (baseUrl && serviceName) {
-			return { apiUrl: baseUrl, serviceName };
+			return { baseUrl, serviceName };
 		}
 		return getApiConfig();
 	}, [baseUrl, serviceName]);
 
 	const client = useMemo(
-		() => createGatewayClient(config.apiUrl, config.serviceName),
-		[config.apiUrl, config.serviceName],
+		() => createGatewayClient(config.baseUrl, config.serviceName),
+		[config.baseUrl, config.serviceName],
 	);
 
 	const value = useMemo(
-		() => ({ client, baseUrl: config.apiUrl, serviceName: config.serviceName }),
-		[client, config.apiUrl, config.serviceName],
+		() => ({
+			client,
+			baseUrl: config.baseUrl,
+			serviceName: config.serviceName,
+		}),
+		[client, config.baseUrl, config.serviceName],
 	);
 
 	return <ApiContext.Provider value={value}>{children}</ApiContext.Provider>;

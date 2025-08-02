@@ -60,3 +60,23 @@ bun tauri android dev
 2. Navigate to [chrome://inspect](chrome://inspect) in the browser. After the streamed install completes, "WebView in org.scottylabs.quest" should show up under the "Remote Target" section.
 
 3. Press "inspect" to connect to the emulated device, and use the browser console as normal.
+
+## Android Deep Links
+
+The following instructions assume you are developing on Mac.
+
+In order to register deep links when testing in dev, you need the `.well-known/assetlinks.json` file to include the `sha256_cert_fingerprints` that your debug keystore is using. You can get this value by running:
+
+```bash
+keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android
+```
+
+The value is on the line that begins with `SHA256`. Then, verify that it is the one your debug APK is actually using by running:
+
+```bash
+$(find ~/Library/Android/sdk/build-tools -name "apksigner" | head -1) verify --print-certs --verbose src-tauri/gen/android/app/build/outputs/apk/arm64/debug/app-arm64-debug.apk
+```
+
+The value is on the line that begins with `Signer #1 certificate SHA-256 digest` (NOT the line that begins with `Signer #1 public key SHA-256 digest`, or either option with `SHA-1` instead of `SHA-256`).
+
+The SHA-256 fingerprints from both commands should match (the first will have colons, the second won't). Add the fingerprint with colons to the `assetlinks.json` file alongside the existing certificate fingerprints.

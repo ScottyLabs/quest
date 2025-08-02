@@ -1,3 +1,4 @@
+import { openUrl } from "@tauri-apps/plugin-opener";
 import createFetchClient from "openapi-fetch";
 import createClient from "openapi-react-query";
 
@@ -12,10 +13,7 @@ function createQueryClient({
 	baseUrl,
 	credentials = "include",
 }: FetchClientOptions) {
-	const fetchClient = createFetchClient<paths>({
-		baseUrl,
-		credentials,
-	});
+	const fetchClient = createFetchClient<paths>({ baseUrl, credentials });
 
 	return createClient(fetchClient);
 }
@@ -31,20 +29,28 @@ export function createGatewayClient(baseUrl: string, client: string) {
 		form.submit();
 	}
 
-	async function login(redirectUri?: string) {
+	async function login() {
 		const isDev = window.location.hostname === "localhost";
 
-		if (isDev) {
-			// auth is mocked in development
-			const redirect = redirectUri || window.location.href;
-			window.location.href = redirect;
+		// auth is mocked in development
+		if (isDev) return;
 
-			return;
-		}
+		// On mobile, we can't redirect to tauri.localhost, so replace it with
+		// an actual domain that we will capture via a deep link
+		const redirect =
+			"__TAURI__" in window
+				? `https://quest.scottylabs.org${window.location.pathname + window.location.search}`
+				: window.location.href;
 
-		const redirect = redirectUri || window.location.href;
 		const loginUrl = `${baseUrl}/oauth2/authorization/${client}?redirect_uri=${encodeURIComponent(redirect)}`;
-		window.location.href = loginUrl;
+
+		if ("__TAURI__" in window) {
+			// On mobile, we can't authenticate from within a WebView,
+			// so instead open the login URL in the system browser
+			await openUrl(loginUrl);
+		} else {
+			window.location.href = loginUrl;
+		}
 	}
 
 	return {

@@ -1,4 +1,4 @@
-use axum::{http::Method, routing::get};
+use axum::http::Method;
 use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
 use serde::{Deserialize, Serialize};
 use tokio::signal;

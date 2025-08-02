@@ -12,7 +12,7 @@ import "@/main.css";
 
 setupDeepLinks();
 
-type ValidPath = keyof FileRoutesByFullPath;
+export type ValidPath = keyof FileRoutesByFullPath;
 
 const pageOrder: ValidPath[] = [
 	"/profile",

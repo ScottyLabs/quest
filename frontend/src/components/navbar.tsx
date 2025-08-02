@@ -1,9 +1,11 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
+import type { ValidPath } from "@/main";
 
-export function Navbar() {
-	const routerState = useRouterState();
-	const currentPath = routerState.location.pathname;
+interface NavbarProps {
+	currentPath: ValidPath;
+}
 
+export function Navbar({ currentPath }: NavbarProps) {
 	// Check if current path is a challenges route (/ or /challenges/*)
 	const isChallengesActive =
 		currentPath === "/" || currentPath.startsWith("/challenges/");

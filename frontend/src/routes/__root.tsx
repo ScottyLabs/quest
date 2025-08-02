@@ -1,6 +1,12 @@
-import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
+import {
+	createRootRouteWithContext,
+	Outlet,
+	useRouterState,
+} from "@tanstack/react-router";
+
 import { Navbar } from "@/components/navbar";
 import type { AuthContext } from "@/lib/auth";
+import type { ValidPath } from "@/main";
 
 interface RouterContext {
 	baseUrl: string;
@@ -12,10 +18,15 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 });
 
 function Root() {
+	const routerState = useRouterState();
+	const currentPath = routerState.location.pathname as ValidPath;
+
+	const shouldShowNavbar = !["/login", "/dorm-select"].includes(currentPath);
+
 	return (
 		<>
 			<Outlet />
-			<Navbar />
+			{shouldShowNavbar && <Navbar currentPath={currentPath} />}
 		</>
 	);
 }

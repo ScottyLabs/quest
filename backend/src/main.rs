@@ -12,13 +12,11 @@ mod doc;
 pub mod entities;
 mod handlers;
 mod middleware;
-mod serve;
 mod services;
 
 use auth::{build_oauth2_resource_server, dev_auth_middleware};
 use doc::ApiDoc;
 use middleware::admin;
-use serve::{apple_app_site_association, assetlinks};
 use services::{
     challenge::ChallengeService, completion::CompletionService, leaderboard::LeaderboardService,
     reward::RewardService, storage::StorageService, transaction::TransactionService,
@@ -139,12 +137,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let public_routes = OpenApiRouter::new()
         .routes(routes!(root))
-        .merge(OpenApiRouter::new().routes(routes!(health)))
-        .route("/.well-known/assetlinks.json", get(assetlinks))
-        .route(
-            "/.well-known/apple-app-site-association",
-            get(apple_app_site_association),
-        );
+        .merge(OpenApiRouter::new().routes(routes!(health)));
 
     let (router, api) = OpenApiRouter::with_openapi(ApiDoc::openapi())
         .merge(protected_routes)

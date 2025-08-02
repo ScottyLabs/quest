@@ -1,0 +1,15 @@
+{
+	"applinks": {
+		"details": [
+			{
+				"appIDs": ["4Y39FMA838.org.scottylabs.quest"],
+				"components": [
+					{
+						"/": "/login",
+						"comment": "Matches OAuth callback URLs"
+					}
+				]
+			}
+		]
+	}
+}

@@ -271,7 +271,6 @@ dependencies = [
  "minio",
  "sea-orm",
  "serde",
- "serde_json",
  "tokio",
  "tower",
  "tower-http",

@@ -19,6 +19,17 @@ export default defineConfig(async () => ({
 		tsConfigPaths({
 			projects: ["./tsconfig.json"],
 		}),
+		{
+			name: "well-known-json-headers",
+			configureServer(server) {
+				server.middlewares.use((req, res, next) => {
+					if (req.url?.startsWith("/.well-known/")) {
+						res.setHeader("Content-Type", "application/json");
+					}
+					next();
+				});
+			},
+		},
 	],
 
 	// Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`

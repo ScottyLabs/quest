@@ -33,7 +33,10 @@ export function createGatewayClient(baseUrl: string, client: string) {
 		const isDev = window.location.hostname === "localhost";
 
 		// auth is mocked in development
-		if (isDev) return;
+		if (isDev) {
+			window.location.href = path;
+			return;
+		}
 
 		// On mobile, we can't redirect to tauri.localhost, so replace it with
 		// an actual domain that we will capture via a deep link

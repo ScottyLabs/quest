@@ -29,7 +29,7 @@ export function createGatewayClient(baseUrl: string, client: string) {
 		form.submit();
 	}
 
-	async function login() {
+	async function login(path: string) {
 		const isDev = window.location.hostname === "localhost";
 
 		// auth is mocked in development
@@ -37,10 +37,12 @@ export function createGatewayClient(baseUrl: string, client: string) {
 
 		// On mobile, we can't redirect to tauri.localhost, so replace it with
 		// an actual domain that we will capture via a deep link
-		const redirect =
+		const redirect = new URL(
+			path,
 			"__TAURI__" in window
-				? `https://quest.scottylabs.org${window.location.pathname + window.location.search}`
-				: window.location.href;
+				? "https://quest.scottylabs.org" // corresponds to the fallback baseUrl
+				: window.location.origin,
+		).toString();
 
 		const loginUrl = `${baseUrl}/oauth2/authorization/${client}?redirect_uri=${encodeURIComponent(redirect)}`;
 

@@ -18,19 +18,10 @@ function Login() {
 	const { login } = useApiClient();
 	const { from } = Route.useSearch();
 
-	const handleLogin = () => {
-		if (from) {
-			const redirectUri = new URL(from, window.location.origin);
-			login(redirectUri.toString());
-		} else {
-			login();
-		}
-	};
-
 	return (
 		<div className="[view-transition-name:main-content]">
 			<h1 className="text-2xl">Login</h1>
-			<button type="button" onClick={handleLogin}>
+			<button type="button" onClick={() => login(from || "/")}>
 				Login
 			</button>
 		</div>

@@ -20,6 +20,7 @@ export default defineConfig(async () => ({
 			projects: ["./tsconfig.json"],
 		}),
 		{
+			// This only applies during dev, the vercel.json file handles this in production
 			name: "well-known-json-headers",
 			configureServer(server) {
 				server.middlewares.use((req, res, next) => {

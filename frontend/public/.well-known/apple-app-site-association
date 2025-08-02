@@ -5,8 +5,8 @@
 				"appIDs": ["4Y39FMA838.org.scottylabs.quest"],
 				"components": [
 					{
-						"/": "/login",
-						"comment": "Matches OAuth callback URLs"
+						"/": "*",
+						"comment": "Matches any URL on this domain"
 					}
 				]
 			}

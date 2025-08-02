@@ -169,7 +169,9 @@ fn build_cors_layer() -> CorsLayer {
     CorsLayer::new()
         .allow_origin([
             "https://cmu.quest".parse().unwrap(),
+			"https://api.cmu.quest".parse().unwrap(),
             "https://quest.scottylabs.org".parse().unwrap(),
+			"https://api.quest.scottylabs.org".parse().unwrap(),
             "http://localhost:1420".parse().unwrap(),
         ])
         .allow_methods([

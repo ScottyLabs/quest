@@ -9,7 +9,10 @@ export interface AuthContext {
 
 // Auth middleware function
 export async function requireAuth(baseUrl: string) {
-	const fetchClient = createFetchClient<paths>({ baseUrl });
+	const fetchClient = createFetchClient<paths>({
+		baseUrl,
+		credentials: "include",
+	});
 
 	try {
 		const { data, error } = await fetchClient.GET("/api/profile");
@@ -33,7 +36,10 @@ export async function requireAuth(baseUrl: string) {
 
 // Redirect if already authenticated
 export async function redirectIfAuthenticated(baseUrl: string) {
-	const fetchClient = createFetchClient<paths>({ baseUrl });
+	const fetchClient = createFetchClient<paths>({
+		baseUrl,
+		credentials: "include",
+	});
 
 	try {
 		const { data, error } = await fetchClient.GET("/api/profile");

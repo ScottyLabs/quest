@@ -1,8 +1,6 @@
-use axum::http::Method;
 use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
 use serde::{Deserialize, Serialize};
 use tokio::signal;
-use tower_http::cors::CorsLayer;
 use utoipa::OpenApi;
 use utoipa_axum::{router::OpenApiRouter, routes};
 use utoipa_swagger_ui::SwaggerUi;
@@ -126,7 +124,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             handlers::journal::delete_journal_photo,
         ))
         .merge(admin_routes)
-        .layer(build_cors_layer())
         .with_state(state);
 
     if cfg!(debug_assertions) && std::env::var("ENABLE_DEV_AUTH").is_ok() {
@@ -163,31 +160,6 @@ async fn create_connection() -> Result<DatabaseConnection, DbErr> {
     // Set connection pool options here
 
     Database::connect(opt).await
-}
-
-fn build_cors_layer() -> CorsLayer {
-    CorsLayer::new()
-        .allow_origin([
-            "https://cmu.quest".parse().unwrap(),
-			"https://api.cmu.quest".parse().unwrap(),
-            "https://quest.scottylabs.org".parse().unwrap(),
-			"https://api.quest.scottylabs.org".parse().unwrap(),
-            "http://localhost:1420".parse().unwrap(),
-        ])
-        .allow_methods([
-            Method::GET,
-            Method::POST,
-            Method::PUT,
-            Method::DELETE,
-            Method::OPTIONS,
-        ])
-        .allow_headers([
-            axum::http::header::AUTHORIZATION,
-            axum::http::header::CONTENT_TYPE,
-            axum::http::header::ACCEPT,
-            axum::http::header::ORIGIN,
-        ])
-        .allow_credentials(true)
 }
 
 async fn shutdown_signal() {

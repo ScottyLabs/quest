@@ -20,3 +20,26 @@ pub async fn assetlinks() -> (HeaderMap, Json<serde_json::Value>) {
 
     (headers, Json(assetlinks))
 }
+
+pub async fn apple_app_site_association() -> (HeaderMap, Json<serde_json::Value>) {
+    let mut headers = HeaderMap::new();
+    headers.insert("content-type", "application/json".parse().unwrap());
+
+    let association = json!({
+        "applinks": {
+            "details": [
+                {
+                    "appIDs": ["4Y39FMA838.org.scottylabs.quest"],
+                    "components": [
+                        {
+                            "/": "/login/*",
+                            "comment": "Matches OAuth callback URLs"
+                        }
+                    ]
+                }
+            ]
+        }
+    });
+
+    (headers, Json(association))
+}

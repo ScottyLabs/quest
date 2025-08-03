@@ -1,5 +1,5 @@
+import { SignInButton } from "@clerk/clerk-react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useApiClient } from "@/lib/api-context";
 import { redirectIfAuthenticated } from "@/lib/auth";
 
 export const Route = createFileRoute("/login")({
@@ -15,15 +15,12 @@ export const Route = createFileRoute("/login")({
 });
 
 function Login() {
-	const { login } = useApiClient();
 	const { from } = Route.useSearch();
 
 	return (
 		<div className="[view-transition-name:main-content]">
 			<h1 className="text-2xl">Login</h1>
-			<button type="button" onClick={() => login(from || "/")}>
-				Login
-			</button>
+			<SignInButton forceRedirectUrl={from || "/"} />
 		</div>
 	);
 }

@@ -1,5 +1,6 @@
-use crate::{AppState, AuthClaims, entities::user};
+use crate::{AppState, entities::user, middleware::admin::check_staff};
 use axum::{Extension, Json, extract::State, http::StatusCode};
+use clerk_rs::validators::authorizer::ClerkJwt;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -14,7 +15,7 @@ pub struct UserProfileResponse {
     pub dorm: Option<String>,
     pub name: String,
     pub scotty_coins: i32,
-    pub groups: Vec<String>,
+    pub is_staff: bool,
 }
 
 #[utoipa::path(
@@ -29,13 +30,19 @@ pub struct UserProfileResponse {
 #[axum::debug_handler]
 pub async fn get_profile(
     State(state): State<AppState>,
-    Extension(claims): Extension<AuthClaims>,
+    Extension(claims): Extension<ClerkJwt>,
 ) -> Result<Json<UserProfileResponse>, StatusCode> {
+    let user_name = claims
+        .other
+        .get("name")
+        .ok_or_else(|| StatusCode::INTERNAL_SERVER_ERROR)?
+        .to_string();
+
     // Get user, coins earned, and coins spent in parallel
     let (user, coins_earned, coins_spent) = tokio::try_join!(
         state
             .user_service
-            .get_or_create_user(&claims.sub, &claims.name),
+            .get_or_create_user(&claims.sub, &user_name),
         state
             .completion_service
             .get_user_total_coins_earned(&claims.sub),
@@ -52,7 +59,7 @@ pub async fn get_profile(
         dorm: user.dorm,
         name: user.name,
         scotty_coins,
-        groups: claims.groups,
+        is_staff: check_staff(claims),
     }))
 }
 
@@ -69,7 +76,7 @@ pub async fn get_profile(
 #[axum::debug_handler]
 pub async fn update_dorm(
     State(state): State<AppState>,
-    Extension(claims): Extension<AuthClaims>,
+    Extension(claims): Extension<ClerkJwt>,
     Json(payload): Json<UpdateDormRequest>,
 ) -> Result<Json<user::Model>, StatusCode> {
     let user = state

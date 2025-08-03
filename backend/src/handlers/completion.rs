@@ -1,6 +1,7 @@
-use crate::{AppState, AuthClaims};
+use crate::AppState;
 use axum::{Extension, Json, extract::State, http::StatusCode};
 use chrono::{NaiveDateTime, Utc};
+use clerk_rs::validators::authorizer::ClerkJwt;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -39,7 +40,7 @@ pub struct CompletionResponse {
 #[axum::debug_handler]
 pub async fn create_completion(
     State(state): State<AppState>,
-    Extension(claims): Extension<AuthClaims>,
+    Extension(claims): Extension<ClerkJwt>,
     Json(payload): Json<CreateCompletionRequest>,
 ) -> Result<Json<CreateCompletionResponse>, StatusCode> {
     // Get the challenge to verify it exists and get the secret

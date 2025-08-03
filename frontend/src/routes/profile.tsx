@@ -16,7 +16,7 @@ function RouteComponent() {
 			<h1 className="text-challenge-1-selected">Hello, {user.name}</h1>
 			<p>Dorm: {user.dorm}</p>
 			<p>ScottyCoins: {user.scotty_coins}</p>
-			<p>Groups: {user.groups.join(", ")}</p>
+			<p>Is Staff: {user.is_staff}</p>
 		</div>
 	);
 }

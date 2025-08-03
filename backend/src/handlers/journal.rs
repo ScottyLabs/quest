@@ -1,10 +1,11 @@
-use crate::{AppState, AuthClaims};
+use crate::AppState;
 use axum::{
     Extension, Json,
     extract::{Path, State},
     http::StatusCode,
 };
 use chrono::NaiveDateTime;
+use clerk_rs::validators::authorizer::ClerkJwt;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -48,7 +49,7 @@ pub struct UpdateJournalRequest {
 #[axum::debug_handler]
 pub async fn get_journal(
     State(state): State<AppState>,
-    Extension(claims): Extension<AuthClaims>,
+    Extension(claims): Extension<ClerkJwt>,
 ) -> Result<Json<JournalListResponse>, StatusCode> {
     let completions_with_challenges = state
         .completion_service
@@ -103,7 +104,7 @@ pub async fn get_journal(
 #[axum::debug_handler]
 pub async fn get_journal_entry(
     State(state): State<AppState>,
-    Extension(claims): Extension<AuthClaims>,
+    Extension(claims): Extension<ClerkJwt>,
     Path(challenge_name): Path<String>,
 ) -> Result<Json<JournalEntryResponse>, StatusCode> {
     let completion_with_challenge = state
@@ -157,7 +158,7 @@ pub async fn get_journal_entry(
 #[axum::debug_handler]
 pub async fn update_journal_entry(
     State(state): State<AppState>,
-    Extension(claims): Extension<AuthClaims>,
+    Extension(claims): Extension<ClerkJwt>,
     Path(challenge_name): Path<String>,
     Json(payload): Json<UpdateJournalRequest>,
 ) -> Result<Json<JournalEntryResponse>, StatusCode> {
@@ -230,7 +231,7 @@ pub struct DeletePhotoResponse {
 #[axum::debug_handler]
 pub async fn delete_journal_photo(
     State(state): State<AppState>,
-    Extension(claims): Extension<AuthClaims>,
+    Extension(claims): Extension<ClerkJwt>,
     Path(challenge_name): Path<String>,
 ) -> Result<Json<DeletePhotoResponse>, StatusCode> {
     // Get the completion to check if it exists and has a photo

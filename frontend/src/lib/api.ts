@@ -30,7 +30,9 @@ export function createGatewayClient(baseUrl: string, client: string) {
 	}
 
 	async function login(path: string) {
-		const isDev = window.location.hostname === "localhost";
+		const isDev =
+			window.location.hostname === "localhost" &&
+			window.location.protocol !== "tauri:"; // don't consider iOS dev
 
 		// auth is mocked in development
 		if (isDev) {
@@ -38,8 +40,8 @@ export function createGatewayClient(baseUrl: string, client: string) {
 			return;
 		}
 
-		// On mobile, we can't redirect to tauri.localhost, so replace it with
-		// an actual domain that we will capture via a deep link
+		// On mobile, we can't redirect to tauri.localhost (Android) or localhost (iOS),
+		// so replace it with an actual domain that we will capture via a deep link
 		const redirect = new URL(
 			path,
 			"__TAURI__" in window

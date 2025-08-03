@@ -129,7 +129,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .layer(build_cors_layer())
         .with_state(state);
 
-    if cfg!(debug_assertions) && std::env::var("ENABLE_DEV_AUTH").is_ok() {
+    if cfg!(debug_assertions) && dotenvy::var("ENABLE_DEV_AUTH").is_ok() {
         protected_routes = protected_routes.layer(axum::middleware::from_fn(dev_auth_middleware));
     } else {
         protected_routes = protected_routes.layer(build_oauth2_resource_server().await);
@@ -166,12 +166,17 @@ async fn create_connection() -> Result<DatabaseConnection, DbErr> {
 }
 
 fn build_cors_layer() -> CorsLayer {
+    let mut origins = vec![
+        "https://cmu.quest".parse().unwrap(),
+        "https://quest.scottylabs.org".parse().unwrap(),
+    ];
+
+    if cfg!(debug_assertions) && dotenvy::var("ENABLE_DEV_AUTH").is_ok() {
+        origins.push("http://localhost:1420".parse().unwrap());
+    }
+
     CorsLayer::new()
-        .allow_origin([
-            "https://cmu.quest".parse().unwrap(),
-            "https://quest.scottylabs.org".parse().unwrap(),
-            "http://localhost:1420".parse().unwrap(),
-        ])
+        .allow_origin(origins)
         .allow_methods([
             Method::GET,
             Method::POST,

@@ -1,0 +1,15 @@
+{
+	"$schema": "../gen/schemas/mobile-schema.json",
+	"identifier": "mobile-capability",
+	"description": "Capability for mobile apps",
+	"platforms": ["android", "iOS"],
+	"windows": ["main"],
+	"permissions": [
+		"nfc:default",
+		"nfc:allow-write",
+		"geolocation:allow-check-permissions",
+		"geolocation:allow-request-permissions",
+		"geolocation:allow-get-current-position",
+		"barcode-scanner:default"
+	]
+}

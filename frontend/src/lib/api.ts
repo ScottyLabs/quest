@@ -42,12 +42,15 @@ export function createGatewayClient(baseUrl: string, client: string) {
 
 		// On mobile, we can't redirect to tauri.localhost (Android) or localhost (iOS),
 		// so replace it with an actual domain that we will capture via a deep link
-		const redirect = new URL(
+		let redirect = new URL(
 			path,
 			"__TAURI__" in window
 				? "https://quest.scottylabs.org" // corresponds to the fallback baseUrl
 				: window.location.origin,
 		).toString();
+
+		// Let the gateway know if we're coming from Tauri
+		redirect = "__TAURI__" in window ? `${redirect}?mobile=true` : redirect;
 
 		const loginUrl = `${baseUrl}/oauth2/authorization/${client}?redirect_uri=${encodeURIComponent(redirect)}`;
 

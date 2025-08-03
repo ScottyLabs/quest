@@ -25,7 +25,7 @@ bun run generate-types
 bun run dev
 ```
 
-## Android Signing
+## Android Setup
 
 The steps available [here](https://v2.tauri.app/distribute/sign/android/) were used to generate the signing key.
 
@@ -47,7 +47,7 @@ storeFile=<absolute path to the key store file>
 bun tauri android build
 ```
 
-## Apple Development
+## Apple Setup
 
 You first need to find the Apple development Team ID from Apple Developer.
 
@@ -69,13 +69,6 @@ You can verify it is working by listing the available simulators:
 xcrun simctl list devices available
 ```
 
-Use the following command to start development:
-
-```bash
-bun tauri ios dev --host # if testing on a physical device
-bun tauri ios dev # otherwise
-```
-
 ## Android Development
 
 You need a Chromium-based browser in order to debug the application when running in the Android emulator.
@@ -89,6 +82,29 @@ bun tauri android dev
 2. Navigate to [chrome://inspect](chrome://inspect) in the browser. After the streamed install completes, "WebView in org.scottylabs.quest" should show up under the "Remote Target" section.
 
 3. Press "inspect" to connect to the emulated device, and use the browser console as normal.
+
+## Apple Development
+
+To start development on one of the aforementioned simulators, use the following command:
+
+```bash
+# replace with the latest iPhone from the above xcrun simctl command
+bun tauri ios dev "iPhone 16 Pro"
+```
+
+Alternatively, use the following command to start development on a physical device:
+
+```bash
+bun tauri ios dev --host
+```
+
+To debug the application, follow these steps:
+
+1. In Safari, go to `Settings -> Advanced` and enable the "Show features for web developers" option
+
+2. Then, find the `Develop` dropdown in the Apple menu bar (not in Safari settings)
+
+3. Find the simulated iPhone, and select the page that shows under the section for this application
 
 ## Android Deep Links
 

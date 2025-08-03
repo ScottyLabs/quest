@@ -172,7 +172,11 @@ fn build_cors_layer() -> CorsLayer {
     ];
 
     if cfg!(debug_assertions) && dotenvy::var("ENABLE_DEV_AUTH").is_ok() {
-        origins.push("http://localhost:1420".parse().unwrap());
+        origins.extend_from_slice(&[
+            "http://localhost:1420".parse().unwrap(),
+            "http://tauri.localhost".parse().unwrap(),
+            "tauri://localhost".parse().unwrap(),
+        ]);
     }
 
     CorsLayer::new()

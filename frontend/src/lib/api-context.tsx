@@ -10,10 +10,11 @@ interface ApiContextValue {
 const ApiContext = createContext<ApiContextValue | null>(null);
 
 function getApiConfig() {
-	const { hostname, protocol } = window.location;
+	const { hostname } = window.location;
 	const isDev =
-		(hostname === "localhost" || hostname === "127.0.0.1") &&
-		protocol !== "tauri:";
+		hostname === "localhost" ||
+		hostname === "127.0.0.1" ||
+		hostname === "tauri.localhost";
 
 	// Dev configuration
 	if (isDev) {

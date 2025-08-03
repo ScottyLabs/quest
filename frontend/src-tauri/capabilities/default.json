@@ -3,20 +3,5 @@
 	"identifier": "default",
 	"description": "Capability for the main window",
 	"windows": ["main"],
-	"permissions": [
-		"core:default",
-		"core:event:default",
-		"deep-link:default",
-		{
-			"identifier": "opener:allow-open-url",
-			"allow": [
-				{
-					"url": "https://api.quest.scottylabs.org/oauth2/authorization/quest?redirect_uri=*"
-				},
-				{
-					"url": "https://api.cmu.quest/oauth2/authorization/quest?redirect_uri=*"
-				}
-			]
-		}
-	]
+	"permissions": ["core:default", "core:event:default", "deep-link:default"]
 }

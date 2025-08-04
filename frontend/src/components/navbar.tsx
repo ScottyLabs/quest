@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useApiClient } from "@/lib/api-context";
+import { useApi } from "@/lib/api-context";
 import type { ValidPath } from "@/main";
 
 interface NavbarProps {
@@ -7,16 +7,16 @@ interface NavbarProps {
 }
 
 export function Navbar({ currentPath }: NavbarProps) {
-	const { $api } = useApiClient();
-	const { data, isLoading } = $api.useQuery("get", "/api/profile");
+	const { client } = useApi();
+	const { data, isLoading } = client.useQuery("get", "/api/profile");
 
 	// Check if current path is a challenges route (/ or /challenges/*)
 	const isChallengesActive =
 		currentPath === "/" || currentPath.startsWith("/challenges/");
 
-	// Show Trade while loading OR if not admin, show Verify only if loaded and admin
-	const isAdmin = !isLoading && data?.groups.includes("O-Quest Admin");
-	const showVerify = !isLoading && isAdmin;
+	// Show Trade while loading or if not staff, show Verify only if loaded and staff
+	const isStaff = !isLoading && data?.is_staff;
+	const showVerify = !isLoading && isStaff;
 
 	return (
 		<div className="flex gap-2">

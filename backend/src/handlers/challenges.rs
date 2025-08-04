@@ -1,6 +1,7 @@
-use crate::{AppState, AuthClaims};
+use crate::AppState;
 use axum::{Extension, Json, extract::State, http::StatusCode};
 use chrono::{NaiveDateTime, Utc};
+use clerk_rs::validators::authorizer::ClerkJwt;
 use serde::Serialize;
 use utoipa::ToSchema;
 
@@ -51,7 +52,7 @@ pub enum ChallengeStatus {
 #[axum::debug_handler]
 pub async fn get_challenges(
     State(state): State<AppState>,
-    Extension(claims): Extension<AuthClaims>,
+    Extension(claims): Extension<ClerkJwt>,
 ) -> Result<Json<ChallengesListResponse>, StatusCode> {
     // Get all challenges and user completions in parallel
     let (challenges, completions) = tokio::try_join!(

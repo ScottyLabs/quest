@@ -1,20 +1,22 @@
 use axum::http::Method;
+use clerk_rs::{
+    ClerkConfiguration,
+    clerk::Clerk,
+    validators::{axum::ClerkLayer, jwks::MemoryCacheJwksProvider},
+};
 use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
-use serde::{Deserialize, Serialize};
 use tokio::signal;
 use tower_http::cors::CorsLayer;
 use utoipa::OpenApi;
 use utoipa_axum::{router::OpenApiRouter, routes};
 use utoipa_swagger_ui::SwaggerUi;
 
-mod auth;
 mod doc;
 pub mod entities;
 mod handlers;
 mod middleware;
 mod services;
 
-use auth::{build_oauth2_resource_server, dev_auth_middleware};
 use doc::ApiDoc;
 use middleware::admin;
 use services::{
@@ -32,24 +34,6 @@ struct AppState {
     transaction_service: TransactionService,
     leaderboard_service: LeaderboardService,
     storage_service: StorageService,
-}
-
-#[derive(Clone, Serialize, Deserialize)]
-struct AuthClaims {
-    pub iss: String,
-    pub sub: String,
-    pub aud: String,
-    pub exp: i64,
-    pub iat: i64,
-    pub auth_time: i64,
-    pub acr: String,
-    pub email: String,
-    pub email_verified: bool,
-    pub name: String,
-    pub given_name: String,
-    pub preferred_username: String,
-    pub nickname: String,
-    pub groups: Vec<String>,
 }
 
 // Public endpoint handlers
@@ -106,7 +90,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         ))
         .layer(axum::middleware::from_fn(admin::require_admin));
 
-    let mut protected_routes = OpenApiRouter::new()
+    let protected_routes = OpenApiRouter::new()
         .routes(routes!(
             handlers::user::get_profile,
             handlers::user::update_dorm,
@@ -127,13 +111,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         ))
         .merge(admin_routes)
         .layer(build_cors_layer())
+        .layer(setup_clerk())
         .with_state(state);
-
-    if cfg!(debug_assertions) && dotenvy::var("ENABLE_DEV_AUTH").is_ok() {
-        protected_routes = protected_routes.layer(axum::middleware::from_fn(dev_auth_middleware));
-    } else {
-        protected_routes = protected_routes.layer(build_oauth2_resource_server().await);
-    }
 
     let public_routes = OpenApiRouter::new()
         .routes(routes!(root))
@@ -153,6 +132,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_graceful_shutdown(shutdown_signal())
         .await?;
     Ok(())
+}
+
+fn setup_clerk() -> ClerkLayer<MemoryCacheJwksProvider> {
+    let secret_key = dotenvy::var("CLERK_SECRET_KEY")
+        .expect("CLERK_SECRET_KEY environment variable must be set");
+
+    let config = ClerkConfiguration::new(None, None, Some(secret_key), None);
+    let jwks_provider = MemoryCacheJwksProvider::new(Clerk::new(config));
+
+    // If routes is None, all routes are protected
+    ClerkLayer::new(jwks_provider, None, true)
 }
 
 async fn create_connection() -> Result<DatabaseConnection, DbErr> {

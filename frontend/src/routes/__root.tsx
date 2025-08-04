@@ -3,7 +3,7 @@ import {
 	Outlet,
 	useRouterState,
 } from "@tanstack/react-router";
-
+import { BottomNavBar } from "@/components/bottom-navbar";
 import { Navbar } from "@/components/navbar";
 import type { AuthContext } from "@/lib/auth";
 import type { ValidPath } from "@/main";
@@ -21,12 +21,14 @@ function Root() {
 	const routerState = useRouterState();
 	const currentPath = routerState.location.pathname as ValidPath;
 
-	const shouldShowNavbar = !["/login", "/dorm-select"].includes(currentPath);
+	const shouldShowNavbar = !["/onboarding", "/login", "/dorm-select"].includes(
+		currentPath,
+	);
 
 	return (
 		<>
 			<Outlet />
-			{shouldShowNavbar && <Navbar currentPath={currentPath} />}
+			{shouldShowNavbar && <BottomNavBar />}
 		</>
 	);
 }

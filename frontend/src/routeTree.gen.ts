@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as TradeRouteImport } from './routes/trade'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as DormSelectRouteImport } from './routes/dorm-select'
@@ -37,6 +38,11 @@ const TradeRoute = TradeRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -101,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/dorm-select': typeof DormSelectRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
   '/trade': typeof TradeRoute
   '/verify': typeof VerifyRoute
@@ -117,6 +124,7 @@ export interface FileRoutesByTo {
   '/dorm-select': typeof DormSelectRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
   '/trade': typeof TradeRoute
   '/verify': typeof VerifyRoute
@@ -134,6 +142,7 @@ export interface FileRoutesById {
   '/dorm-select': typeof DormSelectRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
   '/trade': typeof TradeRoute
   '/verify': typeof VerifyRoute
@@ -152,6 +161,7 @@ export interface FileRouteTypes {
     | '/dorm-select'
     | '/leaderboard'
     | '/login'
+    | '/onboarding'
     | '/profile'
     | '/trade'
     | '/verify'
@@ -168,6 +178,7 @@ export interface FileRouteTypes {
     | '/dorm-select'
     | '/leaderboard'
     | '/login'
+    | '/onboarding'
     | '/profile'
     | '/trade'
     | '/verify'
@@ -184,6 +195,7 @@ export interface FileRouteTypes {
     | '/dorm-select'
     | '/leaderboard'
     | '/login'
+    | '/onboarding'
     | '/profile'
     | '/trade'
     | '/verify'
@@ -201,6 +213,7 @@ export interface RootRouteChildren {
   DormSelectRoute: typeof DormSelectRoute
   LeaderboardRoute: typeof LeaderboardRoute
   LoginRoute: typeof LoginRoute
+  OnboardingRoute: typeof OnboardingRoute
   ProfileRoute: typeof ProfileRoute
   TradeRoute: typeof TradeRoute
   VerifyRoute: typeof VerifyRoute
@@ -233,6 +246,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -321,6 +341,7 @@ const rootRouteChildren: RootRouteChildren = {
   DormSelectRoute: DormSelectRoute,
   LeaderboardRoute: LeaderboardRoute,
   LoginRoute: LoginRoute,
+  OnboardingRoute: OnboardingRoute,
   ProfileRoute: ProfileRoute,
   TradeRoute: TradeRoute,
   VerifyRoute: VerifyRoute,

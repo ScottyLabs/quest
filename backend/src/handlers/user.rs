@@ -32,6 +32,7 @@ pub async fn get_profile(
     Extension(claims): Extension<AuthClaims>,
 ) -> Result<Json<UserProfileResponse>, StatusCode> {
     // Get user, coins earned, and coins spent in parallel
+    println!("Retrieving user profile for: {}", claims.sub);
     let (user, coins_earned, coins_spent) = tokio::try_join!(
         state
             .user_service
@@ -43,8 +44,11 @@ pub async fn get_profile(
             .transaction_service
             .get_user_total_coins_spent(&claims.sub)
     )
-    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
+    .map_err(|e| {
+        eprintln!("Error retrieving user profile for {}: {}", claims.sub, e);
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?;
+    println!("User profile retrieved for: {}", claims.sub);
     let scotty_coins = coins_earned - coins_spent;
 
     Ok(Json(UserProfileResponse {

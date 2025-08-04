@@ -25,9 +25,7 @@
 		/* Path aliasing */
 		"baseUrl": ".",
 		"paths": {
-			"@/*": [
-				"src/*"
-			]
+            "@/*": ["./src/*"],
 		}
 	},
 	"include": [

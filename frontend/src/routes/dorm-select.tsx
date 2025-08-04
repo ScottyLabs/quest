@@ -3,7 +3,7 @@ import { type FormEvent, useState } from "react";
 import { useApiClient } from "@/lib/api-context";
 import { requireAuth } from "@/lib/auth";
 
-const DORM_GROUPS = [
+export const DORM_GROUPS = [
 	{
 		name: "Morewood + E-Tower",
 		dorms: ["Morewood Gardens", "Morewood E-Tower"],

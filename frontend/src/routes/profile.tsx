@@ -3,76 +3,18 @@ import { Camera, ChevronRight, Gift } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getCategoriesWithPercentages } from "@/lib/challenge-data";
 import { useChallengeData } from "@/lib/hooks/use-challenge-data";
+import { useProfileData } from "@/lib/hooks/use-profile";
 import type { UserProfile } from "@/lib/types";
 import CategoryProgressBar from "../components/category-progress-bar";
 import Stamps from "../components/stamps";
 import { Card } from "../components/ui/card";
-
-// Mock function to simulate backend data fetching
-function useProfileData(): UserProfile | null {
-	const [data, setData] = useState<UserProfile | null>(null);
-	useEffect(() => {
-		setTimeout(() => {
-			setData({
-				avatarUrl: "/images/sample-profile-pic.svg",
-				name: "Jeffrey Wang",
-				andrewId: "jw8",
-				house: {
-					name: "Yellow Faction",
-					dorm: "Morewood Garden",
-				},
-				currentScottyCoins: 210,
-				totalScottyCoins: 243,
-				challengesCompleted: 6,
-				totalChallenges: 12,
-				leaderboard: {
-					place: 210,
-					name: "Jeffrey Wang",
-					andrewId: "jw8",
-					points: 33,
-				},
-				gallery: [
-					// Placeholder images
-					{
-						id: "1",
-						title: "Sample Image",
-						src: "/images/onboarding-images/placeholder.svg",
-						alt: "Sample placeholder image",
-					},
-					{
-						id: "2",
-						title: "Sample Image 1",
-						src: "/images/onboarding-images/placeholder.svg",
-						alt: "Sample placeholder image",
-					},
-				],
-				prizes: [
-					// Placeholder images
-					{
-						id: "1",
-						title: "Sample Image",
-						src: "/images/onboarding-images/placeholder.svg",
-						alt: "Sample placeholder image",
-					},
-					{
-						id: "2",
-						title: "Sample Image 1",
-						src: "/images/onboarding-images/placeholder.svg",
-						alt: "Sample placeholder image",
-					},
-				],
-			});
-		}, 500);
-	}, []);
-	return data;
-}
 
 export const Route = createFileRoute("/profile")({
 	component: Profile,
 });
 
 function Profile() {
-	const data = useProfileData();
+	const { data } = useProfileData();
 	const { data: challengeData, loading: challengeLoading } = useChallengeData();
 
 	if (!data)
@@ -153,7 +95,7 @@ function Profile() {
 					</div>
 					<div className="flex justify-between items-center">
 						<span>Carnegie Cup Points:</span>
-						<span className="font-bold">{data.leaderboard.points}</span>
+						<span className="font-bold">{data.leaderboard?.points}</span>
 					</div>
 				</div>
 			</Card>
@@ -161,13 +103,13 @@ function Profile() {
 			{/* Leaderboard Card */}
 			<div className="relative mb-2">
 				<div className="bg-red-700 rounded-2xl shadow-[0_7px_0_#bbb] flex items-center px-4 py-4 mb-4 text-white z-10 relative">
-					<div className="font-bold mr-8">{data.leaderboard.place}</div>
+					<div className="font-bold mr-8">{data.leaderboard?.place}</div>
 					<div className="flex-1">
-						<div className="font-semibold">{data.leaderboard.name}</div>
-						<div className="text-md">{data.leaderboard.andrewId}</div>
+						<div className="font-semibold">{data.leaderboard?.name}</div>
+						<div className="text-md">{data.leaderboard?.andrewId}</div>
 					</div>
 					<div className="text-lg font-bold flex items-center gap-2">
-						{data.leaderboard.points}
+						{data.leaderboard?.points}
 						<img
 							src="/images/scotty-coin.svg"
 							alt="ScottyCoin"
@@ -189,7 +131,7 @@ function Profile() {
 			</div>
 			<div className="flex-1 overflow-x-auto mb-4">
 				<div className="flex gap-2 h-64">
-					{data.prizes.map((img) => (
+					{(data.prizes || []).map((img) => (
 						<img
 							key={img.id}
 							src={img.src}
@@ -207,7 +149,7 @@ function Profile() {
 			</div>
 			<div className="flex-1 overflow-x-auto">
 				<div className="flex gap-2 h-64">
-					{data.gallery.map((img) => (
+					{(data.gallery || []).map((img) => (
 						<img
 							key={img.id}
 							src={img.src}

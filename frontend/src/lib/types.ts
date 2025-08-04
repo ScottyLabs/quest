@@ -34,6 +34,20 @@ export type UserProfile = {
 	prizes: ImageInfo[];
 };
 
+export type GetProfileResponse = {
+	avatarUrl: string;
+	name: string;
+	andrewId: string;
+	dorm: string;
+	currentScottyCoins: number;
+	totalScottyCoins: number;
+	challengesCompleted: number;
+	totalChallenges: number;
+	leaderboard: LeaderboardUser;
+	gallery: ImageInfo[];
+	prizes: ImageInfo[];
+};
+
 export type Challenge = {
 	id: number;
 	name: string;

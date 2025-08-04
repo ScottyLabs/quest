@@ -11,16 +11,21 @@ chrono = { version = "0.4.41", features = ["serde"] }
 dotenvy = "0.15.7"
 minio = "0.3.0"
 sea-orm = { version = "1.1.14", features = [
-    "sqlx-postgres",
-    "runtime-tokio-rustls",
-    "macros",
+	"sqlx-postgres",
+	"runtime-tokio-rustls",
+	"macros",
 ] }
 serde = { version = "1.0.219", features = ["derive"] }
 tokio = { version = "1.47.0", features = ["full"] }
 tower = "0.5.2"
 tower-http = { version = "0.6.6", features = ["cors"] }
 tower-oauth2-resource-server = "0.4.5"
-utoipa = { version = "5.4.0", features = ["axum_extras", "chrono", "uuid"] }
+utoipa = { version = "5.4.0", features = [
+	"axum_extras",
+	"chrono",
+	"uuid",
+	"decimal_float",
+] }
 utoipa-axum = "0.2.0"
 utoipa-swagger-ui = { version = "9.0.2", features = ["axum"] }
 uuid = { version = "1.17.0", features = ["v4"] }

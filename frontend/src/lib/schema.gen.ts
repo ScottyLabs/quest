@@ -350,7 +350,13 @@ export interface components {
         Model: {
             category: string;
             description: string;
+            /** Format: double */
+            latitude?: number | null;
             location: string;
+            /** Format: double */
+            location_accuracy?: number | null;
+            /** Format: double */
+            longitude?: number | null;
             maps_link?: string | null;
             more_info_link?: string | null;
             name: string;

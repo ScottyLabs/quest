@@ -3,7 +3,7 @@ import {
 	Outlet,
 	useRouterState,
 } from "@tanstack/react-router";
-import { Navbar } from "@/components/navbar";
+import { NavBar } from "@/components/navbar";
 import type { AuthContext } from "@/lib/auth";
 import type { ValidPath } from "@/main";
 
@@ -27,7 +27,7 @@ function Root() {
 	return (
 		<>
 			<Outlet />
-			{shouldShowNavbar && <Navbar />}
+			{shouldShowNavbar && <NavBar />}
 		</>
 	);
 }

@@ -1,9 +1,10 @@
-use crate::{AppState, AuthClaims};
+use crate::AppState;
 use axum::{
     Extension, Json,
     extract::{Path, State},
     http::StatusCode,
 };
+use clerk_rs::validators::authorizer::ClerkJwt;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -42,7 +43,7 @@ pub struct TransactionResponse {
 #[axum::debug_handler]
 pub async fn create_transaction(
     State(state): State<AppState>,
-    Extension(claims): Extension<AuthClaims>,
+    Extension(claims): Extension<ClerkJwt>,
     Json(payload): Json<CreateTransactionRequest>,
 ) -> Result<Json<CreateTransactionResponse>, StatusCode> {
     // Validate count is positive
@@ -166,7 +167,7 @@ pub struct CancelTransactionResponse {
 #[axum::debug_handler]
 pub async fn cancel_transaction(
     State(state): State<AppState>,
-    Extension(claims): Extension<AuthClaims>,
+    Extension(claims): Extension<ClerkJwt>,
     Path(transaction_id): Path<String>,
 ) -> Result<Json<CancelTransactionResponse>, StatusCode> {
     // Get the transaction to verify ownership and status

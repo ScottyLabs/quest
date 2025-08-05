@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { type FormEvent, useState } from "react";
-import { useApiClient } from "@/lib/api-context";
+import { useApi } from "@/lib/api-context";
 import { requireAuth } from "@/lib/auth";
 
 export const DORM_GROUPS = [
@@ -44,13 +44,13 @@ export const Route = createFileRoute("/dorm-select")({
 
 function RouteComponent() {
 	const { from } = Route.useSearch();
-	const { $api } = useApiClient();
+	const { client } = useApi();
 	const navigate = useNavigate();
 
 	const [selectedDorm, setSelectedDorm] = useState<string>("");
 	const [error, setError] = useState<string | null>(null);
 
-	const updateDormMutation = $api.useMutation("put", "/api/profile/dorm", {
+	const updateDormMutation = client.useMutation("put", "/api/profile/dorm", {
 		onSuccess: () => {
 			// Navigate to the original destination
 			navigate({ to: from || "/" });

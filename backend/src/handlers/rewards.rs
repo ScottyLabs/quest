@@ -1,6 +1,7 @@
-use crate::{AppState, AuthClaims};
+use crate::AppState;
 use axum::{Extension, Json, extract::State, http::StatusCode};
 use chrono::NaiveDateTime;
+use clerk_rs::validators::authorizer::ClerkJwt;
 use serde::Serialize;
 use utoipa::ToSchema;
 
@@ -47,7 +48,7 @@ pub struct TransactionDetail {
 #[axum::debug_handler]
 pub async fn get_rewards(
     State(state): State<AppState>,
-    Extension(claims): Extension<AuthClaims>,
+    Extension(claims): Extension<ClerkJwt>,
 ) -> Result<Json<RewardsListResponse>, StatusCode> {
     let rewards = state
         .reward_service

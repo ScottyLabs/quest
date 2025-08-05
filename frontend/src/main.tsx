@@ -1,3 +1,4 @@
+import { ClerkProvider } from "@clerk/clerk-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
@@ -8,6 +9,11 @@ import ReactDOM from "react-dom/client";
 import { ApiProvider, useApi } from "@/lib/api-context";
 import { type FileRoutesByFullPath, routeTree } from "@/routeTree.gen";
 import "@/main.css";
+
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+if (!PUBLISHABLE_KEY) {
+	throw new Error("Missing Clerk Publishable Key");
+}
 
 export type ValidPath = keyof FileRoutesByFullPath;
 
@@ -66,14 +72,16 @@ if (!rootElement.innerHTML) {
 	const root = ReactDOM.createRoot(rootElement);
 	root.render(
 		<StrictMode>
-			<QueryClientProvider client={queryClient}>
-				<ApiProvider>
-					<AppWithRouter />
+			<ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/login">
+				<QueryClientProvider client={queryClient}>
+					<ApiProvider>
+						<AppWithRouter />
 
-					<ReactQueryDevtools initialIsOpen={false} />
-					<TanStackRouterDevtools router={router} />
-				</ApiProvider>
-			</QueryClientProvider>
+						<ReactQueryDevtools initialIsOpen={false} />
+						<TanStackRouterDevtools router={router} />
+					</ApiProvider>
+				</QueryClientProvider>
+			</ClerkProvider>
 		</StrictMode>,
 	);
 }

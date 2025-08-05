@@ -409,7 +409,7 @@ export interface components {
         };
         UserProfileResponse: {
             dorm?: string | null;
-            groups: string[];
+            is_staff: boolean;
             name: string;
             /** Format: int32 */
             scotty_coins: number;

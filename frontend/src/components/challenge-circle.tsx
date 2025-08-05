@@ -7,11 +7,14 @@ import {
 	Utensils,
 } from "lucide-react";
 import type { ChallengeCategoryData } from "@/lib/types";
+import circleSvg from "/images/icons/Circle.svg";
 
 interface ChallengeCircleProps {
 	category: ChallengeCategoryData;
 	size?: "sm" | "md" | "lg";
 	showIcon?: boolean;
+	useBackgroundColor?: boolean;
+	iconColor?: string;
 }
 
 const categoryIcons = {
@@ -30,57 +33,56 @@ const sizeClasses = {
 };
 
 const iconSizes = {
-	sm: 20,
-	md: 32,
+	sm: 16,
+	md: 24,
 	lg: 48,
 };
 
 export function ChallengeCircle({
 	category,
-	size = "md",
+	size = "lg",
 	showIcon = true,
+	useBackgroundColor = false,
+	iconColor,
 }: ChallengeCircleProps) {
 	const Icon =
 		categoryIcons[category.name as keyof typeof categoryIcons] || Trophy;
 
 	// Generate color variations based on the main color
 	const mainColor = category.color;
-	const lightColor = generateLightColor(mainColor);
-	const darkColor = generateDarkColor(mainColor);
+
+	// If useBackgroundColor is true, use the main color as background instead of generating variations
+	const backgroundColor = useBackgroundColor
+		? mainColor
+		: generateDarkColor(mainColor);
+
+	// Use custom icon color if provided, otherwise use the main color
+	const finalIconColor = iconColor || mainColor;
 
 	return (
 		<div
-			className={`${sizeClasses[size]} rounded-full flex items-center justify-center`}
-			style={{ backgroundColor: darkColor }}
+			className={`${sizeClasses[size]} relative flex items-center justify-center`}
 		>
-			<div
-				className="w-3/4 h-3/4 rounded-full flex items-center justify-center"
-				style={{ backgroundColor: lightColor }}
-			>
-				{showIcon && (
-					<Icon
-						size={iconSizes[size]}
-						className="text-white"
-						style={{ color: mainColor }}
-					/>
-				)}
+			{/* White outer circle using SVG */}
+			<div className="absolute inset-0 flex items-center justify-center">
+				<img
+					src={circleSvg}
+					alt="White circle background"
+					className="w-full h-full object-contain"
+				/>
 			</div>
+
+			{/* Icon positioned in the center */}
+			{showIcon && (
+				<div className="relative z-10 flex items-center justify-center">
+					<Icon size={iconSizes[size]} style={{ color: finalIconColor }} />
+				</div>
+			)}
 		</div>
 	);
 }
 
 // Helper functions to generate color variations
-function generateLightColor(hexColor: string): string {
-	const color = hexToRgb(hexColor);
-	if (!color) return hexColor;
-
-	return rgbToHex(
-		Math.min(255, color.r + 60),
-		Math.min(255, color.g + 60),
-		Math.min(255, color.b + 60),
-	);
-}
-
 function generateDarkColor(hexColor: string): string {
 	const color = hexToRgb(hexColor);
 	if (!color) return hexColor;
@@ -94,13 +96,15 @@ function generateDarkColor(hexColor: string): string {
 
 function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
 	const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-	return result
-		? {
-				r: parseInt(result[1], 16),
-				g: parseInt(result[2], 16),
-				b: parseInt(result[3], 16),
-			}
-		: null;
+	if (!result || !result[1] || !result[2] || !result[3]) return null;
+
+	const r = parseInt(result[1], 16);
+	const g = parseInt(result[2], 16);
+	const b = parseInt(result[3], 16);
+
+	if (isNaN(r) || isNaN(g) || isNaN(b)) return null;
+
+	return { r, g, b };
 }
 
 function rgbToHex(r: number, g: number, b: number): string {

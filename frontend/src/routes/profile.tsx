@@ -114,7 +114,7 @@ function Profile() {
 				</div>
 			</div>
 
-			<Stamps week={[true, false, false, false, false, false, false]} />
+			<Stamps week={data.stamps} />
 
 			{/* Prizes */}
 			<div className="mt-2 mb-2 flex items-center gap-2">

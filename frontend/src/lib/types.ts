@@ -78,6 +78,7 @@ export type UserProfile = {
 	categoryCompletions: Record<CategoryName, number>;
 	gallery: ImageInfo[];
 	prizes: ImageInfo[];
+	stamps: boolean[];
 };
 
 export type GetProfileResponse = {
@@ -85,6 +86,7 @@ export type GetProfileResponse = {
 	name: string;
 	userId: string;
 	dorm: string;
+	recentActivityDays: string[];
 	scottyCoins: CoinCount;
 	challengesCompleted: ChallengeSummary;
 	totalChallenges: ChallengeSummary;

@@ -12,6 +12,9 @@ export const snakeToCamel = (str: string) =>
 			group.toUpperCase().replace("-", "").replace("_", ""),
 		);
 export const snakeToCamelObject = (obj: Record<string, any>) => {
+	if (typeof obj !== "object" || obj === null || Array.isArray(obj)) {
+		return obj; // Return as is if not an object
+	}
 	const newObj: Record<string, any> = {};
 	for (const key in obj) {
 		if (Object.hasOwn(obj, key)) {

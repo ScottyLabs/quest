@@ -31,7 +31,9 @@ export const useProfileData = () => {
 	if (!query.data) {
 		return query as unknown as typeof query & { data: null };
 	}
+	console.log("Precap profile data:", query.data);
 	query.data = snakeToCamelObject(query.data) as GetProfileResponse;
+	console.log("Raw profile data:", query.data);
 	const newQueryData = {
 		...query.data,
 		house: {
@@ -50,6 +52,13 @@ export const useProfileData = () => {
 						query.data.totalChallenges.byCategory[key]
 					: 0) * 100 || 0,
 		})),
+		stamps: Array.from({ length: 7 }, (_, i) => {
+			const day = new Date();
+			day.setDate(day.getDate() - i);
+			return query.data?.recentActivityDays.includes(
+				day.toISOString().split("T")[0] as string,
+			);
+		}),
 	};
 
 	const newQuery = {

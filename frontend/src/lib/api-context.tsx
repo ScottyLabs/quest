@@ -1,63 +1,75 @@
-import { createContext, type ReactNode, useContext, useMemo } from "react";
-import { createGatewayClient } from "@/lib/api";
+import createFetchClient from "openapi-fetch";
+import createClient from "openapi-react-query";
+import { createContext, type ReactNode, useContext } from "react";
+import type { paths } from "@/lib/schema.gen";
 
-interface ApiContextValue {
-	client: ReturnType<typeof createGatewayClient>;
-	baseUrl: string;
-}
+const CLIENT = "quest";
 
-const ApiContext = createContext<ApiContextValue | null>(null);
-
-function getApiConfig() {
+const getApiConfig = (): string => {
 	const { hostname } = window.location;
-	const isDev =
+
+	if (
 		hostname === "localhost" ||
 		hostname === "127.0.0.1" ||
-		hostname === "tauri.localhost";
-
-	// Dev configuration
-	if (isDev) {
+		hostname === "tauri.localhost"
+	) {
 		return "http://localhost:3000";
 	}
 
-	// Production configuration
 	if (hostname === "cmu.quest") {
 		return "https://api.cmu.quest";
 	}
 
-	if (hostname === "quest.scottylabs.org") {
-		return "https://api.quest.scottylabs.org";
-	}
-
-	// Fallback to production
+	// Default to quest.scottylabs.org API for all other cases
 	return "https://api.quest.scottylabs.org";
-}
+};
 
-interface ApiProviderProps {
-	children: ReactNode;
-	baseUrl?: string;
-}
+const createApiClient = (baseUrl: string) => {
+	const fetchClient = createFetchClient<paths>({
+		baseUrl,
+		credentials: "include",
+	});
 
-export function ApiProvider({
-	children,
-	baseUrl: apiBaseUrl,
-}: ApiProviderProps) {
-	const baseUrl = useMemo(() => apiBaseUrl ?? getApiConfig(), [apiBaseUrl]);
+	return {
+		baseUrl,
+		$api: createClient(fetchClient),
 
-	const client = useMemo(
-		() => createGatewayClient(baseUrl, "quest"),
-		[baseUrl],
-	);
+		async logout() {
+			const form = document.createElement("form");
+			form.method = "POST";
+			form.action = `${baseUrl}/logout`;
 
-	const value = useMemo(
-		() => ({
-			client,
-			baseUrl,
-		}),
-		[client, baseUrl],
-	);
+			document.body.appendChild(form);
+			form.submit();
+		},
 
-	return <ApiContext.Provider value={value}>{children}</ApiContext.Provider>;
+		async login(path: string) {
+			const isDev = ["localhost", "tauri.localhost"].includes(
+				window.location.hostname,
+			);
+
+			// auth mocked in dev
+			if (isDev) {
+				window.location.href = path;
+				return;
+			}
+
+			const redirect = new URL(path, window.location.origin).toString();
+			const loginUrl = `${baseUrl}/oauth2/authorization/${CLIENT}?redirect_uri=${encodeURIComponent(redirect)}`;
+
+			window.location.href = loginUrl;
+		},
+	};
+};
+
+// Context setup
+type ApiContextType = ReturnType<typeof createApiClient>;
+const ApiContext = createContext<ApiContextType | null>(null);
+
+export function ApiProvider({ children }: { children: ReactNode }) {
+	const client = createApiClient(getApiConfig());
+
+	return <ApiContext.Provider value={client}>{children}</ApiContext.Provider>;
 }
 
 export function useApi() {
@@ -67,9 +79,4 @@ export function useApi() {
 	}
 
 	return context;
-}
-
-// Convenience hook
-export function useApiClient() {
-	return useApi().client;
 }

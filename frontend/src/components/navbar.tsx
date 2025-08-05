@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useApiClient } from "@/lib/api-context";
+import { useApi } from "@/lib/api-context";
 import type { ValidPath } from "@/main";
 
 interface NavbarProps {
@@ -7,7 +7,7 @@ interface NavbarProps {
 }
 
 export function Navbar({ currentPath }: NavbarProps) {
-	const { $api } = useApiClient();
+	const { $api } = useApi();
 	const { data, isLoading } = $api.useQuery("get", "/api/profile");
 
 	// Check if current path is a challenges route (/ or /challenges/*)

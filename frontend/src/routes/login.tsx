@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useApiClient } from "@/lib/api-context";
+import { useApi } from "@/lib/api-context";
 import { redirectIfAuthenticated } from "@/lib/auth";
 
 export const Route = createFileRoute("/login")({
@@ -15,7 +15,7 @@ export const Route = createFileRoute("/login")({
 });
 
 function Login() {
-	const { login } = useApiClient();
+	const { login } = useApi();
 	const { from } = Route.useSearch();
 
 	return (

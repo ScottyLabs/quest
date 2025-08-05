@@ -1,10 +1,9 @@
 import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { Trophy } from "lucide-react";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { CategoryTabs } from "@/components/category-tabs";
 import { ChallengeList } from "@/components/challenge-card";
 import { PageHeader } from "@/components/page-header";
-import { StyleContext } from "@/lib/style-context";
 import type { Challenge } from "@/lib/types";
 
 export const CHALLENGE_COLORS: Record<string, string> = {

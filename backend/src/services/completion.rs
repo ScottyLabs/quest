@@ -1,8 +1,8 @@
 use crate::entities::{challenges, completion, prelude::*};
-use chrono::{NaiveDateTime, Utc};
+use chrono::{Duration, NaiveDate, NaiveDateTime, Utc};
 use sea_orm::{
     ActiveModelTrait, ActiveValue::Set, ColumnTrait, DatabaseConnection, EntityTrait, JoinType,
-    QueryFilter, QuerySelect, RelationTrait,
+    PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, RelationTrait, prelude::Expr,
 };
 use std::collections::HashMap;
 
@@ -14,6 +14,61 @@ pub struct CompletionService {
 impl CompletionService {
     pub fn new(db: DatabaseConnection) -> Self {
         Self { db }
+    }
+
+    pub async fn get_user_completions_by_category(
+        &self,
+        user_id: &str,
+    ) -> Result<HashMap<String, i32>, sea_orm::DbErr> {
+        let completions = Completion::find()
+            .filter(completion::Column::UserId.eq(user_id))
+            .join(JoinType::InnerJoin, completion::Relation::Challenges.def())
+            .select_only()
+            .column(challenges::Column::Category)
+            .column_as(completion::Column::ChallengeName.count(), "count")
+            .group_by(challenges::Column::Category)
+            .into_tuple::<(String, i64)>()
+            .all(&self.db)
+            .await?;
+
+        Ok(completions
+            .into_iter()
+            .map(|(category, count)| (category, count as i32))
+            .collect())
+    }
+
+    pub async fn get_user_completion_count(&self, user_id: &str) -> Result<i32, sea_orm::DbErr> {
+        let count = Completion::find()
+            .filter(completion::Column::UserId.eq(user_id))
+            .count(&self.db)
+            .await?;
+
+        Ok(count as i32)
+    }
+
+    pub async fn get_user_recent_activity_days(
+        &self,
+        user_id: &str,
+        num_days_back: i64,
+    ) -> Result<Vec<NaiveDateTime>, sea_orm::DbErr> {
+        let cutoff_date = Utc::now().naive_utc() - Duration::days(num_days_back);
+
+        let activity_days = Completion::find()
+            .filter(completion::Column::UserId.eq(user_id))
+            .filter(completion::Column::Timestamp.gte(cutoff_date))
+            .select_only()
+            .column_as(Expr::cust("DATE(timestamp)"), "activity_date")
+            .group_by(Expr::cust("DATE(timestamp)"))
+            .order_by_asc(Expr::cust("DATE(timestamp)"))
+            .into_tuple::<NaiveDate>()
+            .all(&self.db)
+            .await?;
+
+        // Convert dates to NaiveDateTime (midnight of each day)
+        Ok(activity_days
+            .into_iter()
+            .map(|date| date.and_hms_opt(0, 0, 0).unwrap_or_default())
+            .collect())
     }
 
     // Get completion timestamps for a user (map of challenge_name -> completed_at)

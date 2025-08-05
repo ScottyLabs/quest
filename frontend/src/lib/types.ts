@@ -118,3 +118,13 @@ export type ChallengeData = {
 	totalCompleted: number;
 	totalChallenges: number;
 };
+
+export type LeaderboardEntry = {
+	userId: string;
+	name: string;
+	dorm: string;
+	challengesCompleted: number;
+	coinsEarned: number;
+	coinsSpent: number;
+	rank: number;
+};

@@ -11,9 +11,12 @@ export const snakeToCamel = (str: string) =>
 		.replace(/([-_][a-z])/g, (group) =>
 			group.toUpperCase().replace("-", "").replace("_", ""),
 		);
-export const snakeToCamelObject = (obj: Record<string, any>) => {
-	if (typeof obj !== "object" || obj === null || Array.isArray(obj)) {
+export const snakeToCamelObject = (obj: any): any => {
+	if (typeof obj !== "object" || obj === null) {
 		return obj; // Return as is if not an object
+	}
+	if (Array.isArray(obj)) {
+		return obj.map(snakeToCamelObject); // Recursively convert arrays
 	}
 	const newObj: Record<string, any> = {};
 	for (const key in obj) {

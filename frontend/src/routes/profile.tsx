@@ -87,7 +87,7 @@ function Profile() {
 					</div>
 					<div className="flex justify-between items-center">
 						<span>Carnegie Cup Points:</span>
-						<span className="font-bold">{data.leaderboard?.points}</span>
+						<span className="font-bold">{data.challengesCompleted.total}</span>
 					</div>
 				</div>
 			</Card>
@@ -101,7 +101,7 @@ function Profile() {
 						<div className="text-md">{data.userId}</div>
 					</div>
 					<div className="text-lg font-bold flex items-center gap-2">
-						{data.leaderboardPosition}
+						{data.challengesCompleted.total}
 						<img
 							src="/images/scotty-coin.svg"
 							alt="ScottyCoin"

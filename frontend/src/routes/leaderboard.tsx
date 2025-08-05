@@ -2,7 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Crown, MoreHorizontal } from "lucide-react";
 import { LeaderboardCard } from "@/components/leaderboard-card";
 import { PageHeader } from "@/components/page-header";
-import type { LeaderboardUser } from "@/lib/types";
+import { useLeaderboard } from "@/lib/hooks/use-leaderboard";
+import { useProfileData } from "@/lib/hooks/use-profile";
+import type {
+	LeaderboardEntry,
+	LeaderboardUser,
+	UserProfile,
+} from "@/lib/types";
 
 export const Route = createFileRoute("/leaderboard")({
 	component: Leaderboard,
@@ -45,18 +51,39 @@ const afterCurrent: LeaderboardUser = {
 	points: 32,
 };
 
-function isCurrentUserInTop10() {
-	return top10.some((u) => u.andrewId === currentUser.andrewId);
+function isCurrentUserInTop10(
+	leaderboardData: LeaderboardEntry[] = [],
+	currentUser: UserProfile,
+) {
+	return leaderboardData
+		.slice(0, 10)
+		.some((u) => u.userId === currentUser.userId);
 }
 
-function isCurrentUserLast() {
+function isCurrentUserLast(
+	leaderboardData: LeaderboardEntry[] = [],
+	currentUser: UserProfile,
+) {
 	// Check if the current user's place equals the total number of users
-	return currentUser.place === TOTAL_USERS;
+	return (
+		leaderboardData[leaderboardData.length - 1]?.userId === currentUser.userId
+	);
 }
 
 function Leaderboard() {
-	const inTop10 = isCurrentUserInTop10();
-	const isLast = isCurrentUserLast();
+	const { data: leaderboardData } = useLeaderboard();
+	const { data: currentUser } = useProfileData();
+	console.log("Leaderboard data:", leaderboardData);
+	if (!leaderboardData || !currentUser) {
+		return <div>Loading...</div>;
+	}
+
+	const inTop10 = isCurrentUserInTop10(leaderboardData, currentUser);
+	const isLast = isCurrentUserLast(leaderboardData, currentUser);
+
+	console.log("Is current user in top 10:", inTop10);
+	console.log("Is current user last:", isLast);
+
 	return (
 		<div className="max-w-md mx-auto">
 			<PageHeader
@@ -66,11 +93,11 @@ function Leaderboard() {
 			<div className="bg-white divide-y overflow-hidden">
 				{inTop10 ? (
 					<>
-						{top10.map((user) => (
+						{leaderboardData.slice(0, 10).map((leaderboardEntry) => (
 							<LeaderboardCard
-								key={user.andrewId}
-								{...user}
-								highlight={user.andrewId === currentUser.andrewId}
+								key={leaderboardEntry.userId}
+								{...leaderboardEntry}
+								highlight={leaderboardEntry.userId === currentUser.userId}
 							/>
 						))}
 						{/* Dots separator for more users */}
@@ -80,19 +107,17 @@ function Leaderboard() {
 					</>
 				) : (
 					<>
-						{top10.map((user) => (
-							<LeaderboardCard key={user.andrewId} {...user} />
+						{leaderboardData.slice(0, 10).map((user) => (
+							<LeaderboardCard key={user.userId} {...user} />
 						))}
 						{/* Dots separator */}
 						<div className="flex items-center justify-center py-2 bg-white text-gray-400 select-none">
 							<MoreHorizontal className="h-4 w-4" />
 						</div>
 						{/* Before current user */}
-						<LeaderboardCard {...beforeCurrent} />
-						{/* Current user (highlighted) */}
-						<LeaderboardCard {...currentUser} highlight />
-						{/* After current user - only show if not last */}
-						{!isLast && <LeaderboardCard {...afterCurrent} />}
+						{leaderboardData.slice(10).map((user) => (
+							<LeaderboardCard key={user.userId} {...user} />
+						))}
 						{/* Dots separator for more users - only show if not last */}
 						{!isLast && (
 							<div className="flex items-center justify-center py-2 bg-white text-gray-400 select-none">

@@ -26,11 +26,9 @@ export type ChallengeSummary = {
 };
 
 export type CategoryName =
-	| "Off-campus"
-	| "On-campus"
-	| "Events"
-	| "Academics"
-	| "Service";
+	| "Off-Campus"
+	| "Members of Carnegie"
+	| "Minor-Major General";
 
 // {
 //   "userId": "devuser",
@@ -103,6 +101,7 @@ export type Challenge = {
 	completed: boolean;
 	unlocked: boolean;
 	unlock_date: string;
+	category: CategoryName;
 };
 
 export type ChallengeCategoryData = {

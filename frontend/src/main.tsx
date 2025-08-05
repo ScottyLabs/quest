@@ -16,6 +16,7 @@ const pageOrder: ValidPath[] = [
 	"/leaderboard",
 	"/",
 	"/challenges",
+	"/corners",
 	"/dorm-select",
 	"/onboarding",
 	"/login",

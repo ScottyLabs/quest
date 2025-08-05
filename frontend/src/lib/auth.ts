@@ -65,10 +65,10 @@ export async function adminMiddleware(baseUrl: string) {
 		!authContext.user.groups.includes("O-Quest Admin") &&
 		window.location.pathname === "/verify"
 	) {
-		throw redirect({ to: "/trade" });
+		throw redirect({ to: "/terrier-trade" });
 	} else if (
 		authContext.user.groups.includes("O-Quest Admin") &&
-		window.location.pathname === "/trade"
+		window.location.pathname === "/terrier-trade"
 	) {
 		throw redirect({ to: "/verify" });
 	}

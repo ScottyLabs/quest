@@ -17,7 +17,7 @@ const navItems = [
 	{ to: "/about", icon: Info, label: "About" },
 ];
 
-export function BottomNavBar() {
+export function NavBar() {
 	const location = useLocation();
 	const current = location.pathname;
 

@@ -97,7 +97,7 @@ export const Route = createFileRoute("/challenges")({
 
 function Challenges() {
 	const challenges = useChallengesData();
-	const { data } = useContext(StyleContext);
+	// const { data } = useContext(StyleContext);
 	const { category } = useSearch({ from: "/challenges" });
 
 	if (!challenges) {

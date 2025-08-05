@@ -4,52 +4,11 @@ import { LeaderboardCard } from "@/components/leaderboard-card";
 import { PageHeader } from "@/components/page-header";
 import { useLeaderboard } from "@/lib/hooks/use-leaderboard";
 import { useProfileData } from "@/lib/hooks/use-profile";
-import type {
-	LeaderboardEntry,
-	LeaderboardUser,
-	UserProfile,
-} from "@/lib/types";
+import type { LeaderboardEntry, UserProfile } from "@/lib/types";
 
 export const Route = createFileRoute("/leaderboard")({
 	component: Leaderboard,
 });
-
-// Total number of users in the leaderboard (eventually will be from API)
-const TOTAL_USERS = 250;
-
-// Fake leaderboard data
-const top10: LeaderboardUser[] = [
-	{ place: 1, name: "Jeffrey Wang", andrewId: "andrewid1", points: 100 },
-	{ place: 2, name: "Alice Smith", andrewId: "asmith", points: 99 },
-	{ place: 3, name: "Bob Lee", andrewId: "blee", points: 97 },
-	{ place: 4, name: "Carol Kim", andrewId: "ckim", points: 94 },
-	{ place: 5, name: "David Park", andrewId: "dpark", points: 93 },
-	{ place: 6, name: "Eve Lin", andrewId: "elin", points: 82 },
-	{ place: 7, name: "Frank Zhao", andrewId: "fzhao", points: 76 },
-	{ place: 8, name: "Grace Chen", andrewId: "gchen", points: 70 },
-	{ place: 9, name: "Henry Wu", andrewId: "hwu", points: 65 },
-	{ place: 10, name: "Ivy Xu", andrewId: "ixu", points: 60 },
-];
-
-// Simulate current user (change this to test different scenarios)
-const currentUser: LeaderboardUser = {
-	place: 210,
-	name: "Jeffrey Wang",
-	andrewId: "andrewid",
-	points: 33,
-};
-const beforeCurrent: LeaderboardUser = {
-	place: 209,
-	name: "Sam Lee",
-	andrewId: "slee",
-	points: 34,
-};
-const afterCurrent: LeaderboardUser = {
-	place: 211,
-	name: "Tina Ho",
-	andrewId: "tho",
-	points: 32,
-};
 
 function isCurrentUserInTop10(
 	leaderboardData: LeaderboardEntry[] = [],

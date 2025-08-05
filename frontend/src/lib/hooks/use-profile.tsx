@@ -81,7 +81,7 @@ export const useProfileData = () => {
 
 	const newQuery = {
 		...query,
-		data: newQueryData as UserProfile,
+		data: newQueryData as unknown as UserProfile,
 	};
 
 	console.log("Profile data:", newQuery.data);

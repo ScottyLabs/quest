@@ -255,6 +255,13 @@ export interface components {
             message: string;
             success: boolean;
         };
+        ChallengeCompletionStats: {
+            by_category: {
+                [key: string]: number;
+            };
+            /** Format: int32 */
+            total: number;
+        };
         ChallengeDetails: {
             category: string;
             description: string;
@@ -275,8 +282,23 @@ export interface components {
         };
         /** @enum {string} */
         ChallengeStatus: "locked" | "available" | "completed";
+        ChallengeTotalStats: {
+            by_category: {
+                [key: string]: number;
+            };
+            /** Format: int32 */
+            total: number;
+        };
         ChallengesListResponse: {
             challenges: components["schemas"]["ChallengeResponse"][];
+        };
+        CoinsSummaryResponse: {
+            /** Format: int32 */
+            current: number;
+            /** Format: int32 */
+            total_earned: number;
+            /** Format: int32 */
+            total_spent: number;
         };
         CompletionResponse: {
             challenge_name: string;
@@ -350,7 +372,13 @@ export interface components {
         Model: {
             category: string;
             description: string;
+            /** Format: double */
+            latitude?: number | null;
             location: string;
+            /** Format: double */
+            location_accuracy?: number | null;
+            /** Format: double */
+            longitude?: number | null;
             maps_link?: string | null;
             more_info_link?: string | null;
             name: string;
@@ -408,11 +436,15 @@ export interface components {
             note?: string | null;
         };
         UserProfileResponse: {
+            challenges_completed: components["schemas"]["ChallengeCompletionStats"];
             dorm?: string | null;
             groups: string[];
+            /** Format: int64 */
+            leaderboard_position: number;
             name: string;
-            /** Format: int32 */
-            scotty_coins: number;
+            recent_activity_days: string[];
+            scotty_coins: components["schemas"]["CoinsSummaryResponse"];
+            total_challenges: components["schemas"]["ChallengeTotalStats"];
             user_id: string;
         };
         VerifyTransactionRequest: {

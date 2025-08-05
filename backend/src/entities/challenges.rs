@@ -4,7 +4,7 @@ use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(
-    Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize, utoipa :: ToSchema,
+    Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize, utoipa :: ToSchema,
 )]
 #[sea_orm(table_name = "challenges")]
 pub struct Model {
@@ -26,6 +26,12 @@ pub struct Model {
     pub unlock_timestamp: DateTime,
     #[sea_orm(column_type = "Text")]
     pub secret: String,
+    #[sea_orm(column_type = "Double", nullable)]
+    pub latitude: Option<f64>,
+    #[sea_orm(column_type = "Double", nullable)]
+    pub longitude: Option<f64>,
+    #[sea_orm(column_type = "Decimal(Some((8, 2)))", nullable)]
+    pub location_accuracy: Option<Decimal>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

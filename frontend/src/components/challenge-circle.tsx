@@ -35,7 +35,7 @@ const sizeClasses = {
 const iconSizes = {
 	sm: 16,
 	md: 24,
-	lg: 48,
+	lg: 72,
 };
 
 export function ChallengeCircle({

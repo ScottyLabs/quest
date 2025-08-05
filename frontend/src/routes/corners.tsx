@@ -297,12 +297,18 @@ function CornersPage() {
 			className={`min-h-screen ${colorClasses.bgLight} flex flex-col items-center justify-center`}
 		>
 			<div
-				className={`rounded-[50px] ${colorClasses.bg} flex flex-col items-center justify-center shadow-[0px_51px_0px_0px_rgba(0,0,0,1.00)] border-[13px] border-black`}
+				className={`rounded-[50px] ${colorClasses.bg} flex flex-col items-center shadow-[0px_51px_0px_0px_rgba(0,0,0,1.00)] border-[13px] border-black`}
+				style={{
+					width: "7.5in",
+					height: "9.5in",
+					printColorAdjust: "exact",
+					WebkitPrintColorAdjust: "exact",
+				}}
 			>
 				{/* Header */}
 				<button
 					type="button"
-					className={`w-full max-w-sm ${colorClasses.bg} rounded-t-[34px] px-4 py-0 mb-1 cursor-pointer hover:opacity-90 transition-opacity`}
+					className={` ${colorClasses.bg} w-full rounded-t-[34px] px-[48px] py-8 mb-1 cursor-pointer hover:opacity-90 transition-opacity`}
 					onClick={handleHeaderClick}
 					onKeyDown={(e) => {
 						if (e.key === "Enter" || e.key === " ") {
@@ -311,7 +317,7 @@ function CornersPage() {
 					}}
 					aria-label={`Switch to next challenge. Current: ${currentChallenge?.name || "Unknown"}`}
 				>
-					<div className="flex items-center gap-3 justify-center w-full">
+					<div className="w-full flex items-center gap-3 justify-center">
 						{/* Challenge Circle - 27% width */}
 						<div className="w-[27%] flex justify-center">
 							{currentChallenge ? (
@@ -336,7 +342,7 @@ function CornersPage() {
 							)}
 						</div>
 						{/* Text - remaining width */}
-						<div className="flex-1 text-white text-4xl font-extrabold tracking-wide text-center">
+						<div className="flex-1 text-white text-6xl font-extrabold tracking-wide text-center">
 							{currentChallenge?.category || "Unknown"}
 						</div>
 					</div>
@@ -344,37 +350,41 @@ function CornersPage() {
 
 				{/* Main Content */}
 				<div
-					className={`w-full max-w-sm ${colorClasses.bgLight} rounded-b-[34px] p-4`}
+					className={`w-full h-[760px] ${colorClasses.bgLight} rounded-b-[34px] p-12`}
+					style={{
+						printColorAdjust: "exact",
+						WebkitPrintColorAdjust: "exact",
+					}}
 				>
-					<div className="bg-white rounded-[20px] p-6 shadow-lg">
+					<div className="bg-white h-full flex flex-col items-center rounded-[20px] p-6 shadow-lg">
 						{/* Challenge Name and Location */}
-						<div className="bg-white rounded-[10px] shadow-[0px_0px_4px_0px_rgba(0,0,0,0.25)] p-4 mb-4">
-							<div className="text-center text-secondary-foreground text-2xl font-extrabold tracking-wide ">
+						<div className="bg-white rounded-[10px] w-full flex flex-col items-center shadow-[0px_0px_4px_0px_rgba(0,0,0,0.25)] p-4 mb-4">
+							<div className="flex text-center text-secondary-foreground text-4xl font-extrabold tracking-wide py-1 ">
 								{currentChallenge?.name || "Unknown Challenge"}
 							</div>
-							<div className="text-center text-gray-600 text-lg font-medium">
+							<div className=" flex text-center text-gray-600 text-2xl font-medium">
 								{currentChallenge?.location || "Unknown"}
 							</div>
 						</div>
 
-						{/* Challenge Details */}
-						<div className="space-y-4 mb-4">
+						{/* Ch 	allenge Details */}
+						<div className="space-y-4 mb-4 flex h-full">
 							{/* QR Code Placeholder */}
 							<div className="bg-gray-50 rounded-lg p-3 w-full aspect-square"></div>
 
 							{/* Secret Code */}
-							<div className="bg-gray-50 rounded-lg p-3">
+							{/* <div className="bg-gray-50 rounded-lg p-3">
 								<div className="text-sm font-semibold text-gray-600 mb-1">
 									Secret Code
 								</div>
-								<div className="text-lg font-mono font-medium bg-gray-100 px-2 py-1 rounded">
+								{/* <div className="text-lg font-mono font-medium bg-gray-100 px-2 py-1 rounded">
 									{currentChallenge?.secret || "****"}
-								</div>
-							</div>
+								</div> */}
+							{/* </div> */}
 						</div>
 
 						{/* CMU Property Notice */}
-						<div className="text-center text-secondary-foreground text-l font-extrabold tracking-wide">
+						<div className=" flex text-center text-secondary-foreground text-2xl font-extrabold tracking-wide">
 							CMU Property Do Not Remove
 						</div>
 					</div>

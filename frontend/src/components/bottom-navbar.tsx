@@ -4,10 +4,10 @@ import {
 	ChevronLeft,
 	ChevronRight,
 	Info,
+	MapPin,
 	ShoppingCart,
 	Trophy,
 	User,
-	MapPin,
 } from "lucide-react";
 
 const navItems = [
@@ -24,7 +24,7 @@ export function BottomNavBar() {
 	const current = location.pathname;
 
 	return (
-		<nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center h-20">
+		<nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center h-20 print:hidden">
 			{navItems.map((item) => {
 				const isActive = current.startsWith(item.to);
 

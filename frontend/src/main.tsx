@@ -8,6 +8,7 @@ import ReactDOM from "react-dom/client";
 import { ApiProvider, useApi } from "@/lib/api-context";
 import { type FileRoutesByFullPath, routeTree } from "@/routeTree.gen";
 import "@/main.css";
+import { StyleProvider } from "@/lib/style-context";
 
 export type ValidPath = keyof FileRoutesByFullPath;
 
@@ -15,14 +16,12 @@ const pageOrder: ValidPath[] = [
 	"/profile",
 	"/leaderboard",
 	"/",
-	"/challenges/1",
-	"/challenges/2",
-	"/challenges/3",
-	"/challenges/4",
-	"/challenges/5",
-	"/challenges/6",
+	"/challenges",
+	"/dorm-select",
+	"/onboarding",
+	"/login",
+	"/terrier-trade",
 	"/verify",
-	"/trade",
 	"/about",
 ];
 
@@ -68,10 +67,12 @@ if (!rootElement.innerHTML) {
 		<StrictMode>
 			<QueryClientProvider client={queryClient}>
 				<ApiProvider>
-					<AppWithRouter />
+					<StyleProvider>
+						<AppWithRouter />
 
-					<ReactQueryDevtools initialIsOpen={false} />
-					<TanStackRouterDevtools router={router} />
+						<ReactQueryDevtools initialIsOpen={false} />
+						<TanStackRouterDevtools router={router} />
+					</StyleProvider>
 				</ApiProvider>
 			</QueryClientProvider>
 		</StrictMode>,

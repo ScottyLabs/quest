@@ -23,11 +23,14 @@
 		"@tauri-apps/plugin-geolocation": "^2.3.0",
 		"@tauri-apps/plugin-nfc": "~2",
 		"@vitejs/plugin-react-oxc": "^0.3.0",
+		"lucide": "^0.536.0",
+		"lucide-react": "^0.536.0",
 		"openapi-fetch": "^0.14.0",
 		"openapi-react-query": "^0.5.0",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
 		"tailwindcss": "^4.1.11",
+		"tanstack-query": "^1.0.0",
 		"vite-tsconfig-paths": "^5.1.4"
 	},
 	"devDependencies": {

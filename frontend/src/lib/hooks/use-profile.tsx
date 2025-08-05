@@ -1,9 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
-import type { GetProfileResponse, UserProfile } from "@/lib/types";
+import type {
+	CategoryName,
+	GetProfileResponse,
+	UserProfile,
+} from "@/lib/types";
+import { snakeToCamelObject } from "@/lib/utils";
 import { DORM_GROUPS } from "@/routes/dorm-select";
 
 const dormToName = (dorm: string): string | null => {
-	const group = DORM_GROUPS.find((group) => group.dorms.includes(dorm));
+	const group = DORM_GROUPS.find((group) =>
+		group.dorms.includes(dorm as never),
+	);
 	return group ? group.name : null;
 };
 
@@ -22,14 +29,35 @@ export const useProfileData = () => {
 		console.error("Error fetching profile data:", query.error);
 	}
 	if (!query.data) {
-		return query;
+		return query as unknown as typeof query & { data: null };
 	}
-	const newQuery = {
+	query.data = snakeToCamelObject(query.data) as GetProfileResponse;
+	const newQueryData = {
 		...query.data,
 		house: {
 			dorm: query.data?.dorm || "",
 			name: dormToName(query.data?.dorm) || "",
 		},
-	} as UserProfile;
+		categoryCompletions: (
+			Object.keys(
+				query.data.challengesCompleted.byCategory,
+			) as Array<CategoryName>
+		).map((key: CategoryName) => ({
+			name: key,
+			percentage:
+				(query.data
+					? query.data.challengesCompleted.byCategory[key] /
+						query.data.totalChallenges.byCategory[key]
+					: 0) * 100 || 0,
+		})),
+	};
+
+	const newQuery = {
+		...query,
+		data: newQueryData as UserProfile,
+	};
+
+	console.log("Profile data:", newQuery.data);
+
 	return newQuery;
 };

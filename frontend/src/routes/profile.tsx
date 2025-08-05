@@ -1,10 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Camera, ChevronRight, Gift } from "lucide-react";
-import { useEffect, useState } from "react";
-import { getCategoriesWithPercentages } from "@/lib/challenge-data";
-import { useChallengeData } from "@/lib/hooks/use-challenge-data";
 import { useProfileData } from "@/lib/hooks/use-profile";
-import type { UserProfile } from "@/lib/types";
 import CategoryProgressBar from "../components/category-progress-bar";
 import Stamps from "../components/stamps";
 import { Card } from "../components/ui/card";
@@ -15,7 +11,6 @@ export const Route = createFileRoute("/profile")({
 
 function Profile() {
 	const { data } = useProfileData();
-	const { data: challengeData, loading: challengeLoading } = useChallengeData();
 
 	if (!data)
 		return (
@@ -50,7 +45,7 @@ function Profile() {
 							<span className="font-bold">Name:</span> {data.name}
 						</div>
 						<div className="mb-1">
-							<span className="font-bold">Andrew ID:</span> {data.andrewId}
+							<span className="font-bold">Andrew ID:</span> {data.userId}
 						</div>
 						<div className="mb-1">{data.house.dorm}</div>
 						<div className="flex items-center gap-2 mb-1">
@@ -66,32 +61,29 @@ function Profile() {
 						<div
 							className="h-4 bg-blue-500 rounded-full absolute top-0 left-0"
 							style={{
-								width: `${(data.challengesCompleted / data.totalChallenges) * 100}%`,
+								width: `${(data.challengesCompleted.total / data.totalChallenges.total) * 100}%`,
 							}}
 						/>
 						<span className="absolute inset-0 flex items-center justify-center text-white text-xs font-bold">
-							{data.challengesCompleted}/{data.totalChallenges}
+							{data.challengesCompleted.total}/{data.totalChallenges.total}
 						</span>
 					</div>
 					{/* Category Progress Bars */}
-					{challengeLoading ? (
-						<div className="text-center py-4">Loading categories...</div>
-					) : (
-						<CategoryProgressBar
-							categories={
-								challengeData
-									? getCategoriesWithPercentages(challengeData.categories)
-									: []
-							}
-						/>
-					)}
+					<CategoryProgressBar
+						categories={Object.entries(data.categoryCompletions).map(
+							([name, percentage]) => ({
+								name,
+								percentage,
+							}),
+						)}
+					/>
 				</div>
 
 				{/* Points Information */}
 				<div className="space-y-1">
 					<div className="flex justify-between items-center">
 						<span>Total Scotty Coins:</span>
-						<span className="font-bold">{data.totalScottyCoins}</span>
+						<span className="font-bold">{data.scottyCoins.current}</span>
 					</div>
 					<div className="flex justify-between items-center">
 						<span>Carnegie Cup Points:</span>
@@ -103,13 +95,13 @@ function Profile() {
 			{/* Leaderboard Card */}
 			<div className="relative mb-2">
 				<div className="bg-red-700 rounded-2xl shadow-[0_7px_0_#bbb] flex items-center px-4 py-4 mb-4 text-white z-10 relative">
-					<div className="font-bold mr-8">{data.leaderboard?.place}</div>
+					<div className="font-bold mr-8">{data.leaderboardPosition}</div>
 					<div className="flex-1">
-						<div className="font-semibold">{data.leaderboard?.name}</div>
-						<div className="text-md">{data.leaderboard?.andrewId}</div>
+						<div className="font-semibold">{data.name}</div>
+						<div className="text-md">{data.userId}</div>
 					</div>
 					<div className="text-lg font-bold flex items-center gap-2">
-						{data.leaderboard?.points}
+						{data.leaderboardPosition}
 						<img
 							src="/images/scotty-coin.svg"
 							alt="ScottyCoin"

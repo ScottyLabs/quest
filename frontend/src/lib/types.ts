@@ -20,16 +20,62 @@ export type ImageInfo = {
 	alt: string;
 };
 
+export type ChallengeSummary = {
+	total: number;
+	byCategory: Record<CategoryName, number>;
+};
+
+export type CategoryName =
+	| "Off-campus"
+	| "On-campus"
+	| "Events"
+	| "Academics"
+	| "Service";
+
+// {
+//   "userId": "devuser",
+//   "dorm": "Morewood E-Tower",
+//   "name": "Dev User",
+//   "scottyCoins": {
+//     "current": 0,
+//     "total_earned": 0,
+//     "total_spent": 0
+//   },
+//   "groups": [
+//     "O-Quest Admin"
+//   ],
+//   "leaderboardPosition": 2,
+//   "challengesCompleted": {
+//     "total": 0,
+//     "by_category": {}
+//   },
+//   "totalChallenges": {
+//     "total": 0,
+//     "by_category": {}
+//   },
+//   "recentActivityDays": [],
+//   "house": {
+//     "dorm": "Morewood E-Tower",
+//     "name": "Morewood + E-Tower"
+//   }
+// }
+
+export type CoinCount = {
+	current: number;
+	totalEarned: number;
+	totalSpent: number;
+};
+
 export type UserProfile = {
 	avatarUrl: string;
 	name: string;
-	andrewId: string;
+	userId: string;
 	house: House;
-	currentScottyCoins: number;
-	totalScottyCoins: number;
-	challengesCompleted: number;
-	totalChallenges: number;
-	leaderboard: LeaderboardUser;
+	scottyCoins: CoinCount;
+	challengesCompleted: ChallengeSummary;
+	totalChallenges: ChallengeSummary;
+	leaderboardPosition: number;
+	categoryCompletions: Record<CategoryName, number>;
 	gallery: ImageInfo[];
 	prizes: ImageInfo[];
 };
@@ -37,13 +83,12 @@ export type UserProfile = {
 export type GetProfileResponse = {
 	avatarUrl: string;
 	name: string;
-	andrewId: string;
+	userId: string;
 	dorm: string;
-	currentScottyCoins: number;
-	totalScottyCoins: number;
-	challengesCompleted: number;
-	totalChallenges: number;
-	leaderboard: LeaderboardUser;
+	scottyCoins: CoinCount;
+	challengesCompleted: ChallengeSummary;
+	totalChallenges: ChallengeSummary;
+	leaderboardPosition: number;
 	gallery: ImageInfo[];
 	prizes: ImageInfo[];
 };

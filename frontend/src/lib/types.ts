@@ -11,6 +11,7 @@ export type LeaderboardUser = User & {
 export type House = {
 	name: string;
 	dorm: string;
+	color: string;
 };
 
 export type ImageInfo = {

@@ -2,12 +2,10 @@ import { Flag } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useChallengeData } from "@/lib/hooks/use-challenge-data";
-import { useProfileData } from "@/lib/hooks/use-profile";
 import type { ChallengeCategoryData } from "@/lib/types";
 
 export function ChallengesMenu() {
 	const { data, loading, error } = useChallengeData();
-	const { data: profileData } = useProfileData();
 	const [isOpen, setIsOpen] = useState(false);
 	const backgroundRef = useRef<HTMLDivElement>(null);
 

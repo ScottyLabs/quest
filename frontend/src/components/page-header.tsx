@@ -1,7 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { Flag } from "lucide-react";
 import type React from "react";
-import { useChallengeData } from "@/lib/hooks/use-challenge-data";
+import { useProfileData } from "@/lib/hooks/use-profile";
 import headerArc from "/images/header-arc.svg";
 import scottyCoin from "/images/scotty-coin.svg";
 import { ChallengesMenu } from "./challenges-menu";
@@ -23,20 +22,17 @@ export function PageHeader({
 	leftComponent,
 	rightComponent,
 }: PageHeaderProps) {
-	const { data: challengeData } = useChallengeData();
+	const { data: profileData } = useProfileData();
 
-	// Use real data if available, fallback to dummy data
-	const challengesCompleted = challengeData?.totalCompleted ?? 1;
-	const totalChallenges = challengeData?.totalChallenges ?? 15;
-	const scottyCoins = 260;
+	const scottyCoins = profileData?.scottyCoins.current;
 
 	return (
 		<div
-			className="relative flex flex-col items-center justify-center"
+			className="relative flex flex-col items-center justify-center h-[145px]"
 			style={{ background: bgColor }}
 		>
 			{/* Top stats row */}
-			<div className="w-full flex flex-row justify-between items-center px-6 pt-8 z-1">
+			<div className="w-full flex flex-row justify-between items-center px-6 z-1">
 				{/* All Challenges Stat */}
 				<ChallengesMenu />
 				{/* ScottyCoins Stat */}
@@ -50,26 +46,23 @@ export function PageHeader({
 				</Link>
 			</div>
 			{/* Main icon row */}
-			<div className="relative flex flex-row items-center justify-center w-full mt-2">
+			<div className="absolute z-2 flex flex-row items-center justify-center w-full mt-2">
 				{/* Center icon */}
 				<div className="flex flex-col items-center">
 					<div
-						className="bg-white rounded-full p-3 border-4 border-white shadow"
-						style={{ marginBottom: "-12px", zIndex: 1 }}
+						className={"rounded-full p-3 border-4 border-white shadow"}
+						style={{ backgroundColor: bgColor }}
 					>
 						{icon}
 					</div>
 				</div>
 			</div>
 			{/* Decorative arc with title inside */}
-			<div
-				className="w-full overflow-hidden relative"
-				style={{ marginTop: "-100px" }}
-			>
+			<div className="w-full overflow-hidden absolute top-[70px] h-[75px] bottom-0">
 				<img
 					src={headerArc}
 					alt="Decorative arc separator"
-					className="w-full h-full block"
+					className="w-full h-full"
 				/>
 				{/* Title and components positioned inside the arc, below the icon */}
 				<div className="absolute inset-0 flex justify-between items-end px-6 pb-1">

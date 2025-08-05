@@ -77,6 +77,7 @@ export type UserProfile = {
 	gallery: ImageInfo[];
 	prizes: ImageInfo[];
 	stamps: boolean[];
+	dormMascotUrl: string;
 };
 
 export type GetProfileResponse = {

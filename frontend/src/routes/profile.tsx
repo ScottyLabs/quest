@@ -35,9 +35,9 @@ function Profile() {
 				<div className="flex flex-row gap-4 items-center">
 					<div className="flex flex-col items-center">
 						<img
-							src={data.avatarUrl}
+							src={data.dormMascotUrl}
 							alt="avatar"
-							className="w-40 h-50 rounded-2xl object-contain"
+							className={`w-40 h-50 rounded-2xl object-contain shadow-[0_7px_0_#bbb] ${data.house.color}`}
 						/>
 					</div>
 					<div className="flex-1">
@@ -101,7 +101,7 @@ function Profile() {
 						<div className="text-md">{data.userId}</div>
 					</div>
 					<div className="text-lg font-bold flex items-center gap-2">
-						{data.challengesCompleted.total}
+						{data.scottyCoins.totalEarned}
 						<img
 							src="/images/scotty-coin.svg"
 							alt="ScottyCoin"

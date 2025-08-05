@@ -7,11 +7,28 @@ import type {
 import { snakeToCamelObject } from "@/lib/utils";
 import { DORM_GROUPS } from "@/routes/dorm-select";
 
-const dormToName = (dorm: string): string | null => {
+const dormToNameAndColor = (
+	dorm: string,
+): { name: string | null; color: string | null } => {
 	const group = DORM_GROUPS.find((group) =>
 		group.dorms.includes(dorm as never),
 	);
-	return group ? group.name : null;
+	return group
+		? { name: group.name, color: group.color }
+		: { name: null, color: null };
+};
+
+const DORM_MASCOT_URLS: Record<string, string> = {
+	"Morewood Gardens": "/images/dorm-mascots/flower.png",
+	"Morewood E-Tower": "/images/dorm-mascots/pineapple.png",
+	Donner: "/images/dorm-mascots/whale.png",
+	"West Wing": "/images/dorm-mascots/galaxy.png",
+	Stever: "/images/dorm-mascots/galaxy.png",
+	Mudge: "/images/dorm-mascots/fish.png",
+	"Res on Fifth": "/images/dorm-mascots/flamingo.png",
+	Whesco: "/images/dorm-mascots/uglypenguin.png",
+	Hammerschlag: "/images/dorm-mascots/hedgehog.png",
+	"McGill and Boss": "/images/dorm-mascots/redpanda.png",
 };
 
 export const useProfileData = () => {
@@ -38,7 +55,7 @@ export const useProfileData = () => {
 		...query.data,
 		house: {
 			dorm: query.data?.dorm || "",
-			name: dormToName(query.data?.dorm) || "",
+			...(dormToNameAndColor(query.data?.dorm) || ""),
 		},
 		categoryCompletions: (
 			Object.keys(
@@ -59,6 +76,7 @@ export const useProfileData = () => {
 				day.toISOString().split("T")[0] as string,
 			);
 		}),
+		dormMascotUrl: DORM_MASCOT_URLS[query.data?.dorm] || "",
 	};
 
 	const newQuery = {

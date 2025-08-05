@@ -7,26 +7,32 @@ export const DORM_GROUPS = [
 	{
 		name: "Morewood + E-Tower",
 		dorms: ["Morewood Gardens", "Morewood E-Tower"],
+		color: "bg-[#FDB813]",
 	},
 	{
 		name: "Donner + West Wing",
 		dorms: ["Donner", "West Wing"],
+		color: "bg-[#083372]",
 	},
 	{
 		name: "Stever",
 		dorms: ["Stever"],
+		color: "bg-[#189846]",
 	},
 	{
 		name: "Mudge",
 		dorms: ["Mudge"],
+		color: "bg-[#CAA3E8]",
 	},
 	{
 		name: "Res on Fifth",
 		dorms: ["Res on Fifth"],
+		color: "bg-[#E71763]",
 	},
 	{
 		name: "The Hill",
 		dorms: ["Whesco", "Hammerschlag", "McGill and Boss"],
+		color: "bg-[#D5242C]",
 	},
 ] as const;
 

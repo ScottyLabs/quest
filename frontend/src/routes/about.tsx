@@ -120,7 +120,7 @@ function About() {
 
 	return (
 		<div>
-			<PageHeader title="About" icon={<Info size={40} color="#C8102E" />} />
+			<PageHeader title="About" icon={<Info size={40} color="white" />} />
 
 			<div className="flex flex-col items-center leading-snug">
 				{/* How to Play button */}

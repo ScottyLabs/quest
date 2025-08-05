@@ -34,7 +34,7 @@ function TerrierTrade() {
 		<div>
 			<PageHeader
 				title="Terrier Trade"
-				icon={<ShoppingCart size={40} color="#C8102E" />}
+				icon={<ShoppingCart size={40} color="white" />}
 			/>
 			<div className="p-4 max-w-xl mx-auto flex flex-col gap-8">
 				{prizes.map((prize) => (

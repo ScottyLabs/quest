@@ -113,7 +113,7 @@ function Challenges() {
 		<div>
 			<PageHeader
 				title="Challenges"
-				icon={<Trophy size={40} color="#C8102E" />}
+				icon={<Trophy size={40} color="white" />}
 			/>
 			<div className="p-4 max-w-xl mx-auto">
 				<CategoryTabs categories={categories} selectedCategory={category} />

@@ -85,10 +85,10 @@ function Leaderboard() {
 	console.log("Is current user last:", isLast);
 
 	return (
-		<div className="max-w-md mx-auto">
+		<div className="w-screen mx-auto">
 			<PageHeader
 				title="Leaderboard"
-				icon={<Crown size={40} color="#C8102E" />}
+				icon={<Crown size={40} color="white" />}
 			/>
 			<div className="bg-white divide-y overflow-hidden">
 				{inTop10 ? (

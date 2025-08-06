@@ -148,57 +148,6 @@
 	}
 }
 
-/* Print styles */
-@media print {
-	/* Hide devtools during print */
-	[data-testid="react-query-devtools"],
-	[data-testid="tanstack-router-devtools"],
-	[data-testid*="devtools"],
-	[data-testid*="Devtools"],
-	[class*="devtools"],
-	[class*="Devtools"],
-	[id*="devtools"],
-	[id*="Devtools"],
-	[data-testid="tanstack-query-devtools"],
-	[data-testid="tanstack-router-devtools"],
-	[data-testid="react-query-devtools"],
-	/* Additional selectors for dev tools */
-		div[style*="position: fixed"][style*="z-index"],
-	div[style*="position:fixed"][style*="z-index"],
-	/* Hide any fixed positioned elements that might be dev tools */
-		div[style*="position: fixed"][style*="bottom"],
-	div[style*="position:fixed"][style*="bottom"],
-	/* Hide elements with high z-index that are likely dev tools */
-		div[style*="z-index: 9999"],
-	div[style*="z-index:9999"],
-	div[style*="z-index: 2147483647"],
-	div[style*="z-index:2147483647"],
-	/* Target TanStack Query DevTools specifically */
-		.tsqd-open-btn-container,
-	.tsqd-open-btn,
-	[class*="tsqd-"],
-	/* Target TanStack Router DevTools */
-		[class*="tsrd-"],
-	/* Target React Query DevTools */
-		[class*="rqd-"],
-	/* Hide any floating buttons or dev tool containers */
-		div[style*="position: fixed"][style*="right"],
-	div[style*="position:fixed"][style*="right"],
-	/* Hide elements with specific dev tool classes */
-		[class*="devtools"],
-	[class*="Devtools"],
-	[class*="DevTools"],
-	/* Hide any elements with high z-index that are likely UI overlays */
-		div[style*="z-index: 999"],
-	div[style*="z-index:999"],
-	div[style*="z-index: 1000"],
-	div[style*="z-index:1000"],
-	div[style*="z-index: 9999"],
-	div[style*="z-index:9999"] {
-		display: none !important;
-	}
-}
-
 /* Slide Left Transition */
 html:active-view-transition-type(slide-left) {
 	&::view-transition-old(main-content) {

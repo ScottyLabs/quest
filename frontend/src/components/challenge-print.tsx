@@ -17,6 +17,10 @@ export function ChallengePrint({
 	colorClasses,
 	onHeaderClick,
 }: ChallengePrintProps) {
+	// Debug: Log the challenge data
+	console.log("ChallengePrint received challenge:", challenge);
+	console.log("ChallengePrint received colorClasses:", colorClasses);
+
 	return (
 		<div
 			className={`rounded-[50px] ${colorClasses.bg} flex flex-col items-center shadow-[0px_30px_0px_0px_rgba(0,0,0,1.00)] border-[13px] border-black`}

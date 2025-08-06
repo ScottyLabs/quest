@@ -1,19 +1,199 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ChallengePrint } from "@/components/challenge-print";
 import type { ChallengeData } from "@/lib/challenge-api";
-import { useChallenges } from "@/lib/hooks/use-challenge-data";
 
 export const Route = createFileRoute("/corners")({
 	component: CornersPage,
 });
 
+// Temporary data with challenges for each category
+const TEMP_CHALLENGES: ChallengeData[] = [
+	// The Essentials - 2 challenges
+	{
+		name: "Find the Scotty Statue",
+		category: "The Essentials",
+		location: "Main Campus",
+		secret: "SCOTTY123",
+		scotty_coins: 50,
+		tagline: "Find the iconic Scotty statue",
+		description: "Locate the famous Scotty statue on campus",
+		maps_link: null,
+		more_info_link: null,
+		unlock_timestamp: "2024-01-01T00:00:00Z",
+		status: "available",
+		completed_at: null,
+	},
+	{
+		name: "Visit the Library",
+		category: "The Essentials",
+		location: "Hunt Library",
+		secret: "LIBRARY456",
+		scotty_coins: 75,
+		tagline: "Explore the main library",
+		description: "Visit the Hunt Library and find the secret spot",
+		maps_link: null,
+		more_info_link: null,
+		unlock_timestamp: "2024-01-01T00:00:00Z",
+		status: "available",
+		completed_at: null,
+	},
+	// Campus of Bridges - 2 challenges
+	{
+		name: "Cross the Bridge",
+		category: "Campus of Bridges",
+		location: "Bridge to Wean Hall",
+		secret: "BRIDGE789",
+		scotty_coins: 60,
+		tagline: "Cross the iconic bridge",
+		description: "Find and cross the bridge to Wean Hall",
+		maps_link: null,
+		more_info_link: null,
+		unlock_timestamp: "2024-01-01T00:00:00Z",
+		status: "available",
+		completed_at: null,
+	},
+	{
+		name: "Bridge Photography",
+		category: "Campus of Bridges",
+		location: "Bridge to Gates",
+		secret: "PHOTO321",
+		scotty_coins: 80,
+		tagline: "Take a photo on the bridge",
+		description: "Take a photo on the bridge to Gates building",
+		maps_link: null,
+		more_info_link: null,
+		unlock_timestamp: "2024-01-01T00:00:00Z",
+		status: "available",
+		completed_at: null,
+	},
+	// Corners of Carnegie - 2 challenges
+	{
+		name: "Carnegie Mellon Corner",
+		category: "Corners of Carnegie",
+		location: "Carnegie Mellon Corner",
+		secret: "CARNEGIE654",
+		scotty_coins: 100,
+		tagline: "Find the Carnegie corner",
+		description: "Locate the corner dedicated to Carnegie Mellon",
+		maps_link: null,
+		more_info_link: null,
+		unlock_timestamp: "2024-01-01T00:00:00Z",
+		status: "available",
+		completed_at: null,
+	},
+	{
+		name: "Carnegie Hall Entrance",
+		category: "Corners of Carnegie",
+		location: "Carnegie Hall",
+		secret: "HALL987",
+		scotty_coins: 90,
+		tagline: "Enter Carnegie Hall",
+		description: "Find the main entrance to Carnegie Hall",
+		maps_link: null,
+		more_info_link: null,
+		unlock_timestamp: "2024-01-01T00:00:00Z",
+		status: "available",
+		completed_at: null,
+	},
+	// Let's Eat - 2 challenges
+	{
+		name: "Find the Food Truck",
+		category: "Let's Eat",
+		location: "Food Truck Area",
+		secret: "FOOD147",
+		scotty_coins: 40,
+		tagline: "Locate the food truck",
+		description: "Find the popular food truck on campus",
+		maps_link: null,
+		more_info_link: null,
+		unlock_timestamp: "2024-01-01T00:00:00Z",
+		status: "available",
+		completed_at: null,
+	},
+	{
+		name: "Café Visit",
+		category: "Let's Eat",
+		location: "Student Center Café",
+		secret: "CAFE258",
+		scotty_coins: 55,
+		tagline: "Visit the student café",
+		description: "Visit the café in the student center",
+		maps_link: null,
+		more_info_link: null,
+		unlock_timestamp: "2024-01-01T00:00:00Z",
+		status: "available",
+		completed_at: null,
+	},
+	// Minor-Major Generals - 2 challenges
+	{
+		name: "General's Statue",
+		category: "Minor-Major Generals",
+		location: "General's Plaza",
+		secret: "GENERAL369",
+		scotty_coins: 70,
+		tagline: "Find the general's statue",
+		description: "Locate the statue of the famous general",
+		maps_link: null,
+		more_info_link: null,
+		unlock_timestamp: "2024-01-01T00:00:00Z",
+		status: "available",
+		completed_at: null,
+	},
+	{
+		name: "General's Corner",
+		category: "Minor-Major Generals",
+		location: "General's Corner",
+		secret: "CORNER741",
+		scotty_coins: 85,
+		tagline: "Visit the general's corner",
+		description: "Find the corner dedicated to the general",
+		maps_link: null,
+		more_info_link: null,
+		unlock_timestamp: "2024-01-01T00:00:00Z",
+		status: "available",
+		completed_at: null,
+	},
+	// Off-Campus - 2 challenges
+	{
+		name: "Local Coffee Shop",
+		category: "Off-Campus",
+		location: "Oakland Coffee Shop",
+		secret: "COFFEE852",
+		scotty_coins: 65,
+		tagline: "Visit the local coffee shop",
+		description: "Find and visit the popular local coffee shop",
+		maps_link: null,
+		more_info_link: null,
+		unlock_timestamp: "2024-01-01T00:00:00Z",
+		status: "available",
+		completed_at: null,
+	},
+	{
+		name: "Museum Visit",
+		category: "Off-Campus",
+		location: "Carnegie Museum",
+		secret: "MUSEUM963",
+		scotty_coins: 95,
+		tagline: "Visit the Carnegie Museum",
+		description: "Visit the famous Carnegie Museum of Natural History",
+		maps_link: null,
+		more_info_link: null,
+		unlock_timestamp: "2024-01-01T00:00:00Z",
+		status: "available",
+		completed_at: null,
+	},
+];
+
 function CornersPage() {
-	const { data: challenges, loading, error } = useChallenges();
 	const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0);
 
 	// Get the current challenge based on index
-	const currentChallenge = challenges[currentChallengeIndex];
+	const currentChallenge = TEMP_CHALLENGES[currentChallengeIndex];
+
+	// Debug: Log the current challenge
+	console.log("Current challenge:", currentChallenge);
+	console.log("Current challenge index:", currentChallengeIndex);
 
 	// Map category names to color classes
 	const getColorClasses = (categoryName: string) => {
@@ -75,51 +255,25 @@ function CornersPage() {
 	);
 
 	const handleHeaderClick = () => {
-		if (challenges.length > 0) {
+		if (TEMP_CHALLENGES.length > 0) {
 			setCurrentChallengeIndex(
-				(prevIndex) => (prevIndex + 1) % challenges.length,
+				(prevIndex) => (prevIndex + 1) % TEMP_CHALLENGES.length,
 			);
 		}
 	};
-
-	if (loading) {
-		return (
-			<div
-				className={`min-h-screen ${colorClasses.bgLight} flex flex-col items-center justify-center p-4`}
-			>
-				<div className="text-center text-2xl font-bold">Loading...</div>
-			</div>
-		);
-	}
-
-	if (error) {
-		return (
-			<div
-				className={`min-h-screen ${colorClasses.bgLight} flex flex-col items-center justify-center p-4`}
-			>
-				<div className="text-center text-2xl font-bold text-red-600">
-					Error: {error}
-				</div>
-			</div>
-		);
-	}
-
-	if (challenges.length === 0) {
-		return (
-			<div
-				className={`min-h-screen ${colorClasses.bgLight} flex flex-col items-center justify-center p-4`}
-			>
-				<div className="text-center text-2xl font-bold">
-					No challenges available
-				</div>
-			</div>
-		);
-	}
 
 	return (
 		<div
 			className={`min-h-screen ${colorClasses.bgLight} flex flex-col items-center justify-center z-[100] relative`}
 		>
+			{/* Debug display - hidden when printing */}
+			<div className="absolute top-4 left-4 bg-white p-4 rounded-lg shadow-lg z-50 print:hidden">
+				<div>Current Index: {currentChallengeIndex}</div>
+				<div>Challenge Name: {currentChallenge?.name || "None"}</div>
+				<div>Challenge Category: {currentChallenge?.category || "None"}</div>
+				<div>Challenge Location: {currentChallenge?.location || "None"}</div>
+			</div>
+
 			<ChallengePrint
 				challenge={currentChallenge || null}
 				colorClasses={colorClasses}

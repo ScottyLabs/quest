@@ -1,11 +1,19 @@
-use crate::{AppState, entities::challenges};
-use axum::{Json, extract::State, http::StatusCode};
+use crate::{AppState, AuthClaims, entities::challenges};
+use axum::{Extension, Json, extract::State, http::StatusCode};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 #[derive(Serialize, ToSchema)]
 pub struct AdminChallengesListResponse {
     pub challenges: Vec<challenges::Model>,
+}
+
+#[derive(ToSchema, Deserialize)]
+pub struct ChallengeGeolocationPayload {
+    pub name: String,
+    pub latitude: f64,
+    pub longitude: f64,
+    pub location_accuracy: f64,
 }
 
 #[utoipa::path(
@@ -29,6 +37,37 @@ pub async fn get_all_challenges(
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
     Ok(Json(AdminChallengesListResponse { challenges }))
+}
+
+#[utoipa::path(
+    put,
+    path = "/api/admin/challenges/geolocation",
+    responses(
+        (status = 200, description = "Challenge geolocation updated successfully"),
+        (status = 403, description = "Forbidden - Admin access required"),
+        (status = 500, description = "Internal server error")
+    ),
+    tag = "admin"
+)]
+#[axum::debug_handler]
+pub async fn put_challenge_geolocation(
+    State(state): State<AppState>,
+    Extension(claims): Extension<AuthClaims>,
+    Json(payload): Json<ChallengeGeolocationPayload>,
+) -> Result<StatusCode, StatusCode> {
+    // Update challenge geolocation
+    state
+        .challenge_service
+        .update_challenge_geolocation(
+            &payload.name,
+            payload.latitude,
+            payload.longitude,
+            payload.location_accuracy,
+        )
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    Ok(StatusCode::NO_CONTENT)
 }
 
 #[derive(Deserialize, ToSchema)]

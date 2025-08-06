@@ -45,6 +45,7 @@ impl Modify for SecurityAddon {
         handlers::journal::delete_journal_photo,
         handlers::admin::verify_transaction,
         handlers::admin::get_all_challenges,
+        handlers::admin::put_challenge_geolocation,
     ),
     modifiers(&SecurityAddon),
     components(

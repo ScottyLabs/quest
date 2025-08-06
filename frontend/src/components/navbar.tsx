@@ -3,7 +3,6 @@ import {
 	BarChart2,
 	ChevronLeft,
 	ChevronRight,
-	Flag,
 	Info,
 	ShoppingCart,
 	Trophy,
@@ -14,7 +13,6 @@ const navItems = [
 	{ to: "/profile", icon: User, label: "Profile" },
 	{ to: "/leaderboard", icon: BarChart2, label: "Leaderboard" },
 	{ to: "/challenges", icon: Trophy, label: "Challenges" },
-	{ to: "/corners", icon: Flag, label: "Corners" },
 	{ to: "/terrier-trade", icon: ShoppingCart, label: "Terrier Trade" },
 	{ to: "/about", icon: Info, label: "About" },
 ];

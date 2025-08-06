@@ -136,14 +136,6 @@ function About() {
 					How to Play
 				</Button>
 
-				{/* Corners button */}
-				<Button
-					className="mb-4 px-4 py-2 bg-red-700 text-white rounded-full font-bold"
-					onClick={() => navigate({ to: "/corners" })}
-				>
-					Corners
-				</Button>
-
 				<Dialog>
 					<DialogTrigger asChild>
 						<Button className="mb-4 px-4 py-2 bg-red-700 text-white rounded-full font-bold">

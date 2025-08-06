@@ -3,8 +3,8 @@ import {
 	BarChart2,
 	ChevronLeft,
 	ChevronRight,
-	Flag,
 	Info,
+	MapPin,
 	ShoppingCart,
 	Trophy,
 	User,
@@ -14,17 +14,17 @@ const navItems = [
 	{ to: "/profile", icon: User, label: "Profile" },
 	{ to: "/leaderboard", icon: BarChart2, label: "Leaderboard" },
 	{ to: "/challenges", icon: Trophy, label: "Challenges" },
-	{ to: "/corners", icon: Flag, label: "Corners" },
+	{ to: "/corners", icon: MapPin, label: "Corners" },
 	{ to: "/terrier-trade", icon: ShoppingCart, label: "Terrier Trade" },
 	{ to: "/about", icon: Info, label: "About" },
 ];
 
-export function NavBar() {
+export function BottomNavBar() {
 	const location = useLocation();
 	const current = location.pathname;
 
 	return (
-		<nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center h-20">
+		<nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center h-20 print:hidden">
 			{navItems.map((item) => {
 				const isActive = current.startsWith(item.to);
 

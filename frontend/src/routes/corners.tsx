@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { ChallengePrint } from "@/components/challenge-print";
+import { ChallengePrintFull } from "@/components/challenge-print-full";
 import type { ChallengeData } from "@/lib/challenge-api";
 
 export const Route = createFileRoute("/corners")({

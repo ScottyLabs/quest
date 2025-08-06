@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Camera, ChevronRight, Gift } from "lucide-react";
+import { useJournalData } from "@/lib/hooks/use-journal-data";
+import { usePrizeData } from "@/lib/hooks/use-prize-data";
 import { useProfileData } from "@/lib/hooks/use-profile";
 import CategoryProgressBar from "../components/category-progress-bar";
 import Stamps from "../components/stamps";
@@ -11,7 +13,8 @@ export const Route = createFileRoute("/profile")({
 
 function Profile() {
 	const { data } = useProfileData();
-
+	const { data: journalData, isLoading: isLoadingJournal } = useJournalData();
+	const { data: prizeData, isLoading: isLoadingPrizes } = usePrizeData();
 	if (!data)
 		return (
 			<div className="flex justify-center items-center h-full">Loading...</div>
@@ -122,35 +125,87 @@ function Profile() {
 				<span className="font-semibold text-lg">Prizes</span>
 			</div>
 			<div className="flex-1 overflow-x-auto mb-4">
-				<div className="flex gap-2 h-64">
-					{(data.prizes || []).map((img) => (
-						<img
-							key={img.id}
-							src={img.src}
-							alt={img.alt}
-							className="w-80 h-64 object-cover rounded-xl border flex-shrink-0"
-						/>
-					))}
-				</div>
+				{(!prizeData || prizeData?.rewards.length === 0) && isLoadingPrizes ? (
+					<div className="flex items-center justify-center h-64">
+						<span className="text-gray-500">Loading prizes...</span>
+					</div>
+				) : !prizeData || prizeData?.rewards.length === 0 ? (
+					<div className="flex-1 overflow-x-auto">
+						<div className="flex gap-2 h-64">
+							<div className="w-[95vw] h-64 flex items-center justify-center text-center font-bold bg-gray-200 rounded-xl text-3xl border">
+								Redeem prizes to see your rewards!
+							</div>
+						</div>
+					</div>
+				) : (
+					<div className="flex gap-2 h-64">
+						{prizeData.rewards.map((reward) => (
+							<div
+								key={reward.slug}
+								className="w-80 h-64 flex-shrink-0 bg-white rounded-xl border p-4 flex flex-col justify-between"
+							>
+								<div className="flex-1">
+									{/* <img
+									src={reward.image_url || "/images/scotty-coin.svg"}
+									alt={reward.name}
+									className="w-full h-32 object-cover rounded-lg mb-2"
+								/> */}
+									<h3 className="text-lg font-semibold">{reward.name}</h3>
+									<p className="text-sm text-gray-600">
+										Cost: {reward.cost} Scotty Coins
+									</p>
+								</div>
+								<div className="flex items-center justify-between mt-2">
+									<span className="text-sm text-gray-500">
+										Stock: {reward.stock}
+									</span>
+									<Link
+										to={`/terrier-trade`}
+										className="text-red-700 hover:underline"
+									>
+										View Details
+									</Link>
+								</div>
+							</div>
+						))}
+					</div>
+				)}
 			</div>
 
 			{/* Gallery */}
+
 			<div className="mb-2 flex items-center gap-2">
 				<Camera className="w-6 h-6 text-red-700" />
 				<span className="font-semibold text-lg">Gallery</span>
 			</div>
-			<div className="flex-1 overflow-x-auto">
-				<div className="flex gap-2 h-64">
-					{(data.gallery || []).map((img) => (
-						<img
-							key={img.id}
-							src={img.src}
-							alt={img.alt}
-							className="w-80 h-64 object-cover rounded-xl border flex-shrink-0"
-						/>
-					))}
+			{journalData?.entries?.length ? (
+				isLoadingJournal ? (
+					<div className="flex-1 flex items-center justify-center h-64">
+						<span className="text-gray-500">Loading gallery...</span>
+					</div>
+				) : (
+					<div className="flex-1 overflow-x-auto">
+						<div className="flex gap-2 h-64">
+							{journalData.entries.map((entry) => (
+								<img
+									key={entry.challenge_name + entry.note}
+									src={entry.image_url || "/images/scotty-coin.svg"}
+									alt={entry.challenge_name + " - " + entry.note}
+									className="w-80 h-64 object-cover rounded-xl border flex-shrink-0"
+								/>
+							))}
+						</div>
+					</div>
+				)
+			) : (
+				<div className="flex-1 overflow-x-auto">
+					<div className="flex gap-2 h-64">
+						<div className="w-[95vw] h-64 flex items-center justify-center text-center font-bold bg-gray-200 rounded-xl text-3xl border">
+							Start completing challenges to see your gallery!
+						</div>
+					</div>
 				</div>
-			</div>
+			)}
 		</div>
 	);
 }

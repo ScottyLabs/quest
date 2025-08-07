@@ -46,8 +46,9 @@ function LeaderboardCard({
 					>
 						#{entry.rank}
 					</div>
+
 					<div className="flex gap-2">
-						<h3 className="text-lg font-medium text-gray-900">
+						<h3 className="font-bold text-gray-900">
 							{entry.name}
 							<span className="italic font-normal text-gray-500">
 								{entry.name === name && " (you)"}
@@ -59,9 +60,10 @@ function LeaderboardCard({
 						)}
 					</div>
 				</div>
-				<div className="text-right text-lg flex gap-1 font-semibold text-gray-900">
+
+				<div className="text-right flex gap-1 text-gray-900">
 					<ScottyCoin className="size-5 my-auto" />
-					<span>{entry.coins_earned}</span>
+					<span className="font-bold">{entry.coins_earned}</span>
 				</div>
 			</div>
 
@@ -70,6 +72,7 @@ function LeaderboardCard({
 					<span className="text-gray-600">Dorm: </span>
 					<span className={`font-medium ${textColor}`}>{entry.dorm}</span>
 				</div>
+
 				<div className="flex gap-2">
 					<span className="text-gray-600">Completed</span>
 					<span className="font-medium text-gray-900">

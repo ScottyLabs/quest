@@ -12,7 +12,7 @@ export function ChallengeCategory({ categoryId }: CategoryProps) {
 	const { challenges } = useChallengesByCategory(categoryId);
 
 	return (
-		<div className="px-4 pt-6 max-w-xl mx-auto pb-32 [view-transition-name:main-content] flex flex-col gap-4">
+		<div className="px-4 pt-6 max-w-xl mx-auto [view-transition-name:main-content] flex flex-col gap-4">
 			{challenges.map((challenge, index) => (
 				<ChallengeCard
 					key={challenge.name}

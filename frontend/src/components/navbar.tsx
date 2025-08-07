@@ -26,7 +26,7 @@ export function Navbar({ currentPath, pageColors }: NavbarProps) {
 	});
 
 	return (
-		<nav className="fixed bottom-0 left-0 right-0 flex justify-around items-center h-20">
+		<nav className="fixed [view-transition-name:navbar] bottom-0 left-0 right-0 flex justify-around items-center h-20">
 			{pages.map((page) => {
 				const activeStyles =
 					(page.to !== "/" && currentPath.startsWith(page.to)) ||

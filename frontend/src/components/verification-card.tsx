@@ -11,8 +11,11 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { useApi } from "@/lib/api-context";
-import type { Challenge } from "@/lib/types";
+import type { components } from "@/lib/schema.gen";
 import { callWithGeolocation } from "@/lib/utils";
+
+// Use the same Challenge type as the challenge layout
+type Challenge = components["schemas"]["AdminChallengeResponse"];
 
 type VerificationChallenge = Challenge & {
 	completed?: boolean;
@@ -73,6 +76,18 @@ export function VerificationCard({
 		longitude: number;
 		accuracy: number;
 	} | null>(null);
+
+	// Use the API context to send location data to backend
+	const completeMutation = $api.useMutation("post", "/api/complete", {
+		onSuccess: () => {
+			// Mark as completed locally
+			challenge.status = "completed";
+			setIsLocationDialogOpen(false);
+		},
+		onError: () => {
+			alert("Failed to verify location. Please try again.");
+		},
+	});
 
 	// Completed state
 	if (completed) {
@@ -299,7 +314,7 @@ export function VerificationList({
 	return (
 		<div className="relative flex flex-col items-start w-full gap-3">
 			{challenges.map((challenge) => (
-				<VerificationCardWithIcon key={challenge.id} challenge={challenge} />
+				<VerificationCardWithIcon key={challenge.name} challenge={challenge} />
 			))}
 		</div>
 	);

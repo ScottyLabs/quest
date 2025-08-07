@@ -1,56 +1,19 @@
 use axum::http::Method;
-use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
-use serde::{Deserialize, Serialize};
 use tokio::signal;
 use tower_http::cors::CorsLayer;
 use utoipa::OpenApi;
 use utoipa_axum::{router::OpenApiRouter, routes};
 use utoipa_swagger_ui::SwaggerUi;
 
-mod auth;
-mod doc;
-pub mod entities;
-mod handlers;
-mod middleware;
-mod services;
-
-use auth::{build_oauth2_resource_server, dev_auth_middleware};
-use doc::ApiDoc;
-use middleware::admin;
-use services::{
+use backend::auth::{build_oauth2_resource_server, dev_auth_middleware};
+use backend::doc::ApiDoc;
+use backend::middleware::admin;
+use backend::services::{
     challenge::ChallengeService, completion::CompletionService, leaderboard::LeaderboardService,
     reward::RewardService, storage::StorageService, transaction::TransactionService,
     user::UserService,
 };
-
-#[derive(Clone)]
-struct AppState {
-    user_service: UserService,
-    challenge_service: ChallengeService,
-    completion_service: CompletionService,
-    reward_service: RewardService,
-    transaction_service: TransactionService,
-    leaderboard_service: LeaderboardService,
-    storage_service: StorageService,
-}
-
-#[derive(Clone, Serialize, Deserialize)]
-struct AuthClaims {
-    pub iss: String,
-    pub sub: String,
-    pub aud: String,
-    pub exp: i64,
-    pub iat: i64,
-    pub auth_time: i64,
-    pub acr: String,
-    pub email: String,
-    pub email_verified: bool,
-    pub name: String,
-    pub given_name: String,
-    pub preferred_username: String,
-    pub nickname: String,
-    pub groups: Vec<String>,
-}
+use backend::{create_connection, handlers};
 
 // Public endpoint handlers
 #[utoipa::path(
@@ -89,7 +52,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         dotenvy::var("MINIO_BUCKET").expect("MINIO_BUCKET must be set"),
     )?;
 
-    let state = AppState {
+    let state = backend::AppState {
         user_service: UserService::new(db.clone()),
         challenge_service: ChallengeService::new(db.clone()),
         completion_service: CompletionService::new(db.clone()),
@@ -154,16 +117,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_graceful_shutdown(shutdown_signal())
         .await?;
     Ok(())
-}
-
-async fn create_connection() -> Result<DatabaseConnection, DbErr> {
-    let database_url =
-        dotenvy::var("DATABASE_URL").expect("DATABASE_URL environment variable must be set");
-    let opt = ConnectOptions::new(database_url);
-
-    // Set connection pool options here
-
-    Database::connect(opt).await
 }
 
 fn build_cors_layer() -> CorsLayer {

@@ -118,16 +118,13 @@ impl TransactionService {
         transaction_id: &str,
         status: &str,
     ) -> Result<Option<transaction::Model>, sea_orm::DbErr> {
-        let transaction = self.get_transaction_by_id(transaction_id).await?;
+        let Some(transaction) = self.get_transaction_by_id(transaction_id).await? else {
+            return Ok(None);
+        };
 
-        match transaction {
-            Some(transaction) => {
-                let mut active_transaction: transaction::ActiveModel = transaction.into();
-                active_transaction.status = Set(status.to_string());
-                let updated = active_transaction.update(&self.db).await?;
-                Ok(Some(updated))
-            }
-            None => Ok(None),
-        }
+        let mut active_transaction: transaction::ActiveModel = transaction.into();
+        active_transaction.status = Set(status.to_string());
+
+        active_transaction.update(&self.db).await.map(Some)
     }
 }

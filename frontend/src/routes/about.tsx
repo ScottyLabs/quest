@@ -1,12 +1,4 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
 
 interface Contributor {
 	firstName: string;
@@ -107,6 +99,14 @@ function About() {
 				>
 					How to Play
 				</button>
+
+				{/* Corners button */}
+				<Button
+					className="mb-4 px-4 py-2 bg-red-700 text-white rounded-full font-bold"
+					onClick={() => navigate({ to: "/corners" })}
+				>
+					Corners
+				</Button>
 
 				<Dialog>
 					<DialogTrigger asChild>

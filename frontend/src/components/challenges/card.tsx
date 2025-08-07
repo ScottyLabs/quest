@@ -34,7 +34,7 @@ export function ChallengeCard({
 
 	const card =
 		challenge.status === "completed" ? (
-			<div className="rounded-2xl p-4 bg-success-light hover:bg-success-hover cursor-pointer transition-colors flex flex-row gap-2">
+			<div className="shadow-[0_3px_0_#53b752] duration-250 hover:shadow-none transition-all rounded-2xl p-4 bg-success-light hover:bg-success-hover cursor-pointer flex flex-row gap-2">
 				{/* Check icon */}
 				<div className="relative my-auto size-12">
 					<CheckContainer className="absolute size-full" />
@@ -48,7 +48,7 @@ export function ChallengeCard({
 				</div>
 			</div>
 		) : challenge.status === "locked" ? (
-			<div className="rounded-2xl p-4 bg-locked-light flex flex-row gap-2">
+			<div className="shadow-[0_3px_0_#000] rounded-2xl p-4 bg-locked-light flex flex-row gap-2">
 				{/* Locked icon */}
 				<div className="relative -m-1 size-12 my-auto shrink-0">
 					<div
@@ -65,7 +65,7 @@ export function ChallengeCard({
 			</div>
 		) : (
 			/* challenge.status === "available" */
-			<div className="relative rounded-2xl p-4 bg-white hover:bg-gray-100 cursor-pointer transition-colors flex flex-row gap-4">
+			<div className="shadow-[0_3px_0_#bbb] duration-250 hover:shadow-none transition-all relative rounded-2xl p-4 bg-white hover:bg-gray-100 cursor-pointer flex flex-row gap-4">
 				{/* Category icon */}
 				<div className="relative -m-1 size-12 my-auto shrink-0">
 					<div

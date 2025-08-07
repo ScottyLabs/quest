@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 
 use crate::entities::{challenges, prelude::*};
+use rust_decimal::Decimal;
 use sea_orm::{
-    ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait, QueryFilter, QuerySelect,
-    sea_query::OnConflict,
+    ActiveModelTrait, ActiveValue::Set, ColumnTrait, DatabaseConnection, EntityTrait,
+    PaginatorTrait, QueryFilter, QuerySelect, sea_query::OnConflict,
 };
 
 #[derive(Clone)]
@@ -58,6 +59,25 @@ impl ChallengeService {
             .filter(challenges::Column::Name.eq(name))
             .one(&self.db)
             .await
+    }
+
+    pub async fn update_challenge_geolocation(
+        &self,
+        name: &str,
+        latitude: f64,
+        longitude: f64,
+        location_accuracy: f64,
+    ) -> Result<Option<challenges::Model>, sea_orm::DbErr> {
+        let Some(challenge) = self.get_challenge_by_name(name).await? else {
+            return Ok(None);
+        };
+
+        let mut active_challenge: challenges::ActiveModel = challenge.into();
+        active_challenge.latitude = Set(Some(latitude));
+        active_challenge.longitude = Set(Some(longitude));
+        active_challenge.location_accuracy = Set(Decimal::from_f64_retain(location_accuracy));
+
+        active_challenge.update(&self.db).await.map(Some)
     }
 
     pub async fn get_total_challenges_by_category(

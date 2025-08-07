@@ -1,7 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { MoreHorizontal } from "lucide-react";
-import { LeaderboardCard } from "@/components/leaderboard/leaderboard-card";
+import { EllipsisVertical, Trophy } from "lucide-react";
+import ScottyCoin from "@/assets/scotty-coin.svg?react";
+import { useApi } from "@/lib/api-context";
 import { requireAuth } from "@/lib/auth";
+import { type DormName, dormColors, dormGroupFromName } from "@/lib/data/dorms";
+import type { components } from "@/lib/schema.gen";
 
 export const Route = createFileRoute("/leaderboard")({
 	beforeLoad: async ({ context }) => {
@@ -10,49 +13,153 @@ export const Route = createFileRoute("/leaderboard")({
 	component: Leaderboard,
 });
 
-function Leaderboard() {
-	const inTop10 = true;
-	const isLast = true;
+interface LeaderboardCardProps {
+	entry: components["schemas"]["LeaderboardEntry"];
+	name?: string;
+	totalChallenges: number;
+	index: number;
+}
+
+function LeaderboardCard({
+	entry,
+	name,
+	totalChallenges,
+	index,
+}: LeaderboardCardProps) {
+	const trophyColors = [
+		"fill-yellow-500 text-yellow-500",
+		"fill-gray-400 text-gray-400",
+		"fill-yellow-600 text-yellow-600",
+	];
+
+	const dormGroup = entry.dorm && dormGroupFromName[entry.dorm as DormName];
+	const dormColor = dormGroup ? dormColors[dormGroup].selected : "bg-gray-100";
+	const textColor = dormGroup ? dormColors[dormGroup].text : "text-gray-500";
 
 	return (
-		<div className="w-screen mx-auto">
-			<div className="bg-white divide-y overflow-hidden">
-				{inTop10 ? (
-					<>
-						{leaderboardData.slice(0, 10).map((leaderboardEntry) => (
-							<LeaderboardCard
-								key={leaderboardEntry.userId}
-								{...leaderboardEntry}
-								highlight={leaderboardEntry.userId === currentUser.userId}
-							/>
-						))}
-						{/* Dots separator for more users */}
-						<div className="flex items-center justify-center py-2 bg-white text-gray-400 select-none">
-							<MoreHorizontal className="h-4 w-4" />
-						</div>
-					</>
-				) : (
-					<>
-						{leaderboardData.slice(0, 10).map((user) => (
-							<LeaderboardCard key={user.userId} {...user} />
-						))}
-						{/* Dots separator */}
-						<div className="flex items-center justify-center py-2 bg-white text-gray-400 select-none">
-							<MoreHorizontal className="h-4 w-4" />
-						</div>
-						{/* Before current user */}
-						{leaderboardData.slice(10).map((user) => (
-							<LeaderboardCard key={user.userId} {...user} />
-						))}
-						{/* Dots separator for more users - only show if not last */}
-						{!isLast && (
-							<div className="flex items-center justify-center py-2 bg-white text-gray-400 select-none">
-								<MoreHorizontal className="h-4 w-4" />
-							</div>
+		<div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+			<div className="flex items-center justify-between gap-1">
+				<div className="flex items-center space-x-3">
+					<div
+						title={entry.dorm ?? undefined}
+						className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold text-white ${dormColor}`}
+					>
+						#{entry.rank}
+					</div>
+					<div className="flex gap-2">
+						<h3 className="text-lg font-medium text-gray-900">
+							{entry.name}
+							<span className="italic font-normal text-gray-500">
+								{entry.name === name && " (you)"}
+							</span>
+						</h3>
+
+						{index < 3 && (
+							<Trophy className={`size-5 my-auto ${trophyColors[index]}`} />
 						)}
-					</>
-				)}
+					</div>
+				</div>
+				<div className="text-right text-lg flex gap-1 font-semibold text-gray-900">
+					<ScottyCoin className="size-5 my-auto" />
+					<span>{entry.coins_earned}</span>
+				</div>
 			</div>
+
+			<div className="flex items-center justify-between text-sm mt-1">
+				<div>
+					<span className="text-gray-600">Dorm: </span>
+					<span className={`font-medium ${textColor}`}>{entry.dorm}</span>
+				</div>
+				<div className="flex gap-2">
+					<span className="text-gray-600">Completed</span>
+					<span className="font-medium text-gray-900">
+						{entry.challenges_completed} / {totalChallenges}
+					</span>
+				</div>
+			</div>
+		</div>
+	);
+}
+
+type LeaderboardResponse = components["schemas"]["LeaderboardResponse"];
+
+function Leaderboard() {
+	const { $api } = useApi();
+	const { data: profile } = $api.useQuery("get", "/api/profile");
+
+	const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+		$api.useInfiniteQuery(
+			"get",
+			"/api/leaderboard",
+			{
+				params: {
+					query: {
+						limit: 20,
+					},
+				},
+			},
+			{
+				getNextPageParam: (lastPage: LeaderboardResponse) =>
+					lastPage.has_next ? lastPage.next_cursor : undefined,
+				initialPageParam: undefined,
+				pageParamName: "after_rank", // which query param to use for pagination
+			},
+		);
+
+	const allEntries = data?.pages.flatMap((page) => page.entries) ?? [];
+	const totalChallenges = profile?.total_challenges.total ?? 0;
+
+	const position = profile?.leaderboard_position ?? Infinity;
+	const notInLeaderboard = position > allEntries.length;
+
+	return (
+		<div className="px-4 pt-6 max-w-xl mx-auto pb-32 [view-transition-name:main-content]">
+			<div className="space-y-3">
+				{allEntries.map((entry, index) => (
+					<LeaderboardCard
+						key={entry.rank}
+						entry={entry}
+						name={profile?.name}
+						totalChallenges={totalChallenges}
+						index={index}
+					/>
+				))}
+			</div>
+
+			{hasNextPage && (
+				<div className="my-6 text-center">
+					<button
+						type="button"
+						onClick={() => fetchNextPage()}
+						disabled={isFetchingNextPage}
+						className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
+					>
+						{isFetchingNextPage ? "Loading..." : "Load More"}
+					</button>
+				</div>
+			)}
+
+			{notInLeaderboard && (
+				<div className="flex flex-col gap-6 mt-6">
+					<EllipsisVertical className="mx-auto text-white" />
+					<LeaderboardCard
+						entry={{
+							challenges_completed: profile?.challenges_completed.total ?? 0,
+							coins_earned: profile?.scotty_coins.total_earned ?? 0,
+							coins_spent: profile?.scotty_coins.total_spent ?? 0,
+							dorm: profile?.dorm,
+							// If there is no name for some reason, defaulting to "You"
+							// will also ensure that the italic "(You)" is not added
+							name: profile?.name ?? "You",
+							rank: position,
+							user_id: profile?.user_id ?? "No user ID",
+						}}
+						name={profile?.name}
+						totalChallenges={totalChallenges}
+						index={allEntries.length}
+					/>
+				</div>
+			)}
 		</div>
 	);
 }

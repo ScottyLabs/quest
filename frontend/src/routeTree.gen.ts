@@ -17,6 +17,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as DormSelectRouteImport } from './routes/dorm-select'
 import { Route as CornersRouteImport } from './routes/corners'
+import { Route as CameraTestRouteImport } from './routes/camera-test'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as Challenges6RouteImport } from './routes/challenges/6'
@@ -66,6 +67,11 @@ const CornersRoute = CornersRouteImport.update({
   path: '/corners',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CameraTestRoute = CameraTestRouteImport.update({
+  id: '/camera-test',
+  path: '/camera-test',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -110,6 +116,7 @@ const Challenges1Route = Challenges1RouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/camera-test': typeof CameraTestRoute
   '/corners': typeof CornersRoute
   '/dorm-select': typeof DormSelectRoute
   '/leaderboard': typeof LeaderboardRoute
@@ -128,6 +135,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/camera-test': typeof CameraTestRoute
   '/corners': typeof CornersRoute
   '/dorm-select': typeof DormSelectRoute
   '/leaderboard': typeof LeaderboardRoute
@@ -147,6 +155,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/camera-test': typeof CameraTestRoute
   '/corners': typeof CornersRoute
   '/dorm-select': typeof DormSelectRoute
   '/leaderboard': typeof LeaderboardRoute
@@ -167,6 +176,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/camera-test'
     | '/corners'
     | '/dorm-select'
     | '/leaderboard'
@@ -185,6 +195,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/camera-test'
     | '/corners'
     | '/dorm-select'
     | '/leaderboard'
@@ -203,6 +214,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/about'
+    | '/camera-test'
     | '/corners'
     | '/dorm-select'
     | '/leaderboard'
@@ -222,6 +234,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  CameraTestRoute: typeof CameraTestRoute
   CornersRoute: typeof CornersRoute
   DormSelectRoute: typeof DormSelectRoute
   LeaderboardRoute: typeof LeaderboardRoute
@@ -296,6 +309,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CornersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/camera-test': {
+      id: '/camera-test'
+      path: '/camera-test'
+      fullPath: '/camera-test'
+      preLoaderRoute: typeof CameraTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -358,6 +378,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  CameraTestRoute: CameraTestRoute,
   CornersRoute: CornersRoute,
   DormSelectRoute: DormSelectRoute,
   LeaderboardRoute: LeaderboardRoute,

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { EllipsisVertical, Trophy } from "lucide-react";
 import ScottyCoin from "@/assets/scotty-coin.svg?react";
 import { useApi } from "@/lib/api-context";
@@ -36,8 +36,17 @@ function LeaderboardCard({
 	const dormColor = dormGroup ? dormColors[dormGroup].selected : "bg-gray-100";
 	const textColor = dormGroup ? dormColors[dormGroup].text : "text-gray-500";
 
+	const isCurrentUser = name === entry.name;
+
+	const navigate = useNavigate();
+
 	return (
-		<div className="bg-white rounded-2xl shadow-[0_3px_0_#bbb] p-4">
+		// biome-ignore lint/a11y/noStaticElementInteractions: button component breaks styling
+		// biome-ignore lint/a11y/useKeyWithClickEvents: TODO
+		<div
+			onClick={() => navigate({ to: "/profile" })}
+			className={`bg-white rounded-2xl shadow-[0_3px_0_#bbb] duration-250 transition-all p-4 ${isCurrentUser ? "cursor-pointer hover:shadow-none" : ""}`}
+		>
 			<div className="flex items-center justify-between gap-1">
 				<div className="flex items-center space-x-3">
 					<div
@@ -51,7 +60,7 @@ function LeaderboardCard({
 						<h3 className="font-bold text-gray-900">
 							{entry.name}
 							<span className="italic font-normal text-gray-500">
-								{entry.name === name && " (you)"}
+								{isCurrentUser && " (you)"}
 							</span>
 						</h3>
 

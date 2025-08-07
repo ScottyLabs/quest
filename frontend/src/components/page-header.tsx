@@ -56,7 +56,7 @@ export function PageHeader({
 				</div>
 
 				{/* Main icon row */}
-				<div className="absolute z-2 flex flex-row items-center justify-center w-full my-2 ">
+				<div className="pointer-events-none  absolute z-2 flex flex-row items-center justify-center w-full my-2 ">
 					<div className="flex flex-col items-center">
 						<div
 							className={`rounded-full p-3 border-4 text-white border-white shadow ${pageColors.primary}`}

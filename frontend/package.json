@@ -20,6 +20,7 @@
 		"@tauri-apps/plugin-deep-link": "~2",
 		"@tauri-apps/plugin-geolocation": "^2.3.0",
 		"@tauri-apps/plugin-nfc": "~2",
+		"jsqr": "^1.4.0",
 		"lucide": "^0.536.0",
 		"lucide-react": "^0.536.0",
 		"openapi-fetch": "^0.14.0",

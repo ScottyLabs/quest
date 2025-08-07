@@ -22,9 +22,12 @@ function Root() {
 	const routerState = useRouterState();
 	const currentPath = routerState.location.pathname as ValidPath;
 
-	const usePageTemplate = !["/onboarding", "/login", "/dorm-select"].includes(
-		currentPath,
-	);
+	const usePageTemplate = ![
+		"/onboarding",
+		"/login",
+		"/dorm-select",
+		"/camera-test",
+	].includes(currentPath);
 
 	// The "all" category (corresponding to "/") shares colors with other pages
 	const categoryId = categoryIdFromRoute[currentPath] || "all";

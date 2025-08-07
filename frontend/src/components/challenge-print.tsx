@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { ChallengeCircle } from "@/components/challenge-circle";
 import type { components } from "@/lib/schema.gen";
 
@@ -23,6 +24,14 @@ export function ChallengePrint({
 	// Debug: Log the challenge data
 	console.log("ChallengePrint received challenge:", challenge);
 	console.log("ChallengePrint received colorClasses:", colorClasses);
+
+	// Set document title for printing
+	useEffect(() => {
+		if (challenge) {
+			const printTitle = `${challenge.category}-${challenge.name}`;
+			document.title = printTitle;
+		}
+	}, [challenge]);
 
 	return (
 		<div
@@ -104,7 +113,7 @@ export function ChallengePrint({
 
 					{/* CMU Property Notice */}
 					<div className=" flex text-center text-secondary-foreground text-2xl font-extrabold tracking-wide">
-						CMU Property Do Not Remove
+						CMU Property Do Not Remove {challenge?.secret || "Unknown"}
 					</div>
 				</div>
 			</div>

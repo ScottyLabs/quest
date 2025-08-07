@@ -1,40 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { ChallengePrint } from "@/components/challenge-print";
-import { ChallengePrintFull } from "@/components/challenge-print-full";
-import {
-	useAllChallenges,
-	useAllChallengesWithSecrets,
-} from "@/lib/hooks/use-challenge-data";
-import type { Challenge } from "@/lib/types";
+import { useAdminChallengesForCorners } from "@/lib/hooks/use-challenge-data";
 
 export const Route = createFileRoute("/corners")({
 	component: CornersPage,
 });
 
-// We'll use the useAllChallenges hook to get real data from the API
-
 function CornersPage() {
-	// Try admin endpoint first (with secrets), fallback to user endpoint
-	const adminChallenges = useAllChallengesWithSecrets();
-	const userChallenges = useAllChallenges();
+	const { data: challenges, loading, error } = useAdminChallengesForCorners();
+	const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0);
 
-	// Use admin data if available, otherwise fall back to user data
-	const challenges = adminChallenges.data?.length
-		? adminChallenges.data
-		: userChallenges.data;
-	const loading = adminChallenges.loading || userChallenges.loading;
-	const error = adminChallenges.error || userChallenges.error;
-	const debug = adminChallenges.data?.length
-		? adminChallenges.debug
-		: userChallenges.debug;
-
-	// Debug: Log the current challenge
-	console.log("All challenges:", challenges);
-	console.log("Challenges length:", challenges?.length);
-	console.log("Loading state:", loading);
-	console.log("Error state:", error);
-	console.log("Debug info:", debug);
+	// Get current challenge
+	const currentChallenge = challenges?.[currentChallengeIndex] || null;
 
 	// Map category names to color classes
 	const getColorClasses = (categoryName: string) => {
@@ -126,9 +104,6 @@ function CornersPage() {
 		return (
 			<div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
 				<div className="text-lg">No challenges available</div>
-				<div className="text-sm text-gray-600 mt-2">
-					Debug: {JSON.stringify(debug)}
-				</div>
 			</div>
 		);
 	}
@@ -138,7 +113,7 @@ function CornersPage() {
 			className={`min-h-screen ${colorClasses.bgLight} flex flex-col items-center justify-center z-[100] relative`}
 		>
 			<ChallengePrint
-				challenge={currentChallenge || null}
+				challenge={currentChallenge}
 				colorClasses={colorClasses}
 				onHeaderClick={handleHeaderClick}
 			/>

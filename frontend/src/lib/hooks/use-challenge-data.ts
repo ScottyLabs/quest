@@ -255,6 +255,37 @@ export function useAdminChallengesForVerify() {
 	};
 }
 
+// New hook for corners page - returns only essential fields (category, location, secret, name)
+export function useAdminChallengesForCorners() {
+	const { $api } = useApi();
+
+	const query = $api.useQuery("get", "/api/admin/challenges");
+
+	if (query.isError) {
+		console.error("Error fetching admin challenges for corners:", query.error);
+	}
+
+	// Transform the data when it's available
+	const transformedData = (() => {
+		if (!query.data?.challenges) {
+			return [];
+		}
+
+		return query.data.challenges.map(
+			(challenge: components["schemas"]["Model"], index: number) => ({
+				...challenge, // Return the full Model type
+				id: index, // Add id for React keys
+			}),
+		);
+	})();
+
+	return {
+		data: transformedData,
+		loading: query.isLoading,
+		error: query.isError ? "Failed to load admin challenges" : null,
+	};
+}
+
 // Helper function to get category colors
 function getCategoryColor(categoryName: string): string {
 	const colorMap: Record<string, string> = {

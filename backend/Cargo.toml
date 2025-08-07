@@ -20,6 +20,7 @@ chrono = { version = "0.4.41", features = ["serde"] }
 csv = "1.3.1"
 dotenvy = "0.15.7"
 minio = "0.3.0"
+rust_decimal = "1.37.2"
 sea-orm = { version = "1.1.14", features = [
 	"sqlx-postgres",
 	"runtime-tokio-rustls",

@@ -51,7 +51,71 @@ export const dorms = [
 	},
 ] as const;
 
+export type DormName = (typeof dorms)[number]["name"];
+export type DormGroup = (typeof dorms)[number]["group"];
+
+interface ColorSet {
+	primary: string;
+	light: string;
+	text: string;
+	selected: string;
+	muted: string;
+}
+
+export const dormColors: Record<DormGroup, ColorSet> = {
+	Morewood: {
+		primary: "bg-housing-1",
+		light: "bg-housing-1-light",
+		text: "text-housing-1-selected",
+		selected: "bg-housing-1-selected",
+		muted: "bg-housing-1-muted",
+	},
+	"The Hill": {
+		primary: "bg-housing-2",
+		light: "bg-housing-2-light",
+		text: "text-housing-2-selected",
+		selected: "bg-housing-2-selected",
+		muted: "bg-housing-2-muted",
+	},
+	"Donner + West Wing": {
+		primary: "bg-housing-3",
+		light: "bg-housing-3-light",
+		text: "text-housing-3-selected",
+		selected: "bg-housing-3-selected",
+		muted: "bg-housing-3-muted",
+	},
+	Stever: {
+		primary: "bg-housing-4",
+		light: "bg-housing-4-light",
+		text: "text-housing-4-selected",
+		selected: "bg-housing-4-selected",
+		muted: "bg-housing-4-muted",
+	},
+	Mudge: {
+		primary: "bg-housing-5",
+		light: "bg-housing-5-light",
+		text: "text-housing-5-selected",
+		selected: "bg-housing-5-selected",
+		muted: "bg-housing-5-muted",
+	},
+	"Res on Fifth": {
+		primary: "bg-housing-6",
+		light: "bg-housing-6-light",
+		text: "text-housing-6-selected",
+		selected: "bg-housing-6-selected",
+		muted: "bg-housing-6-muted",
+	},
+};
+
 // Reverse lookups
+export const dormGroupFromName: Record<DormName, DormGroup> = dorms.reduce(
+	(acc, dorm) => {
+		acc[dorm.name] = dorm.group;
+		return acc;
+	},
+	{} as Record<DormName, DormGroup>,
+);
+
 export const dormGroups = dorms.reduce(
 	(acc, dorm) => {
 		const group = dorm.group;

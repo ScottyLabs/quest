@@ -36,6 +36,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/challenges/geolocation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["put_challenge_geolocation"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/verify_transaction": {
         parameters: {
             query?: never;
@@ -140,22 +156,6 @@ export interface paths {
             cookie?: never;
         };
         get: operations["get_leaderboard"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/leaderboard/user": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["get_user_leaderboard"];
         put?: never;
         post?: never;
         delete?: never;
@@ -310,6 +310,15 @@ export interface components {
             /** Format: int32 */
             scotty_coins: number;
             tagline: string;
+        };
+        ChallengeGeolocationPayload: {
+            /** Format: double */
+            latitude: number;
+            /** Format: double */
+            location_accuracy: number;
+            /** Format: double */
+            longitude: number;
+            name: string;
         };
         ChallengeResponse: (null | components["schemas"]["ChallengeDetails"]) & {
             /** Format: date-time */
@@ -524,6 +533,42 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["AdminChallengesListResponse"];
                 };
+            };
+            /** @description Forbidden - Admin access required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    put_challenge_geolocation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChallengeGeolocationPayload"];
+            };
+        };
+        responses: {
+            /** @description Challenge geolocation updated successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Forbidden - Admin access required */
             403: {
@@ -787,40 +832,6 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["LeaderboardResponse"];
                 };
-            };
-            /** @description Internal server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    get_user_leaderboard: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description User leaderboard entry retrieved successfully */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LeaderboardEntry"];
-                };
-            };
-            /** @description User not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
             /** @description Internal server error */
             500: {

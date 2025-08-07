@@ -37,7 +37,7 @@ function LeaderboardCard({
 	const textColor = dormGroup ? dormColors[dormGroup].text : "text-gray-500";
 
 	return (
-		<div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
+		<div className="bg-white rounded-2xl shadow-[0_3px_0_#bbb] p-4">
 			<div className="flex items-center justify-between gap-1">
 				<div className="flex items-center space-x-3">
 					<div

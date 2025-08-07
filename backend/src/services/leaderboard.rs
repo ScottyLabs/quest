@@ -72,7 +72,7 @@ impl LeaderboardService {
             ranked_users AS (
                 SELECT
                     *,
-                    ROW_NUMBER() OVER (ORDER BY (COALESCE(coins_earned, 0) - COALESCE(coins_spent, 0)) DESC, challenges_completed DESC, name ASC) as rank
+                    ROW_NUMBER() OVER (ORDER BY COALESCE(coins_earned, 0) DESC, name ASC) as rank
                 FROM user_stats
             )
             SELECT * FROM ranked_users
@@ -134,8 +134,7 @@ impl LeaderboardService {
 					user_id,
 					ROW_NUMBER() OVER (
 						ORDER BY
-							(COALESCE(coins_earned, 0) - COALESCE(coins_spent, 0)) DESC,
-							challenges_completed DESC,
+							COALESCE(coins_earned, 0) DESC,
 							name ASC
 					) as rank
 				FROM user_stats

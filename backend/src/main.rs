@@ -78,7 +78,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .routes(routes!(handlers::challenges::get_challenges,))
         .routes(routes!(handlers::rewards::get_rewards,))
         .routes(routes!(handlers::leaderboard::get_leaderboard,))
-        .routes(routes!(handlers::leaderboard::get_user_leaderboard,))
         .routes(routes!(
             handlers::transaction::create_transaction,
             handlers::transaction::cancel_transaction,

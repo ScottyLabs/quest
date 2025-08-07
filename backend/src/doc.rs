@@ -35,7 +35,6 @@ impl Modify for SecurityAddon {
         handlers::challenges::get_challenges,
         handlers::rewards::get_rewards,
         handlers::leaderboard::get_leaderboard,
-        handlers::leaderboard::get_user_leaderboard,
         handlers::transaction::create_transaction,
         handlers::transaction::cancel_transaction,
         handlers::completion::create_completion,

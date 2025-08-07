@@ -36,7 +36,7 @@ function Root() {
 	const pageData = isCategoryPage ? pageObject["/"] : pageObject[currentPath];
 
 	return (
-		<div className={`h-full ${pageColors.secondary}`}>
+		<div className={`min-h-screen ${pageColors.secondary}`}>
 			{usePageTemplate && (
 				<PageHeader
 					categoryId={categoryId}
@@ -46,7 +46,10 @@ function Root() {
 				/>
 			)}
 
-			<Outlet />
+			{/* Space for fixed navbar and header */}
+			<div className={usePageTemplate ? "pb-32 min-h-[calc(100vh-145px)]" : ""}>
+				<Outlet />
+			</div>
 
 			{usePageTemplate && (
 				<Navbar currentPath={currentPath} pageColors={pageColors} />

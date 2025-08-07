@@ -113,7 +113,7 @@ function Leaderboard() {
 	const notInLeaderboard = position > allEntries.length;
 
 	return (
-		<div className="px-4 pt-6 max-w-xl mx-auto pb-32 [view-transition-name:main-content]">
+		<div className="px-4 pt-6 max-w-xl mx-auto [view-transition-name:main-content]">
 			<div className="space-y-3">
 				{allEntries.map((entry, index) => (
 					<LeaderboardCard

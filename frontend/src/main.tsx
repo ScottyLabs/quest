@@ -6,26 +6,21 @@ import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 
 import { ApiProvider, useApi } from "@/lib/api-context";
-import { type FileRoutesByFullPath, routeTree } from "@/routeTree.gen";
+import { pageOrder, type ValidPath } from "@/lib/data/page";
+import { routeTree } from "@/routeTree.gen";
 import "@/main.css";
-import { StyleProvider } from "@/lib/style-context";
 
-export type ValidPath = keyof FileRoutesByFullPath;
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			// Cache data for 5 minutes before considering it stale
+			staleTime: 5 * 60 * 1000,
+			// Keep data in cache for 10 minutes after component unmounts
+			gcTime: 10 * 60 * 1000,
+		},
+	},
+});
 
-const pageOrder: ValidPath[] = [
-	"/profile",
-	"/leaderboard",
-	"/",
-	"/challenges",
-	"/dorm-select",
-	"/onboarding",
-	"/login",
-	"/terrier-trade",
-	"/verify",
-	"/about",
-];
-
-const queryClient = new QueryClient();
 const router = createRouter({
 	routeTree,
 	scrollRestoration: true,
@@ -67,12 +62,10 @@ if (!rootElement.innerHTML) {
 		<StrictMode>
 			<QueryClientProvider client={queryClient}>
 				<ApiProvider>
-					<StyleProvider>
-						<AppWithRouter />
+					<AppWithRouter />
 
-						<ReactQueryDevtools initialIsOpen={false} />
-						<TanStackRouterDevtools router={router} />
-					</StyleProvider>
+					<ReactQueryDevtools initialIsOpen={false} />
+					<TanStackRouterDevtools router={router} />
 				</ApiProvider>
 			</QueryClientProvider>
 		</StrictMode>,

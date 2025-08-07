@@ -2,39 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { type FormEvent, useState } from "react";
 import { useApi } from "@/lib/api-context";
 import { requireAuth } from "@/lib/auth";
-
-export const DORM_GROUPS = [
-	{
-		name: "Morewood + E-Tower",
-		dorms: ["Morewood Gardens", "Morewood E-Tower"],
-		color: "bg-[#FDB813]",
-	},
-	{
-		name: "Donner + West Wing",
-		dorms: ["Donner", "West Wing"],
-		color: "bg-[#083372]",
-	},
-	{
-		name: "Stever",
-		dorms: ["Stever"],
-		color: "bg-[#189846]",
-	},
-	{
-		name: "Mudge",
-		dorms: ["Mudge"],
-		color: "bg-[#CAA3E8]",
-	},
-	{
-		name: "Res on Fifth",
-		dorms: ["Res on Fifth"],
-		color: "bg-[#E71763]",
-	},
-	{
-		name: "The Hill",
-		dorms: ["Whesco", "Hammerschlag", "McGill and Boss"],
-		color: "bg-[#D5242C]",
-	},
-] as const;
+import { dormGroups } from "@/lib/data/dorms";
 
 export const Route = createFileRoute("/dorm-select")({
 	beforeLoad: async ({ context }) => {
@@ -92,9 +60,9 @@ function RouteComponent() {
 						onChange={(e) => setSelectedDorm(e.target.value)}
 						disabled={updateDormMutation.isPending}
 					>
-						{DORM_GROUPS.map((group) => (
-							<optgroup key={group.name} label={group.name}>
-								{group.dorms.map((dorm) => (
+						{Object.entries(dormGroups).map(([groupName, dorms]) => (
+							<optgroup key={groupName} label={groupName}>
+								{dorms.map((dorm) => (
 									<option key={dorm} value={dorm}>
 										{dorm}
 									</option>

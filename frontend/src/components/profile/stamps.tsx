@@ -14,12 +14,11 @@ export default function Stamps({ week }: StampsProps) {
 				{days.map((d, i) => (
 					<div key={d} className="flex flex-col items-center">
 						<div
-							className={`relative rounded-full flex items-center justify-center ${
+							className={`relative size-[40px] rounded-full flex items-center justify-center ${
 								week[i]
 									? "bg-[#F3E9D2] shadow-[0_0_0_8px_#F3E9D2]"
 									: "bg-transparent"
 							}`}
-							style={{ width: 40, height: 40 }}
 						>
 							<Badge
 								size={40}
@@ -27,9 +26,9 @@ export default function Stamps({ week }: StampsProps) {
 								fill={week[i] ? "#B81C1C" : "#7A4E06"}
 								strokeWidth={2}
 							/>
+
 							<span
-								className={`absolute text-base font-bold ${week[i] ? "text-white" : "text-[#F3E9D2]"}`}
-								style={{ pointerEvents: "none" }}
+								className={`absolute pointer-events-none text-base font-bold ${week[i] ? "text-white" : "text-[#F3E9D2]"}`}
 							>
 								{d}
 							</span>

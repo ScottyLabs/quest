@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ChallengeCategory } from "@/components/category";
+import { ChallengeCategory } from "@/components/challenges/category";
+import { ChallengesLayout } from "@/components/challenges/layout";
 import { requireAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/")({
@@ -12,5 +13,9 @@ export const Route = createFileRoute("/")({
 function Challenges() {
 	const { user } = Route.useRouteContext();
 
-	return <ChallengeCategory categoryId="all" user={user} />;
+	return (
+		<ChallengesLayout>
+			<ChallengeCategory categoryId="all" user={user} />
+		</ChallengesLayout>
+	);
 }

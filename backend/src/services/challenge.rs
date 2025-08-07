@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use crate::entities::{challenges, prelude::*};
 use sea_orm::{
     ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait, QueryFilter, QuerySelect,
+    sea_query::OnConflict,
 };
 
 #[derive(Clone)]
@@ -13,6 +14,36 @@ pub struct ChallengeService {
 impl ChallengeService {
     pub fn new(db: DatabaseConnection) -> Self {
         Self { db }
+    }
+
+    // Used for seeding
+    pub async fn upsert_challenges_batch(
+        &self,
+        challenges: Vec<challenges::ActiveModel>,
+    ) -> Result<usize, sea_orm::DbErr> {
+        let count = challenges.len();
+
+        // Use insert_many with ON CONFLICT DO UPDATE
+        Challenges::insert_many(challenges)
+            .on_conflict(
+                OnConflict::column(challenges::Column::Name)
+                    .update_columns([
+                        challenges::Column::Category,
+                        challenges::Column::Location,
+                        challenges::Column::ScottyCoins,
+                        challenges::Column::MapsLink,
+                        challenges::Column::Tagline,
+                        challenges::Column::Description,
+                        challenges::Column::MoreInfoLink,
+                        challenges::Column::UnlockTimestamp,
+                        challenges::Column::Secret,
+                    ])
+                    .to_owned(),
+            )
+            .exec(&self.db)
+            .await?;
+
+        Ok(count)
     }
 
     pub async fn get_all_challenges(&self) -> Result<Vec<challenges::Model>, sea_orm::DbErr> {

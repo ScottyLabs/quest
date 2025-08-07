@@ -1,5 +1,13 @@
 ## O-Quest Backend
 
+## Seeding
+
+Relative to this directory, create the challenges CSV in `./data/challenges.csv` and run:
+
+```bash
+cargo run --bin seed
+```
+
 ## Database
 
 You should install `sea-orm-cli` using `cargo install sea-orm-cli`. The following instructions assume you are in the `backend` directory:

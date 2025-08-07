@@ -3,6 +3,8 @@
 		"biomejs.biome",
 		"bradlc.vscode-tailwindcss",
 		"rust-lang.rust-analyzer",
-		"tauri-apps.tauri-vscode"
+		"tauri-apps.tauri-vscode",
+		"naumovs.color-highlight",
+		"mechatroner.rainbow-csv"
 	]
 }

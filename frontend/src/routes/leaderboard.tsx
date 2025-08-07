@@ -39,12 +39,15 @@ function LeaderboardCard({
 	const isCurrentUser = name === entry.name;
 
 	const navigate = useNavigate();
+	const toProfile = () => {
+		if (isCurrentUser) navigate({ to: "/profile" });
+	};
 
 	return (
 		// biome-ignore lint/a11y/noStaticElementInteractions: button component breaks styling
 		// biome-ignore lint/a11y/useKeyWithClickEvents: TODO
 		<div
-			onClick={() => navigate({ to: "/profile" })}
+			onClick={toProfile}
 			className={`bg-white rounded-2xl shadow-[0_3px_0_#bbb] duration-250 transition-all p-4 ${isCurrentUser ? "cursor-pointer hover:shadow-none" : ""}`}
 		>
 			<div className="flex items-center justify-between gap-1">

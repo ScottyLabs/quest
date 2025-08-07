@@ -1,9 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Camera, ChevronRight, Gift } from "lucide-react";
+import StickyNoteTop from "@/assets/sticky-note-top.svg?react";
 import CategoryProgressBar from "@/components/profile/category-progress-bar";
 import Stamps from "@/components/profile/stamps";
 import { useApi } from "@/lib/api-context";
 import { requireAuth } from "@/lib/auth";
+import { type DormName, dormGroupFromName } from "@/lib/data/dorms";
+import { LeaderboardFromProfile } from "@/routes/leaderboard";
 
 export const Route = createFileRoute("/profile")({
 	beforeLoad: async ({ context }) => {
@@ -16,20 +19,22 @@ function Profile() {
 	const { $api } = useApi();
 	const { data } = $api.useQuery("get", "/api/profile");
 
+	// These are consistent with the defaults in the leaderboard page
+	const name = data?.name ?? "You";
+	const userId = data?.user_id ?? "No user ID";
+
+	const dormGroup = data?.dorm
+		? dormGroupFromName[data?.dorm as DormName]
+		: "No housing community";
+	const dorm = data?.dorm ?? "No dorm";
+
 	return (
 		<div className="bg-[#F3E9D2] pb-20 p-4 flex flex-col">
 			<div className="rounded-4xl shadow-[0_7px_0_#bbb] p-4 mb-6 mt-4 relative overflow-visible">
-				{/* Decorative SVG at the top */}
-				<div
-					className="w-full flex justify-center -mt-8 mb-2"
-					style={{ position: "relative", zIndex: 1 }}
-				>
-					<img
-						src="/images/sticky-note-top.svg"
-						alt="Sticky Note Top"
-						style={{ width: "60%" }}
-					/>
+				<div className="w-full relative z-1 flex justify-center -mt-8 mb-2">
+					<StickyNoteTop className="w-3/5" />
 				</div>
+
 				<div className="flex flex-row gap-4 items-center">
 					<div className="flex flex-col items-center">
 						<img
@@ -38,16 +43,17 @@ function Profile() {
 							className={`w-40 h-50 rounded-2xl object-contain shadow-[0_7px_0_#bbb] ${data.house.color}`}
 						/>
 					</div>
+
 					<div className="flex-1">
 						<div className="mb-1">
-							<span className="font-bold">Name:</span> {data.name}
+							<span className="font-bold">Name:</span> {name}
 						</div>
 						<div className="mb-1">
-							<span className="font-bold">Andrew ID:</span> {data.userId}
+							<span className="font-bold">Andrew ID:</span> {userId}
 						</div>
-						<div className="mb-1">{data.house.dorm}</div>
+						<div className="mb-1">{dorm}</div>
 						<div className="flex items-center gap-2 mb-1">
-							<span>{data.house.name}</span>
+							<span>{dormGroup}</span>
 						</div>
 					</div>
 				</div>
@@ -66,6 +72,7 @@ function Profile() {
 							{data.challengesCompleted.total}/{data.totalChallenges.total}
 						</span>
 					</div>
+
 					{/* Category Progress Bars */}
 					<CategoryProgressBar
 						categories={Object.entries(data.categoryCompletions).map(
@@ -83,6 +90,7 @@ function Profile() {
 						<span>Total Scotty Coins:</span>
 						<span className="font-bold">{data.scottyCoins.current}</span>
 					</div>
+
 					<div className="flex justify-between items-center">
 						<span>Carnegie Cup Points:</span>
 						<span className="font-bold">{data.challengesCompleted.total}</span>
@@ -90,26 +98,8 @@ function Profile() {
 				</div>
 			</div>
 
-			{/* Leaderboard Card */}
 			<div className="relative mb-2">
-				<div className="bg-red-700 rounded-2xl shadow-[0_7px_0_#bbb] flex items-center px-4 py-4 mb-4 text-white z-10 relative">
-					<div className="font-bold mr-8">{data.leaderboardPosition}</div>
-					<div className="flex-1">
-						<div className="font-semibold">{data.name}</div>
-						<div className="text-md">{data.userId}</div>
-					</div>
-					<div className="text-lg font-bold flex items-center gap-2">
-						{data.scottyCoins.totalEarned}
-						<img
-							src="/images/scotty-coin.svg"
-							alt="ScottyCoin"
-							className="w-7 h-7 relative top-1"
-						/>
-					</div>
-					<Link to="/leaderboard" className="text-white ml-6">
-						<ChevronRight />
-					</Link>
-				</div>
+				<LeaderboardFromProfile profile={data} to="/leaderboard" />
 			</div>
 
 			<Stamps week={data.stamps} />
@@ -140,11 +130,6 @@ function Profile() {
 								className="w-80 h-64 flex-shrink-0 bg-white rounded-xl border p-4 flex flex-col justify-between"
 							>
 								<div className="flex-1">
-									{/* <img
-									src={reward.image_url || "/images/scotty-coin.svg"}
-									alt={reward.name}
-									className="w-full h-32 object-cover rounded-lg mb-2"
-								/> */}
 									<h3 className="text-lg font-semibold">{reward.name}</h3>
 									<p className="text-sm text-gray-600">
 										Cost: {reward.cost} Scotty Coins

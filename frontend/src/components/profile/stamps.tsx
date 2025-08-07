@@ -1,6 +1,6 @@
 import { Badge } from "lucide-react";
 
-const days = ["S", "M", "T", "W", "T", "F", "S"];
+const DAYS = ["S", "M", "T", "W", "T", "F", "S"];
 
 export type StampsProps = {
 	week: boolean[]; // 7 booleans, Sunday to Saturday
@@ -11,8 +11,8 @@ export default function Stamps({ week }: StampsProps) {
 		<div className="rounded-3xl bg-[#B38156] shadow-[0_8px_0_#C2BBA7] px-6 py-4 flex flex-col gap-2 max-w-full mb-4">
 			<div className="font-bold text-lg text-[#3B2600] mb-2">Stamps</div>
 			<div className="flex flex-row gap-3 justify-center items-center">
-				{days.map((d, i) => (
-					<div key={d} className="flex flex-col items-center">
+				{DAYS.map((day, i) => (
+					<div key={day} className="flex flex-col items-center">
 						<div
 							className={`relative size-[40px] rounded-full flex items-center justify-center ${
 								week[i]
@@ -30,7 +30,7 @@ export default function Stamps({ week }: StampsProps) {
 							<span
 								className={`absolute pointer-events-none text-base font-bold ${week[i] ? "text-white" : "text-[#F3E9D2]"}`}
 							>
-								{d}
+								{day}
 							</span>
 						</div>
 					</div>

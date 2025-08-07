@@ -4,6 +4,7 @@ import ScottyCoin from "@/assets/scotty-coin.svg?react";
 import { useApi } from "@/lib/api-context";
 import { requireAuth } from "@/lib/auth";
 import { type DormName, dormColors, dormGroupFromName } from "@/lib/data/dorms";
+import type { ValidPath } from "@/lib/data/page";
 import type { components } from "@/lib/schema.gen";
 
 export const Route = createFileRoute("/leaderboard")({
@@ -17,14 +18,14 @@ interface LeaderboardCardProps {
 	entry: components["schemas"]["LeaderboardEntry"];
 	name?: string;
 	totalChallenges: number;
-	index: number;
+	to: ValidPath;
 }
 
 function LeaderboardCard({
 	entry,
 	name,
 	totalChallenges,
-	index,
+	to,
 }: LeaderboardCardProps) {
 	const trophyColors = [
 		"fill-yellow-500 text-yellow-500",
@@ -39,15 +40,15 @@ function LeaderboardCard({
 	const isCurrentUser = name === entry.name;
 
 	const navigate = useNavigate();
-	const toProfile = () => {
-		if (isCurrentUser) navigate({ to: "/profile" });
+	const toPath = () => {
+		if (isCurrentUser) navigate({ to });
 	};
 
 	return (
 		// biome-ignore lint/a11y/noStaticElementInteractions: button component breaks styling
 		// biome-ignore lint/a11y/useKeyWithClickEvents: TODO
 		<div
-			onClick={toProfile}
+			onClick={toPath}
 			className={`bg-white rounded-2xl shadow-[0_3px_0_#bbb] duration-250 transition-all p-4 ${isCurrentUser ? "cursor-pointer hover:shadow-none" : ""}`}
 		>
 			<div className="flex items-center justify-between gap-1">
@@ -67,8 +68,10 @@ function LeaderboardCard({
 							</span>
 						</h3>
 
-						{index < 3 && (
-							<Trophy className={`size-5 my-auto ${trophyColors[index]}`} />
+						{entry.rank <= 3 && (
+							<Trophy
+								className={`size-5 my-auto ${trophyColors[entry.rank - 1]}`}
+							/>
 						)}
 					</div>
 				</div>
@@ -82,7 +85,9 @@ function LeaderboardCard({
 			<div className="flex items-center justify-between text-sm mt-1">
 				<div>
 					<span className="text-gray-600">Dorm: </span>
-					<span className={`font-medium ${textColor}`}>{entry.dorm}</span>
+					<span className={`font-medium ${textColor}`}>
+						{entry.dorm ?? "No dorm"}
+					</span>
 				</div>
 
 				<div className="flex gap-2">
@@ -93,6 +98,36 @@ function LeaderboardCard({
 				</div>
 			</div>
 		</div>
+	);
+}
+
+interface LeaderboardFromProfileProps {
+	profile?: components["schemas"]["UserProfileResponse"];
+	to: ValidPath;
+}
+
+export function LeaderboardFromProfile({
+	profile,
+	to,
+}: LeaderboardFromProfileProps) {
+	return (
+		<LeaderboardCard
+			// The entry is not loaded, so construct it manually from profile
+			entry={{
+				challenges_completed: profile?.challenges_completed.total ?? 0,
+				coins_earned: profile?.scotty_coins.total_earned ?? 0,
+				coins_spent: profile?.scotty_coins.total_spent ?? 0,
+				dorm: profile?.dorm,
+				// If there is no name for some reason, defaulting to "You"
+				// will also ensure that the italic "(You)" is not added too
+				name: profile?.name ?? "You",
+				rank: profile?.leaderboard_position ?? Infinity,
+				user_id: profile?.user_id ?? "No user ID",
+			}}
+			name={profile?.name}
+			totalChallenges={profile?.total_challenges.total ?? 0}
+			to={to}
+		/>
 	);
 }
 
@@ -122,21 +157,18 @@ function Leaderboard() {
 		);
 
 	const allEntries = data?.pages.flatMap((page) => page.entries) ?? [];
-	const totalChallenges = profile?.total_challenges.total ?? 0;
-
 	const position = profile?.leaderboard_position ?? Infinity;
-	const notInLeaderboard = position > allEntries.length;
 
 	return (
 		<div className="px-4 pt-6 max-w-xl mx-auto [view-transition-name:main-content]">
 			<div className="space-y-3">
-				{allEntries.map((entry, index) => (
+				{allEntries.map((entry) => (
 					<LeaderboardCard
 						key={entry.rank}
 						entry={entry}
 						name={profile?.name}
-						totalChallenges={totalChallenges}
-						index={index}
+						totalChallenges={profile?.total_challenges.total ?? 0}
+						to="/profile"
 					/>
 				))}
 			</div>
@@ -154,26 +186,10 @@ function Leaderboard() {
 				</div>
 			)}
 
-			{notInLeaderboard && (
+			{position > allEntries.length && (
 				<div className="flex flex-col gap-6 mt-6">
 					<EllipsisVertical className="mx-auto text-white" />
-					<LeaderboardCard
-						// The entry is not loaded, so construct it manually from profile
-						entry={{
-							challenges_completed: profile?.challenges_completed.total ?? 0,
-							coins_earned: profile?.scotty_coins.total_earned ?? 0,
-							coins_spent: profile?.scotty_coins.total_spent ?? 0,
-							dorm: profile?.dorm,
-							// If there is no name for some reason, defaulting to "You"
-							// will also ensure that the italic "(You)" is not added too
-							name: profile?.name ?? "You",
-							rank: position,
-							user_id: profile?.user_id ?? "No user ID",
-						}}
-						name={profile?.name}
-						totalChallenges={totalChallenges}
-						index={allEntries.length}
-					/>
+					<LeaderboardFromProfile profile={profile} to="/profile" />
 				</div>
 			)}
 		</div>

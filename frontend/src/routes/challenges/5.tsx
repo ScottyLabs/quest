@@ -3,19 +3,19 @@ import { ChallengeCategory } from "@/components/challenges/category";
 import { ChallengesLayout } from "@/components/challenges/layout";
 import { requireAuth } from "@/lib/auth";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/challenges/5")({
 	beforeLoad: async ({ context }) => {
 		return await requireAuth(context.baseUrl);
 	},
-	component: Challenges,
+	component: RouteComponent,
 });
 
-function Challenges() {
+function RouteComponent() {
 	const { user } = Route.useRouteContext();
 
 	return (
 		<ChallengesLayout>
-			<ChallengeCategory categoryId="all" user={user} />
+			<ChallengeCategory categoryId="minor-major-general" user={user} />
 		</ChallengesLayout>
 	);
 }

@@ -21,6 +21,7 @@ function CategoryProgressBar({ categories }: CategoryProgressBarProps) {
 	if (categories.length === 0) {
 		return null;
 	}
+
 	return (
 		<div className="bg-[#111] rounded-2xl p-2 px-3 flex gap-3 justify-center items-center shadow-[0_7px_0_#bbb]">
 			{categories.slice(0, 7).map(({ name, percentage }, i) => {
@@ -36,6 +37,7 @@ function CategoryProgressBar({ categories }: CategoryProgressBarProps) {
 						aria-label={`${name} progress: ${percentage}%`}
 					>
 						<title>{`${name} progress: ${percentage}%`}</title>
+
 						{/* Background circle */}
 						<circle
 							cx={CIRCLE_SIZE / 2}
@@ -45,6 +47,7 @@ function CategoryProgressBar({ categories }: CategoryProgressBarProps) {
 							strokeWidth={STROKE_WIDTH}
 							fill="none"
 						/>
+
 						{/* Progress circle */}
 						<circle
 							cx={CIRCLE_SIZE / 2}
@@ -62,6 +65,7 @@ function CategoryProgressBar({ categories }: CategoryProgressBarProps) {
 								transformOrigin: "50% 50%",
 							}}
 						/>
+
 						{/* Percentage text */}
 						<text
 							x="50%"

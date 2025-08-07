@@ -1,7 +1,4 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Info } from "lucide-react";
-import { PageHeader } from "@/components/page-header";
-import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -24,25 +21,9 @@ const contributors: Contributor[] = [
 	{
 		firstName: "Kenechukwu",
 		lastName: "Echezona",
-		role: "Developer",
+		role: "Project Lead",
 		major: "SCS",
 		grad_year: 2026,
-		contribution_year: 2025,
-	},
-	{
-		firstName: "Yuxiang",
-		lastName: "Huang",
-		role: "Developer",
-		major: "IS",
-		grad_year: 2027,
-		contribution_year: 2025,
-	},
-	{
-		firstName: "Xavier",
-		lastName: "Lien",
-		role: "Developer",
-		major: "SCS",
-		grad_year: 2027,
 		contribution_year: 2025,
 	},
 	{
@@ -74,14 +55,6 @@ const contributors: Contributor[] = [
 		lastName: "Wang",
 		role: "Developer",
 		major: "BXA",
-		grad_year: 2027,
-		contribution_year: 2025,
-	},
-	{
-		firstName: "Eric",
-		lastName: "Xu",
-		role: "Developer",
-		major: "SCS",
 		grad_year: 2027,
 		contribution_year: 2025,
 	},
@@ -120,11 +93,10 @@ function About() {
 
 	return (
 		<div>
-			<PageHeader title="About" icon={<Info size={40} color="white" />} />
-
 			<div className="flex flex-col items-center leading-snug">
 				{/* How to Play button */}
-				<Button
+				<button
+					type="button"
 					className="mb-4 px-4 py-2 bg-red-700 text-white rounded-full font-bold"
 					onClick={() =>
 						navigate({
@@ -134,13 +106,13 @@ function About() {
 					}
 				>
 					How to Play
-				</Button>
+				</button>
 
 				<Dialog>
 					<DialogTrigger asChild>
-						<Button className="mb-4 px-4 py-2 bg-red-700 text-white rounded-full font-bold">
+						<div className="mb-4 px-4 py-2 bg-red-700 text-white rounded-full font-bold">
 							Credits
-						</Button>
+						</div>
 					</DialogTrigger>
 					<DialogContent className="w-[90vw] max-w-md max-h-[90vh] overflow-y-auto mx-auto">
 						<DialogHeader>

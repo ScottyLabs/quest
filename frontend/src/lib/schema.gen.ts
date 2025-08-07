@@ -148,6 +148,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/leaderboard/user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_user_leaderboard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/profile": {
         parameters: {
             query?: never;
@@ -248,8 +264,31 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AdminChallengeResponse: {
+            category: string;
+            /** Format: date-time */
+            completed_at?: string | null;
+            description: string;
+            /** Format: double */
+            latitude?: number | null;
+            location: string;
+            /** Format: double */
+            location_accuracy?: number | null;
+            /** Format: double */
+            longitude?: number | null;
+            maps_link?: string | null;
+            more_info_link?: string | null;
+            name: string;
+            /** Format: int32 */
+            scotty_coins: number;
+            secret: string;
+            status: components["schemas"]["ChallengeStatus"];
+            tagline: string;
+            /** Format: date-time */
+            unlock_timestamp: string;
+        };
         AdminChallengesListResponse: {
-            challenges: components["schemas"]["Model"][];
+            challenges: components["schemas"]["AdminChallengeResponse"][];
         };
         CancelTransactionResponse: {
             message: string;
@@ -370,24 +409,9 @@ export interface components {
             next_cursor?: number | null;
         };
         Model: {
-            category: string;
-            description: string;
-            /** Format: double */
-            latitude?: number | null;
-            location: string;
-            /** Format: double */
-            location_accuracy?: number | null;
-            /** Format: double */
-            longitude?: number | null;
-            maps_link?: string | null;
-            more_info_link?: string | null;
+            dorm?: string | null;
             name: string;
-            /** Format: int32 */
-            scotty_coins: number;
-            secret: string;
-            tagline: string;
-            /** Format: date-time */
-            unlock_timestamp: string;
+            user_id: string;
         };
         RewardResponse: {
             /** Format: int32 */
@@ -763,6 +787,40 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["LeaderboardResponse"];
                 };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    get_user_leaderboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description User leaderboard entry retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeaderboardEntry"];
+                };
+            };
+            /** @description User not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Internal server error */
             500: {

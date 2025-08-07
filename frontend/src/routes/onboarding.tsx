@@ -5,13 +5,12 @@ import {
 } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/onboarding")({
-	component: Onboarding,
 	validateSearch: (search) => ({
 		from: search.from as string | undefined,
 	}),
+	component: Onboarding,
 });
 
 interface Step {
@@ -168,15 +167,15 @@ function Onboarding() {
 
 			{/* Next button */}
 			<div className="px-8 pb-8 shrink-0">
-				<Button
+				<button
 					onClick={handleStepAction}
-					className="w-full h-12 bg-red-700 text-white rounded-3xl text-lg font-medium font-bold mb-2 transition hover:bg-red-800"
+					className="w-full h-12 bg-red-700 text-white rounded-3xl text-lg font-bold mb-2 transition hover:bg-red-800"
 					type="button"
 				>
 					{isFromAbout && currentStep === steps.length - 1
 						? "End Tutorial"
 						: button}
-				</Button>
+				</button>
 			</div>
 		</div>
 	);

@@ -1,26 +1,24 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Camera, ChevronRight, Gift } from "lucide-react";
-import { useProfileData } from "@/lib/hooks/use-profile";
-import CategoryProgressBar from "../components/category-progress-bar";
-import Stamps from "../components/stamps";
-import { Card } from "../components/ui/card";
+import { useApi } from "@/lib/api-context";
+import { requireAuth } from "@/lib/auth";
+import CategoryProgressBar from "../components/profile/category-progress-bar";
+import Stamps from "../components/profile/stamps";
 
 export const Route = createFileRoute("/profile")({
+	beforeLoad: async ({ context }) => {
+		return await requireAuth(context.baseUrl);
+	},
 	component: Profile,
 });
 
 function Profile() {
-	const { data } = useProfileData();
-
-	if (!data)
-		return (
-			<div className="flex justify-center items-center h-full">Loading...</div>
-		);
+	const { $api } = useApi();
+	const { data } = $api.useQuery("get", "/api/profile");
 
 	return (
 		<div className="bg-[#F3E9D2] pb-20 p-4 flex flex-col">
-			{/* Profile Card */}
-			<Card className="rounded-4xl shadow-[0_7px_0_#bbb] p-4 mb-6 mt-4 relative overflow-visible">
+			<div className="rounded-4xl shadow-[0_7px_0_#bbb] p-4 mb-6 mt-4 relative overflow-visible">
 				{/* Decorative SVG at the top */}
 				<div
 					className="w-full flex justify-center -mt-8 mb-2"
@@ -90,7 +88,7 @@ function Profile() {
 						<span className="font-bold">{data.challengesCompleted.total}</span>
 					</div>
 				</div>
-			</Card>
+			</div>
 
 			{/* Leaderboard Card */}
 			<div className="relative mb-2">

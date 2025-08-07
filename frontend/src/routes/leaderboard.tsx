@@ -1,54 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Crown, MoreHorizontal } from "lucide-react";
-import { LeaderboardCard } from "@/components/leaderboard-card";
-import { PageHeader } from "@/components/page-header";
-import { useLeaderboard } from "@/lib/hooks/use-leaderboard";
-import { useProfileData } from "@/lib/hooks/use-profile";
-import type { LeaderboardEntry, UserProfile } from "@/lib/types";
+import { MoreHorizontal } from "lucide-react";
+import { LeaderboardCard } from "@/components/leaderboard/leaderboard-card";
+import { requireAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/leaderboard")({
+	beforeLoad: async ({ context }) => {
+		return await requireAuth(context.baseUrl);
+	},
 	component: Leaderboard,
 });
 
-function isCurrentUserInTop10(
-	leaderboardData: LeaderboardEntry[] = [],
-	currentUser: UserProfile,
-) {
-	return leaderboardData
-		.slice(0, 10)
-		.some((u) => u.userId === currentUser.userId);
-}
-
-function isCurrentUserLast(
-	leaderboardData: LeaderboardEntry[] = [],
-	currentUser: UserProfile,
-) {
-	// Check if the current user's place equals the total number of users
-	return (
-		leaderboardData[leaderboardData.length - 1]?.userId === currentUser.userId
-	);
-}
-
 function Leaderboard() {
-	const { data: leaderboardData } = useLeaderboard();
-	const { data: currentUser } = useProfileData();
-	console.log("Leaderboard data:", leaderboardData);
-	if (!leaderboardData || !currentUser) {
-		return <div>Loading...</div>;
-	}
-
-	const inTop10 = isCurrentUserInTop10(leaderboardData, currentUser);
-	const isLast = isCurrentUserLast(leaderboardData, currentUser);
-
-	console.log("Is current user in top 10:", inTop10);
-	console.log("Is current user last:", isLast);
+	const inTop10 = true;
+	const isLast = true;
 
 	return (
 		<div className="w-screen mx-auto">
-			<PageHeader
-				title="Leaderboard"
-				icon={<Crown size={40} color="white" />}
-			/>
 			<div className="bg-white divide-y overflow-hidden">
 				{inTop10 ? (
 					<>

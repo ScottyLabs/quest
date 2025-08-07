@@ -1,9 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ShoppingCart } from "lucide-react";
-import { PageHeader } from "@/components/page-header";
-import { PrizeCard } from "@/components/prize-card";
+import { PrizeCard } from "@/components/trade/prize-card";
+import { adminMiddleware } from "@/lib/auth";
 
 export const Route = createFileRoute("/terrier-trade")({
+	beforeLoad: async ({ context }) => {
+		return await adminMiddleware(context.baseUrl);
+	},
 	component: TerrierTrade,
 });
 
@@ -30,12 +32,9 @@ function TerrierTrade() {
 				"https://images.unsplash.com/photo-1518717758536-85ae29035b6d?auto=format&fit=facearea&w=256&h=256&q=80",
 		},
 	];
+
 	return (
 		<div>
-			<PageHeader
-				title="Terrier Trade"
-				icon={<ShoppingCart size={40} color="white" />}
-			/>
 			<div className="p-4 max-w-xl mx-auto flex flex-col gap-8">
 				{prizes.map((prize) => (
 					<PrizeCard key={prize.name} prize={prize} />

@@ -37,39 +37,39 @@ export const callWithGeolocation = async <T>(
 	samplePeriod: number = 0,
 ): Promise<T | null> => {
 	// Finds the user's most precise geolocation that was sampled over the course of waiting for the sample period
-	return new Promise((resolve) => {
-		if (!navigator.geolocation) {
-			resolve(null);
-			return;
-		}
+	if (!navigator.geolocation) {
+		return null;
+	}
 
-		let bestPosition: GeolocationPosition | null = null;
-		let bestAccuracy = Infinity;
+	let bestPosition: GeolocationPosition | null = null;
+	let bestAccuracy = Infinity;
 
-		const startTime = Date.now();
-		const sampleInterval = setInterval(() => {
+	for (let i = 0; i < samplePeriod / 500; i++) {
+		await new Promise((resolve) =>
 			navigator.geolocation.getCurrentPosition(
 				(position) => {
 					if (position.coords.accuracy < bestAccuracy) {
 						bestPosition = position;
 						bestAccuracy = position.coords.accuracy;
 					}
+					resolve(null);
 				},
-				() => {}, // Ignore errors
+				(e) => {
+					console.error("Geolocation error:", e);
+					resolve(null);
+				},
 				{
 					enableHighAccuracy: true,
-					timeout: 5000, // 5 seconds timeout for each sample
+					timeout: 500, // 500 milliseconds timeout for each sample
 				},
-			);
-
-			if (Date.now() - startTime >= samplePeriod) {
-				clearInterval(sampleInterval);
-				if (bestPosition) {
-					fn(bestPosition).then(resolve);
-				} else {
-					resolve(null);
-				}
-			}
-		}, 500); // Sample every half second
-	});
+			),
+		);
+		await new Promise((resolve) => setTimeout(resolve, 500)); // Wait for 500ms before next sample
+	}
+	if (bestPosition) {
+		return fn(bestPosition);
+	} else {
+		console.warn("No geolocation data available");
+		return fn(null);
+	}
 };

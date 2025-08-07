@@ -1,13 +1,24 @@
+import { useNavigate } from "@tanstack/react-router";
 import { Flag } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useChallengeData } from "@/lib/hooks/use-challenge-data";
-import type { ChallengeCategoryData } from "@/lib/types";
+import type { components } from "@/lib/schema.gen";
+
+// Use OpenAPI types
+type ChallengeCategoryData = {
+	name: string;
+	completed: number;
+	total: number;
+	color: string;
+	flagColor: string;
+};
 
 export function ChallengesMenu() {
 	const { data, loading, error } = useChallengeData();
 	const [isOpen, setIsOpen] = useState(false);
-	const backgroundRef = useRef<HTMLDivElement>(null);
+	const backgroundRef = useRef<HTMLButtonElement>(null);
+	const navigate = useNavigate();
 
 	const handleBackgroundClick = (e: React.MouseEvent) => {
 		if (e.target === e.currentTarget) {
@@ -20,6 +31,11 @@ export function ChallengesMenu() {
 		if (e.key === "Escape") {
 			setIsOpen(false);
 		}
+	};
+
+	const handleCategoryClick = (categoryName: string) => {
+		setIsOpen(false);
+		navigate({ to: "/challenges", search: { category: categoryName } });
 	};
 
 	useEffect(() => {
@@ -42,11 +58,12 @@ export function ChallengesMenu() {
 			</button>
 			{isOpen &&
 				createPortal(
-					<div
+					<button
 						ref={backgroundRef}
-						className="fixed inset-0 bg-[#2A2A2A] z-[99999] isolate"
+						className="fixed inset-0 bg-[#202020] opacity-95 z-[99999] isolate border-0 p-0"
 						onClick={handleBackgroundClick}
 						onKeyDown={handleBackgroundKeyDown}
+						type="button"
 					>
 						<div className="absolute top-4 left-4 max-w-md">
 							<div className="p-6 relative">
@@ -64,22 +81,24 @@ export function ChallengesMenu() {
 									<div className="space-y-3">
 										{/* All Challenges Row (Highlighted) */}
 										<div className="flex items-center gap-3">
-											<div className="bg-[#8B7355] rounded-full px-4 py-2 flex items-center gap-2 border border-purple-200">
+											<div className="bg-[#F5D68C] rounded-full px-4 py-2 flex items-center gap-2 border border-purple-200">
 												<Flag size={16} fill="#D7263D" />
 												<span className="text-black font-semibold text-sm">
 													{data.totalCompleted}/{data.totalChallenges}
 												</span>
 											</div>
-											<span className="text-[#8B7355] font-semibold">
+											<span className="text-[#F5D68C] font-extrabold">
 												Challenges
 											</span>
 										</div>
 
 										{/* Category Rows */}
-										{data.categories.map((category: ChallengeCategoryData) => (
-											<div
+										{data.categories?.map((category: ChallengeCategoryData) => (
+											<button
 												key={category.name}
-												className="flex items-center gap-3"
+												className="flex items-center gap-3 w-full text-left hover:bg-gray-800 rounded-lg p-2 transition-colors"
+												onClick={() => handleCategoryClick(category.name)}
+												type="button"
 											>
 												<div className="bg-white rounded-full px-4 py-2 flex items-center gap-2 border border-purple-200">
 													<Flag size={16} fill={category.flagColor} />
@@ -87,16 +106,16 @@ export function ChallengesMenu() {
 														{category.completed}/{category.total}
 													</span>
 												</div>
-												<span className="text-white font-semibold">
+												<span className="text-white font-extrabold">
 													{category.name}
 												</span>
-											</div>
+											</button>
 										))}
 									</div>
 								)}
 							</div>
 						</div>
-					</div>,
+					</button>,
 					document.body,
 				)}
 		</div>

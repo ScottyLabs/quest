@@ -1,9 +1,14 @@
 import { Link } from "@tanstack/react-router";
 import type React from "react";
 import { useProfileData } from "@/lib/hooks/use-profile";
+import type { components } from "@/lib/schema.gen";
 import headerArc from "/images/header-arc.svg";
 import scottyCoin from "/images/scotty-coin.svg";
 import { ChallengesMenu } from "./challenges-menu";
+
+// Use OpenAPI types
+type UserProfileResponse = components["schemas"]["UserProfileResponse"];
+type CoinsSummaryResponse = components["schemas"]["CoinsSummaryResponse"];
 
 interface PageHeaderProps {
 	title: string;
@@ -18,13 +23,13 @@ export function PageHeader({
 	title,
 	icon,
 	bgColor = "#C8102E", // CMU red as default
-	textColor = "#C8102E",
+	textColor = bgColor,
 	leftComponent,
 	rightComponent,
 }: PageHeaderProps) {
 	const { data: profileData } = useProfileData();
 
-	const scottyCoins = profileData?.scottyCoins.current;
+	const scottyCoins = profileData?.scottyCoins?.current ?? 0;
 
 	return (
 		<div
@@ -32,7 +37,7 @@ export function PageHeader({
 			style={{ background: bgColor }}
 		>
 			{/* Top stats row */}
-			<div className="w-full flex flex-row justify-between items-center px-6 z-1">
+			<div className="w-full flex flex-row justify-between items-center px-6 pt-8 z-3">
 				{/* All Challenges Stat */}
 				<ChallengesMenu />
 				{/* ScottyCoins Stat */}
@@ -71,7 +76,7 @@ export function PageHeader({
 					{/* Title */}
 					<span
 						className="font-extrabold text-2xl text-center select-none"
-						style={{ color: textColor }}
+						style={{ color: bgColor }}
 					>
 						{title}
 					</span>

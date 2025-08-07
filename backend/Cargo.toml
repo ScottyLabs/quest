@@ -10,6 +10,7 @@ base64 = "0.22.1"
 chrono = { version = "0.4.41", features = ["serde"] }
 dotenvy = "0.15.7"
 minio = "0.3.0"
+qrc = "0.0.5"
 sea-orm = { version = "1.1.14", features = [
 	"sqlx-postgres",
 	"runtime-tokio-rustls",

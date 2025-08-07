@@ -1,8 +1,11 @@
 import { ChallengeCircle } from "@/components/challenge-circle";
-import type { ChallengeData } from "@/lib/challenge-api";
+import type { components } from "@/lib/schema.gen";
+
+// Use the Model type which includes the secret field
+type ChallengeWithSecret = components["schemas"]["Model"];
 
 interface ChallengePrintProps {
-	challenge: ChallengeData | null;
+	challenge: ChallengeWithSecret | null;
 	colorClasses: {
 		bg: string;
 		bgLight: string;
@@ -95,18 +98,8 @@ export function ChallengePrint({
 
 					{/* Challenge Details */}
 					<div className="space-y-4 mb-4 flex h-full">
-						{/* QR Code Placeholder */}
-						<div className="bg-gray-50 rounded-lg p-3 w-full aspect-square"></div>
-
-						{/* Secret Code */}
-						{/* <div className="bg-gray-50 rounded-lg p-3">
-							<div className="text-sm font-semibold text-gray-600 mb-1">
-								Secret Code
-							</div>
-							{/* <div className="text-lg font-mono font-medium bg-gray-100 px-2 py-1 rounded">
-								{challenge?.secret || "****"}
-							</div> */}
-						{/* </div> */}
+						{/* QR Code */}
+						<div className="bg-gray-50 rounded-lg p-3 w-full aspect-square flex items-center justify-center"></div>
 					</div>
 
 					{/* CMU Property Notice */}

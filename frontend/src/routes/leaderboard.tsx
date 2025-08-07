@@ -37,7 +37,7 @@ function LeaderboardCard({
 	const textColor = dormGroup ? dormColors[dormGroup].text : "text-gray-500";
 
 	return (
-		<div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+		<div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
 			<div className="flex items-center justify-between gap-1">
 				<div className="flex items-center space-x-3">
 					<div
@@ -143,13 +143,14 @@ function Leaderboard() {
 				<div className="flex flex-col gap-6 mt-6">
 					<EllipsisVertical className="mx-auto text-white" />
 					<LeaderboardCard
+						// The entry is not loaded, so construct it manually from profile
 						entry={{
 							challenges_completed: profile?.challenges_completed.total ?? 0,
 							coins_earned: profile?.scotty_coins.total_earned ?? 0,
 							coins_spent: profile?.scotty_coins.total_spent ?? 0,
 							dorm: profile?.dorm,
 							// If there is no name for some reason, defaulting to "You"
-							// will also ensure that the italic "(You)" is not added
+							// will also ensure that the italic "(You)" is not added too
 							name: profile?.name ?? "You",
 							rank: position,
 							user_id: profile?.user_id ?? "No user ID",

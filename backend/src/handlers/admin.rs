@@ -1,11 +1,32 @@
-use crate::{AppState, entities::challenges};
-use axum::{Json, extract::State, http::StatusCode};
+use crate::{AppState, AuthClaims, handlers::challenges::ChallengeStatus};
+use axum::{Extension, Json, extract::State, http::StatusCode};
+use chrono::{NaiveDateTime, Utc};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 #[derive(Serialize, ToSchema)]
 pub struct AdminChallengesListResponse {
-    pub challenges: Vec<challenges::Model>,
+    pub challenges: Vec<AdminChallengeResponse>,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct AdminChallengeResponse {
+    pub name: String,
+    pub category: String,
+    pub location: String,
+    pub scotty_coins: i32,
+    pub maps_link: Option<String>,
+    pub tagline: String,
+    pub description: String,
+    pub more_info_link: Option<String>,
+    pub unlock_timestamp: NaiveDateTime,
+    pub secret: String,
+    pub latitude: Option<f64>,
+    pub longitude: Option<f64>,
+    pub location_accuracy: Option<rust_decimal::Decimal>,
+    // Completion data
+    pub status: ChallengeStatus,
+    pub completed_at: Option<NaiveDateTime>,
 }
 
 #[utoipa::path(
@@ -21,14 +42,56 @@ pub struct AdminChallengesListResponse {
 #[axum::debug_handler]
 pub async fn get_all_challenges(
     State(state): State<AppState>,
+    Extension(claims): Extension<AuthClaims>,
 ) -> Result<Json<AdminChallengesListResponse>, StatusCode> {
-    let challenges = state
-        .challenge_service
-        .get_all_challenges()
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    // Get all challenges and completion data in parallel
+    let (challenges, user_completions) = tokio::try_join!(
+        state.challenge_service.get_all_challenges(),
+        state
+            .completion_service
+            .get_user_completion_map(&claims.sub)
+    )
+    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    Ok(Json(AdminChallengesListResponse { challenges }))
+    let now = Utc::now().naive_utc();
+
+    let challenge_responses: Vec<AdminChallengeResponse> = challenges
+        .into_iter()
+        .map(|challenge| {
+            let is_unlocked = challenge.unlock_timestamp <= now;
+            let completed_at = user_completions.get(&challenge.name).copied();
+
+            let status = if completed_at.is_some() {
+                ChallengeStatus::Completed
+            } else if is_unlocked {
+                ChallengeStatus::Available
+            } else {
+                ChallengeStatus::Locked
+            };
+
+            AdminChallengeResponse {
+                name: challenge.name,
+                category: challenge.category,
+                location: challenge.location,
+                scotty_coins: challenge.scotty_coins,
+                maps_link: challenge.maps_link,
+                tagline: challenge.tagline,
+                description: challenge.description,
+                more_info_link: challenge.more_info_link,
+                unlock_timestamp: challenge.unlock_timestamp,
+                secret: challenge.secret,
+                latitude: challenge.latitude,
+                longitude: challenge.longitude,
+                location_accuracy: challenge.location_accuracy,
+                status,
+                completed_at,
+            }
+        })
+        .collect();
+
+    Ok(Json(AdminChallengesListResponse {
+        challenges: challenge_responses,
+    }))
 }
 
 #[derive(Deserialize, ToSchema)]

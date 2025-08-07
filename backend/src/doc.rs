@@ -68,6 +68,7 @@ impl Modify for SecurityAddon {
             handlers::admin::VerifyTransactionRequest,
             handlers::admin::VerifyTransactionResponse,
             handlers::admin::AdminChallengesListResponse,
+			handlers::admin::AdminChallengeResponse,
         )
     ),
     tags(

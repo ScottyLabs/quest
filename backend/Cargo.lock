@@ -270,6 +270,7 @@ dependencies = [
  "csv",
  "dotenvy",
  "minio",
+ "rust_decimal",
  "sea-orm",
  "serde",
  "tokio",

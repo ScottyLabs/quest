@@ -1,11 +1,12 @@
-use crate::{AppState, AuthClaims, services::leaderboard::LeaderboardEntry};
+use crate::{AppState, services::leaderboard::LeaderboardEntry};
 use axum::{
-    Extension, Json,
+    Json,
     extract::{Query, State},
     http::StatusCode,
 };
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
+
 #[derive(Deserialize)]
 pub struct LeaderboardQuery {
     #[serde(default = "default_limit")]
@@ -69,58 +70,4 @@ pub async fn get_leaderboard(
         has_next,
         next_cursor,
     }))
-}
-
-#[utoipa::path(
-    get,
-    path = "/api/leaderboard/user",
-    responses(
-        (status = 200, description = "User leaderboard entry retrieved successfully", body = LeaderboardEntry),
-        (status = 404, description = "User not found"),
-        (status = 500, description = "Internal server error")
-    ),
-    tag = "leaderboard"
-)]
-#[axum::debug_handler]
-pub async fn get_user_leaderboard(
-    State(state): State<AppState>,
-    Extension(claims): Extension<AuthClaims>,
-) -> Result<Json<Vec<LeaderboardEntry>>, StatusCode> {
-    // Ensure user exists first
-    let user = state
-        .user_service
-        .get_or_create_user(&claims.sub, &claims.name)
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-    // Get top 10 on leaderboard and the user's position, and the two guys around the user
-    let top_10 = state
-        .leaderboard_service
-        .get_leaderboard_page(10, None)
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    let user_position = state
-        .leaderboard_service
-        .get_user_leaderboard_position(&user.user_id)
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    if user_position < 10 {
-        return Ok(Json(top_10));
-    }
-
-    let surrounding = state
-        .leaderboard_service
-        .get_leaderboard_page(3, Some(user_position - 1))
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    let mut entries = top_10;
-    if let Some(user_entry) = surrounding.into_iter().find(|e| e.user_id == user.user_id) {
-        entries.push(user_entry);
-        entries.sort_by_key(|e| e.rank);
-        entries.dedup_by_key(|e| e.user_id.clone());
-    }
-
-    Ok(Json(entries))
 }

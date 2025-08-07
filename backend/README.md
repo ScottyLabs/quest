@@ -1,16 +1,26 @@
 ## O-Quest Backend
 
+The following instructions assuming you are in the `backend` directory.
+
 ## Seeding
 
-Relative to this directory, create the challenges CSV in `./data/challenges.csv` and run:
+Create the challenges CSV in `./data/challenges.csv` and run:
 
 ```bash
 cargo run --bin seed
 ```
 
+## Generating QR Codes
+
+To create the `./data/qr-challenges.json` file:
+
+```bash
+cargo run --bin qr-export
+```
+
 ## Database
 
-You should install `sea-orm-cli` using `cargo install sea-orm-cli`. The following instructions assume you are in the `backend` directory:
+You should install `sea-orm-cli` using `cargo install sea-orm-cli`.
 
 ### Initializing
 

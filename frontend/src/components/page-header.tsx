@@ -6,6 +6,7 @@ import { useApi } from "@/lib/api-context";
 import {
 	type CategoryId,
 	categories,
+	categoryIconFromId,
 	type colorClasses,
 } from "@/lib/data/categories";
 import type { pageObject } from "@/lib/data/page";
@@ -26,6 +27,10 @@ export function PageHeader({
 }: PageHeaderProps) {
 	const { $api } = useApi();
 	const { data } = $api.useQuery("get", "/api/profile");
+
+	const Icon = isCategoryPage
+		? categoryIconFromId[categoryId]
+		: pageObject.Icon;
 
 	return (
 		<>
@@ -61,7 +66,7 @@ export function PageHeader({
 						<div
 							className={`rounded-full p-3 border-4 text-white border-white shadow ${pageColors.primary}`}
 						>
-							<pageObject.Icon className="size-10" />
+							<Icon className="size-10" />
 						</div>
 					</div>
 				</div>

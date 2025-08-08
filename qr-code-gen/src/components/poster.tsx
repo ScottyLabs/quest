@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { QRCode } from "react-qrcode-logo";
 
+// Icons are also defined in frontend/src/lib/data/categories.ts
 const categoryInfo = {
 	"The Essentials": {
 		dark: "bg-challenge-1",

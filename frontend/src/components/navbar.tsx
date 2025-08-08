@@ -29,8 +29,9 @@ export function Navbar({ currentPath, pageColors }: NavbarProps) {
 		<nav className="fixed [view-transition-name:navbar] bottom-0 left-0 right-0 flex justify-around items-center h-20">
 			{pages.map((page) => {
 				const activeStyles =
-					(page.to !== "/" && currentPath.startsWith(page.to)) ||
-					currentPath === page.to
+					(page.to === "/" &&
+						(currentPath === "/" || currentPath.startsWith("/challenges"))) ||
+					(page.to !== "/" && currentPath.startsWith(page.to))
 						? pageColors.selected
 						: pageColors.hover;
 

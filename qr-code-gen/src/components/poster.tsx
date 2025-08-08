@@ -21,7 +21,7 @@ const categoryInfo = {
 		arc: "[--arc-color:theme(colors.challenge-2-light)]",
 		Icon: Factory,
 	},
-	"Let's Eat": {
+	"Let's Eat!": {
 		dark: "bg-challenge-3",
 		light: "bg-challenge-3-light",
 		arc: "[--arc-color:theme(colors.challenge-3-light)]",
@@ -47,17 +47,17 @@ const categoryInfo = {
 	},
 } as const;
 
-export type Category = keyof typeof categoryInfo;
+type Category = keyof typeof categoryInfo;
 
-interface PosterProps {
-	category: Category;
+export interface Challenge {
+	category: string;
 	name: string;
 	tagline: string;
 	secret: string;
 }
 
-export function Poster({ category, name, tagline, secret }: PosterProps) {
-	const info = categoryInfo[category];
+export function Poster({ category, name, tagline, secret }: Challenge) {
+	const info = categoryInfo[category as Category];
 	const codeValue = `Scan me from the website in the footer! This challenge: ${secret}`;
 
 	return (
@@ -89,7 +89,7 @@ export function Poster({ category, name, tagline, secret }: PosterProps) {
 						<p className="text-lg font-bold underline">
 							Scan this code from https://cmu.quest
 						</p>
-						<p className="italic text-gray-200 text-sm">
+						<p className="italic text-sm">
 							Do not remove. Property of CMU's First-Year Orientation.
 						</p>
 					</div>
@@ -118,8 +118,9 @@ export function Poster({ category, name, tagline, secret }: PosterProps) {
 						<QRCode
 							value={codeValue}
 							logoImage="/logo.png"
-							logoWidth={50}
-							logoHeight={50}
+							logoWidth={400}
+							logoHeight={400}
+							size={1000}
 							qrStyle="dots"
 							style={{
 								width: "4in",
@@ -128,7 +129,7 @@ export function Poster({ category, name, tagline, secret }: PosterProps) {
 							}}
 						/>
 
-						<p className="mx-auto italic">{tagline}</p>
+						<p className="mx-auto text-center italic">{tagline}</p>
 					</div>
 				</div>
 			</div>

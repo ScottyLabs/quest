@@ -1,7 +1,6 @@
 import { parseAsInteger, useQueryState } from "nuqs";
 import { useEffect, useState } from "react";
 import { type Challenge, Poster } from "@/components/poster";
-import challengesData from "@/data/qr_challenges.json";
 
 export function App() {
 	// Manage current challenge index in URL
@@ -14,7 +13,13 @@ export function App() {
 	const [printProgress, setPrintProgress] = useState(0);
 	const [printedCount, setPrintedCount] = useState(0);
 
-	const challenges: Challenge[] = challengesData;
+	const dataBase64 = import.meta.env.VITE_DATA_BASE64;
+	if (!dataBase64) throw new Error("VITE_DATA_BASE64 is not set");
+
+	const jsonString = new TextDecoder().decode(
+		Uint8Array.from(window.atob(dataBase64), (c) => c.charCodeAt(0)),
+	);
+	const challenges: Challenge[] = JSON.parse(jsonString);
 
 	// Ensure currentIndex is within bounds
 	const safeCurrentIndex = Math.max(

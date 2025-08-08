@@ -1,24 +1,47 @@
+import {
+	BusFront,
+	Factory,
+	IceCreamCone,
+	PartyPopper,
+	PocketKnife,
+	Soup,
+	Trophy,
+} from "lucide-react";
 import { typedFromEntries } from "@/lib/utils";
 
+// These icons are also listed in the poster component in qr-code-gen
 export const categories = [
-	{ id: "all", to: "/", label: "All" },
-	{ id: "the-essentials", to: "/challenges/1", label: "The Essentials" },
-	{ id: "campus-of-bridges", to: "/challenges/2", label: "Campus of Bridges" },
-	{ id: "lets-eat", to: "/challenges/3", label: "Let's Eat!" },
+	{ id: "all", to: "/", label: "All", Icon: Trophy },
+	{
+		id: "the-essentials",
+		to: "/challenges/1",
+		label: "The Essentials",
+		Icon: PartyPopper,
+	},
+	{
+		id: "campus-of-bridges",
+		to: "/challenges/2",
+		label: "Campus of Bridges",
+		Icon: Factory,
+	},
+	{ id: "lets-eat", to: "/challenges/3", label: "Let's Eat!", Icon: Soup },
 	{
 		id: "cool-corners-of-carnegie",
 		to: "/challenges/4",
 		label: "Cool Corners of Carnegie",
+		Icon: IceCreamCone,
 	},
 	{
 		id: "minor-major-general",
 		to: "/challenges/5",
 		label: "Minor-Major General",
+		Icon: PocketKnife,
 	},
 	{
 		id: "off-campus-adventures",
 		to: "/challenges/6",
 		label: "Off-Campus Adventures",
+		Icon: BusFront,
 	},
 ] as const;
 
@@ -96,6 +119,10 @@ export const colorClasses = {
 // Reverse lookups
 export const categoryLabelFromId = typedFromEntries(
 	categories.map((c) => [c.id, c.label]),
+);
+
+export const categoryIconFromId = typedFromEntries(
+	categories.map((c) => [c.id, c.Icon]),
 );
 
 export const categoryIdFromLabel = typedFromEntries(

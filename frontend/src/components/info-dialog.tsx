@@ -39,6 +39,7 @@ export function InfoDialog({
 							<li>• Track your progress across all categories</li>
 						</ul>
 					</div>
+
 					<div>
 						<h4 className="font-semibold text-gray-900 mb-2">
 							Challenge Types:

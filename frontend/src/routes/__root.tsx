@@ -3,6 +3,8 @@ import {
 	Outlet,
 	useRouterState,
 } from "@tanstack/react-router";
+import { createContext, useContext, useState } from "react";
+import type { FilterOption } from "@/components/filter-card";
 import { Navbar } from "@/components/navbar";
 import { PageHeader } from "@/components/page-header";
 import type { AuthContext } from "@/lib/auth";
@@ -14,6 +16,21 @@ interface RouterContext {
 	auth?: AuthContext;
 }
 
+interface FilterContextType {
+	selectedFilter: FilterOption;
+	setSelectedFilter: (filter: FilterOption) => void;
+}
+
+const FilterContext = createContext<FilterContextType | null>(null);
+
+export const useFilter = () => {
+	const context = useContext(FilterContext);
+	if (!context) {
+		throw new Error("useFilter must be used within a FilterProvider");
+	}
+	return context;
+};
+
 export const Route = createRootRouteWithContext<RouterContext>()({
 	component: Root,
 });
@@ -21,6 +38,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 function Root() {
 	const routerState = useRouterState();
 	const currentPath = routerState.location.pathname as ValidPath;
+	const [selectedFilter, setSelectedFilter] = useState<FilterOption>("all");
 
 	const usePageTemplate = ![
 		"/onboarding",
@@ -39,24 +57,30 @@ function Root() {
 	const pageData = isCategoryPage ? pageObject["/"] : pageObject[currentPath];
 
 	return (
-		<div className={`min-h-screen ${pageColors.secondary}`}>
-			{usePageTemplate && (
-				<PageHeader
-					categoryId={categoryId}
-					isCategoryPage={isCategoryPage}
-					pageColors={pageColors}
-					pageObject={pageData}
-				/>
-			)}
+		<FilterContext.Provider value={{ selectedFilter, setSelectedFilter }}>
+			<div className={`min-h-screen ${pageColors.secondary}`}>
+				{usePageTemplate && (
+					<PageHeader
+						categoryId={categoryId}
+						isCategoryPage={isCategoryPage}
+						pageColors={pageColors}
+						pageObject={pageData}
+						selectedFilter={selectedFilter}
+						onFilterChange={setSelectedFilter}
+					/>
+				)}
 
-			{/* Space for fixed navbar and header */}
-			<div className={usePageTemplate ? "pb-32 min-h-[calc(100vh-145px)]" : ""}>
-				<Outlet />
+				{/* Space for fixed navbar and header */}
+				<div
+					className={usePageTemplate ? "pb-32 min-h-[calc(100vh-145px)]" : ""}
+				>
+					<Outlet />
+				</div>
+
+				{usePageTemplate && (
+					<Navbar currentPath={currentPath} pageColors={pageColors} />
+				)}
 			</div>
-
-			{usePageTemplate && (
-				<Navbar currentPath={currentPath} pageColors={pageColors} />
-			)}
-		</div>
+		</FilterContext.Provider>
 	);
 }

@@ -12,6 +12,8 @@
 		"tauri": "tauri"
 	},
 	"dependencies": {
+		"@radix-ui/react-dialog": "^1.1.14",
+		"@radix-ui/react-slot": "^1.2.3",
 		"@tanstack/react-query-devtools": "^5.83.0",
 		"@tanstack/react-router": "^1.130.8",
 		"@tanstack/react-router-devtools": "^1.130.8",
@@ -21,6 +23,8 @@
 		"@tauri-apps/plugin-geolocation": "^2.3.0",
 		"@tauri-apps/plugin-nfc": "~2",
 		"@vitejs/plugin-react": "^5.0.0",
+		"class-variance-authority": "^0.7.1",
+		"clsx": "^2.1.1",
 		"jsqr": "^1.4.0",
 		"lucide": "^0.536.0",
 		"lucide-react": "^0.536.0",
@@ -28,6 +32,7 @@
 		"openapi-react-query": "^0.5.0",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
+		"tailwind-merge": "^3.3.1",
 		"tailwindcss": "^4.1.11"
 	},
 	"devDependencies": {

@@ -26,12 +26,6 @@ export function ChallengeCard({
 	}
 
 	const primaryColor = colorClasses[categoryId].primary;
-
-	// TODO: remove this in prod
-	const rand = Math.random();
-	challenge.status =
-		rand < 0.3 ? "completed" : rand < 0.6 ? "locked" : "available";
-
 	const card =
 		challenge.status === "completed" ? (
 			<div className="shadow-[0_3px_0_#53b752] duration-250 hover:shadow-none transition-all rounded-2xl p-4 bg-success-light hover:bg-success-hover cursor-pointer flex flex-row gap-2">

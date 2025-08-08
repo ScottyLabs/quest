@@ -48,7 +48,7 @@ export function PageHeader({
 				<div className="absolute top-6 w-full flex flex-row justify-between items-center px-6">
 					<Link
 						to="/"
-						className="flex items-center w-20 justify-center bg-white rounded-full px-3 py-2 shadow-[0_3px_0_#bbb] text-sm font-bold gap-1 hover:bg-gray-50 transition-colors"
+						className="flex items-center w-20 justify-center bg-white duration-250 hover:shadow-none transition-all hover:bg-gray-100 rounded-full px-3 py-2 shadow-[0_3px_0_#bbb] text-sm font-bold gap-1"
 						aria-label="View Challenges"
 					>
 						<Flag size={18} className="text-red-600" />
@@ -60,7 +60,7 @@ export function PageHeader({
 
 					<Link
 						to="/terrier-trade"
-						className="flex items-center w-20 justify-center bg-white rounded-full px-3 py-2 shadow-[0_3px_0_#bbb] text-sm font-bold gap-2"
+						className="flex items-center w-20 justify-center bg-white duration-250 hover:shadow-none transition-all hover:bg-gray-100 rounded-full px-3 py-2 shadow-[0_3px_0_#bbb] text-sm font-bold gap-2"
 						aria-label="View Coins"
 					>
 						<ScottyCoin className="size-5" />

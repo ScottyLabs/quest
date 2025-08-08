@@ -100,7 +100,7 @@ function About() {
 				<div className="absolute top-[5%] left-1/2 transform -translate-x-1/2 flex flex-col items-center leading-snug justify-start gap-12">
 					{/* How to Play button */}
 					<Button
-						className="w-80 h-20 inline-flex justify-center items-center mb-4 px-4 py-2 bg-red-700 text-white text-4xl font-extrabold 
+						className="w-80 h-20 inline-flex justify-center items-center mb-4 px-4 py-2 bg-red-700 text-white text-4xl font-extrabold
                     rounded-2xl shadow-[0px_7px_0px_0px_rgba(128,27,39,1.00)] border-4 border-red-900"
 						onClick={() =>
 							navigate({
@@ -115,7 +115,7 @@ function About() {
 					<Dialog>
 						<DialogTrigger asChild>
 							<Button
-								className="w-80 h-20 inline-flex justify-center items-center mb-4 px-4 py-2 bg-red-700 text-white text-4xl font-extrabold 
+								className="w-80 h-20 inline-flex justify-center items-center mb-4 px-4 py-2 bg-red-700 text-white text-4xl font-extrabold
                     rounded-2xl shadow-[0px_7px_0px_0px_rgba(128,27,39,1.00)] border-4 border-red-900"
 							>
 								Credits
@@ -180,7 +180,7 @@ function About() {
 						</DialogContent>
 					</Dialog>
 					<Button
-						className="w-80 h-20 inline-flex justify-center items-center mb-4 px-4 py-2 bg-red-700 text-white text-4xl font-extrabold 
+						className="w-80 h-20 inline-flex justify-center items-center mb-4 px-4 py-2 bg-red-700 text-white text-4xl font-extrabold
                     rounded-2xl shadow-[0px_7px_0px_0px_rgba(128,27,39,1.00)] border-4 border-red-900"
 						onClick={() =>
 							navigate({

@@ -78,7 +78,7 @@ export function ChallengeCard({
 					<p className="text-xs text-gray-500">{challenge.tagline}</p>
 				</div>
 
-				<div className="absolute right-4 my-auto flex gap-1">
+				<div className="absolute right-4 my-auto flex gap-2">
 					<ScottyCoin className="size-5 my-auto" />
 					<p className="text-sm font-bold">+{challenge.scotty_coins}</p>
 				</div>

@@ -3,8 +3,9 @@ import { Filter, Flag, Info } from "lucide-react";
 import { useState } from "react";
 import HeaderArc from "@/assets/header-arc.svg?react";
 import ScottyCoin from "@/assets/scotty-coin.svg?react";
-import { FilterCard, type FilterOption } from "@/components/filter-card";
-import { InfoDialog } from "@/components/info-dialog";
+import { FilterCard } from "@/components/challenges/filter-card";
+import { useFilterContext } from "@/components/challenges/filter-layout";
+import { InfoDialog } from "@/components/challenges/info-dialog";
 import { useApi } from "@/lib/api-context";
 import {
 	type CategoryId,
@@ -20,8 +21,6 @@ interface PageHeaderProps {
 	isCategoryPage: boolean;
 	pageColors: ValueOf<typeof colorClasses>;
 	pageObject: ValueOf<typeof pageObject>;
-	selectedFilter?: FilterOption;
-	onFilterChange?: (filter: FilterOption) => void;
 }
 
 export function PageHeader({
@@ -29,19 +28,13 @@ export function PageHeader({
 	isCategoryPage,
 	pageColors,
 	pageObject,
-	selectedFilter = "all",
-	onFilterChange,
 }: PageHeaderProps) {
 	const { $api } = useApi();
 	const { data } = $api.useQuery("get", "/api/profile");
 	const [isFilterOpen, setIsFilterOpen] = useState(false);
 	const [isInfoOpen, setIsInfoOpen] = useState(false);
 
-	const handleFilterChange = (filter: FilterOption) => {
-		if (onFilterChange) {
-			onFilterChange(filter);
-		}
-	};
+	const { selectedFilter, setSelectedFilter } = useFilterContext();
 
 	const Icon = isCategoryPage
 		? categoryIconFromId[categoryId]
@@ -154,7 +147,7 @@ export function PageHeader({
 					isOpen={isFilterOpen}
 					onClose={() => setIsFilterOpen(false)}
 					selectedFilter={selectedFilter}
-					onFilterChange={handleFilterChange}
+					onFilterChange={setSelectedFilter}
 				/>
 			)}
 

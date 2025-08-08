@@ -27,7 +27,7 @@ export function Navbar({ currentPath, pageColors }: NavbarProps) {
 
 	return (
 		<div>
-			<div className="fixed bottom-20 left-0 right-0 z-50 w-full h-16 bg-gradient-to-b from-transparent from-10% via-black/1 via-30% via-black/4 via-55% via-black/12 to-black/36 pointer-events-none" />
+			<div className="fixed bottom-20 left-0 right-0 z-50 w-full h-16 bg-gradient-to-b from-transparent from-10% via-55% via-black/12 to-black/36 pointer-events-none" />
 			<nav className="fixed [view-transition-name:navbar] bottom-0 left-0 right-0 flex justify-around items-center h-20">
 				{pages.map((page) => {
 					const activeStyles =

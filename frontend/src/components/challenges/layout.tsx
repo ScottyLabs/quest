@@ -36,6 +36,7 @@ function useChallengesContext() {
 			"useChallengesContext must be used within ChallengesLayout",
 		);
 	}
+
 	return context;
 }
 

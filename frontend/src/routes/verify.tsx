@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageLayout } from "@/components/page-layout";
 import { adminMiddleware } from "@/lib/auth";
 
 export const Route = createFileRoute("/verify")({
@@ -9,7 +10,13 @@ export const Route = createFileRoute("/verify")({
 });
 
 function RouteComponent() {
+	const { user } = Route.useRouteContext();
+
 	return (
-		<div className="[view-transition-name:main-content]">Hello "/verify"!</div>
+		<PageLayout currentPath="/verify" user={user}>
+			<div className="[view-transition-name:main-content]">
+				Hello "/verify"!
+			</div>
+		</PageLayout>
 	);
 }

@@ -76,7 +76,7 @@ function LeaderboardCard({
 					</div>
 				</div>
 
-				<div className="text-right flex gap-1 text-gray-900">
+				<div className="text-right flex gap-2 text-gray-900">
 					<ScottyCoin className="size-5 my-auto" />
 					<span className="font-bold">{entry.coins_earned}</span>
 				</div>

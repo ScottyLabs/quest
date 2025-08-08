@@ -4,7 +4,8 @@ import {
 	useSearch,
 } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import ScottyCoin from "@/assets/scotty-coin.svg?react";
 
 export const Route = createFileRoute("/onboarding")({
 	validateSearch: (search) => ({
@@ -16,7 +17,7 @@ export const Route = createFileRoute("/onboarding")({
 interface Step {
 	title: string;
 	description: string;
-	image: string;
+	image: string | React.ComponentType;
 	button: string;
 	action: "next" | "login";
 }
@@ -33,7 +34,7 @@ const steps: Step[] = [
 	{
 		title: "Collect Coins",
 		description: "Scotty Coins can be earned through completing tasks",
-		image: "/images/onboarding-images/collect-coins.svg",
+		image: ScottyCoin,
 		button: "Next",
 		action: "next",
 	},
@@ -122,32 +123,45 @@ function Onboarding() {
 			{/* Scrollable content area */}
 			<div className="flex-1 overflow-y-auto flex flex-col items-center justify-center px-8">
 				{/* Image */}
-				<img
-					src={image}
-					alt={title}
-					style={
-						imgSize
-							? {
-									width: imgSize.width,
-									height: imgSize.height,
-									objectFit: "contain",
-									marginBottom: "2rem",
-								}
-							: {
-									maxWidth: 300,
-									maxHeight: 240,
-									objectFit: "contain",
-									marginBottom: "2rem",
-								}
-					}
-					onLoad={(e) => {
-						const { naturalWidth, naturalHeight } = e.currentTarget;
-						setImgSize({
-							width: naturalWidth,
-							height: naturalHeight,
-						});
-					}}
-				/>
+				{typeof image === "string" ? (
+					<img
+						src={image}
+						alt={title}
+						style={
+							imgSize
+								? {
+										width: imgSize.width,
+										height: imgSize.height,
+										objectFit: "contain",
+										marginBottom: "2rem",
+									}
+								: {
+										maxWidth: 300,
+										maxHeight: 240,
+										objectFit: "contain",
+										marginBottom: "2rem",
+									}
+						}
+						onLoad={(e) => {
+							const { naturalWidth, naturalHeight } = e.currentTarget;
+							setImgSize({
+								width: naturalWidth,
+								height: naturalHeight,
+							});
+						}}
+					/>
+				) : (
+					<div
+						style={{
+							maxWidth: 300,
+							maxHeight: 240,
+							objectFit: "contain",
+							marginBottom: "2rem",
+						}}
+					>
+						{React.createElement(image)}
+					</div>
+				)}
 				{/* Title */}
 				<h2 className="text-2xl font-medium mb-2 text-center">{title}</h2>
 				{/* Description */}

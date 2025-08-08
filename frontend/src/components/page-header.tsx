@@ -1,7 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { Filter, Flag, Info } from "lucide-react";
+import { useState } from "react";
 import HeaderArc from "@/assets/header-arc.svg?react";
 import ScottyCoin from "@/assets/scotty-coin.svg?react";
+import { FilterCard, type FilterOption } from "@/components/filter-card";
+import { InfoDialog } from "@/components/info-dialog";
 import { useApi } from "@/lib/api-context";
 import {
 	type CategoryId,
@@ -17,6 +20,8 @@ interface PageHeaderProps {
 	isCategoryPage: boolean;
 	pageColors: ValueOf<typeof colorClasses>;
 	pageObject: ValueOf<typeof pageObject>;
+	selectedFilter?: FilterOption;
+	onFilterChange?: (filter: FilterOption) => void;
 }
 
 export function PageHeader({
@@ -24,9 +29,19 @@ export function PageHeader({
 	isCategoryPage,
 	pageColors,
 	pageObject,
+	selectedFilter = "all",
+	onFilterChange,
 }: PageHeaderProps) {
 	const { $api } = useApi();
 	const { data } = $api.useQuery("get", "/api/profile");
+	const [isFilterOpen, setIsFilterOpen] = useState(false);
+	const [isInfoOpen, setIsInfoOpen] = useState(false);
+
+	const handleFilterChange = (filter: FilterOption) => {
+		if (onFilterChange) {
+			onFilterChange(filter);
+		}
+	};
 
 	const Icon = isCategoryPage
 		? categoryIconFromId[categoryId]
@@ -80,7 +95,11 @@ export function PageHeader({
 						<div className="mx-auto flex flex-row gap-2">
 							{isCategoryPage && (
 								<>
-									<button type="button" className="pt-0.5 cursor-pointer">
+									<button
+										type="button"
+										className="pt-0.5 cursor-pointer"
+										onClick={() => setIsFilterOpen(true)}
+									>
 										<Filter className="text-white size-6" />
 									</button>
 									<span className="text-white my-auto">&middot;</span>
@@ -94,7 +113,11 @@ export function PageHeader({
 							{isCategoryPage && (
 								<>
 									<span className="text-white my-auto">&middot;</span>
-									<button type="button" className="pt-0.5 cursor-pointer">
+									<button
+										type="button"
+										className="pt-0.5 cursor-pointer"
+										onClick={() => setIsInfoOpen(true)}
+									>
 										<Info className="text-white size-6" />
 									</button>
 								</>
@@ -123,6 +146,25 @@ export function PageHeader({
 
 					<div className="flex-grow" />
 				</div>
+			)}
+
+			{/* Filter Card */}
+			{isCategoryPage && (
+				<FilterCard
+					isOpen={isFilterOpen}
+					onClose={() => setIsFilterOpen(false)}
+					selectedFilter={selectedFilter}
+					onFilterChange={handleFilterChange}
+				/>
+			)}
+
+			{/* Info Dialog */}
+			{isCategoryPage && (
+				<InfoDialog
+					isOpen={isInfoOpen}
+					onOpenChange={setIsInfoOpen}
+					pageObjectLabel={pageObject.label}
+				/>
 			)}
 		</>
 	);

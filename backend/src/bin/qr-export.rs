@@ -1,6 +1,7 @@
 use std::error::Error;
 
 use backend::{create_connection, entities::challenges, services::challenge::ChallengeService};
+use base64::{Engine, engine::general_purpose};
 use serde::Serialize;
 
 #[derive(Debug, Serialize)]
@@ -38,7 +39,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .collect::<Vec<_>>();
 
     let json = serde_json::to_string_pretty(&qr_challenges)?;
-    std::fs::write("data/qr_challenges.json", json)?;
+    let base64 = general_purpose::STANDARD.encode(json);
+
+    std::fs::write("data/qr.txt", base64)?;
 
     Ok(())
 }

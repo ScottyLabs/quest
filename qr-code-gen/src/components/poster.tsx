@@ -118,8 +118,8 @@ export function Poster({ category, name, tagline, secret }: Challenge) {
 						<QRCode
 							value={codeValue}
 							logoImage="/logo.png"
-							logoWidth={400}
-							logoHeight={400}
+							logoWidth={300}
+							logoHeight={300}
 							size={1000}
 							qrStyle="dots"
 							style={{

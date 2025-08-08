@@ -12,7 +12,7 @@ cargo run --bin seed
 
 ## Generating QR Codes
 
-To create the `./data/qr-challenges.json` file:
+To create the `./data/qr.txt` file:
 
 ```bash
 cargo run --bin qr-export

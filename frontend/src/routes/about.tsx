@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import Scotty from "@/assets/about-page-scotty.svg?react";
+import { PageLayout } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -9,64 +10,18 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-
-interface Contributor {
-	firstName: string;
-	lastName: string;
-	role: string;
-	major: string;
-	grad_year: number;
-	contribution_year: number;
-}
-
-const contributors: Contributor[] = [
-	{
-		firstName: "Kenechukwu",
-		lastName: "Echezona",
-		role: "Project Lead",
-		major: "SCS",
-		grad_year: 2026,
-		contribution_year: 2025,
-	},
-	{
-		firstName: "Anish",
-		lastName: "Pallati",
-		role: "Developer",
-		major: "MCS",
-		grad_year: 2028,
-		contribution_year: 2025,
-	},
-	{
-		firstName: "Autumn",
-		lastName: "Qiu",
-		role: "Developer",
-		major: "IS",
-		grad_year: 2027,
-		contribution_year: 2025,
-	},
-	{
-		firstName: "Theo",
-		lastName: "Urban",
-		role: "Developer",
-		major: "SCS",
-		grad_year: 2026,
-		contribution_year: 2025,
-	},
-	{
-		firstName: "Jeffery",
-		lastName: "Wang",
-		role: "Developer",
-		major: "BXA",
-		grad_year: 2027,
-		contribution_year: 2025,
-	},
-];
+import { requireAuth } from "@/lib/auth";
+import { contributors, contributorsByYear } from "@/lib/data/contrib";
 
 export const Route = createFileRoute("/about")({
+	beforeLoad: async ({ context }) => {
+		return await requireAuth(context);
+	},
 	component: About,
 });
 
 function About() {
+	const { user } = Route.useRouteContext();
 	const navigate = useNavigate();
 
 	const currentYear = new Date().getFullYear();
@@ -75,26 +30,8 @@ function About() {
 		.filter((c) => c.contribution_year === currentYear)
 		.sort((a, b) => a.lastName.localeCompare(b.lastName));
 
-	const pastContributors = contributors
-		.filter((c) => c.contribution_year < currentYear)
-		.sort((a, b) => a.lastName.localeCompare(b.lastName));
-
-	// Group past contributors by contribution year
-	const groupByContributionYear = (contributors: Contributor[]) => {
-		const grouped: { [key: number]: Contributor[] } = {};
-		for (const c of contributors) {
-			if (!grouped[c.contribution_year]) {
-				grouped[c.contribution_year] = [];
-			}
-			grouped[c.contribution_year]?.push(c);
-		}
-		return grouped;
-	};
-
-	const pastContributorsByYear = groupByContributionYear(pastContributors);
-
 	return (
-		<div>
+		<PageLayout currentPath="/about" user={user}>
 			<div className="relative flex justify-center">
 				<Scotty className="w-[90%] h-[80%]" />
 				<div className="absolute top-[5%] left-1/2 transform -translate-x-1/2 flex flex-col items-center leading-snug justify-start gap-12">
@@ -146,14 +83,14 @@ function About() {
 							</div>
 
 							{/* Previous Contributors */}
-							{Object.keys(pastContributorsByYear).length > 0 && (
+							{Object.keys(contributorsByYear).length > 0 && (
 								<div className="mt-4">
 									<h2 className="text-xl font-semibold text-center mb-2">
 										Previous Contributors
 									</h2>
-									{Object.entries(pastContributorsByYear)
+									{Object.entries(contributorsByYear)
 										.sort(([a], [b]) => Number.parseInt(b) - Number.parseInt(a))
-										.map(([year, teamMembers]: [string, Contributor[]]) => (
+										.map(([year, teamMembers]) => (
 											<div key={year} className="mb-4">
 												<h3 className="text-lg font-semibold text-center mb-2">
 													{year} Team
@@ -189,6 +126,6 @@ function About() {
 					</Button>
 				</div>
 			</div>
-		</div>
+		</PageLayout>
 	);
 }

@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageLayout } from "@/components/page-layout";
 import { PrizeCard } from "@/components/trade/prize-card";
 import { adminMiddleware } from "@/lib/auth";
 
@@ -10,6 +11,8 @@ export const Route = createFileRoute("/terrier-trade")({
 });
 
 function TerrierTrade() {
+	const { user } = Route.useRouteContext();
+
 	const prizes = [
 		{
 			name: "Terrier Plushie",
@@ -34,12 +37,12 @@ function TerrierTrade() {
 	];
 
 	return (
-		<div>
+		<PageLayout currentPath="/terrier-trade" user={user}>
 			<div className="p-4 max-w-xl mx-auto flex flex-col gap-8">
 				{prizes.map((prize) => (
 					<PrizeCard key={prize.name} prize={prize} />
 				))}
 			</div>
-		</div>
+		</PageLayout>
 	);
 }

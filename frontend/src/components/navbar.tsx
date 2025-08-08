@@ -1,25 +1,20 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useApi } from "@/lib/api-context";
 import type { colorClasses } from "@/lib/data/categories";
 import { navbarPages as allPages, type ValidPath } from "@/lib/data/page";
+import type { components } from "@/lib/schema.gen";
 import type { ValueOf } from "@/lib/utils";
 
 interface NavbarProps {
 	currentPath: ValidPath;
 	pageColors: ValueOf<typeof colorClasses>;
+	user: components["schemas"]["UserProfileResponse"];
 }
 
-export function Navbar({ currentPath, pageColors }: NavbarProps) {
-	const { $api } = useApi();
-	const { data, isLoading } = $api.useQuery("get", "/api/profile");
-
-	// Show Trade while loading or if not admin, show Verify only if loaded and admin
-	const isAdmin = !isLoading && data?.groups.includes("O-Quest Admin");
-	const showVerify = !isLoading && isAdmin;
-
+export function Navbar({ currentPath, pageColors, user }: NavbarProps) {
 	const pages = allPages.filter((page) => {
-		if (showVerify) {
+		// Show /terrier-trade if not admin, show /verify if admin
+		if (user.groups.includes("O-Quest Admin")) {
 			return page.label !== "Terrier Trade";
 		}
 		return page.label !== "Verify";

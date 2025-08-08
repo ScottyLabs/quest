@@ -6,7 +6,6 @@ import ScottyCoin from "@/assets/scotty-coin.svg?react";
 import { FilterCard } from "@/components/challenges/filter-card";
 import { useFilterContext } from "@/components/challenges/filter-layout";
 import { InfoDialog } from "@/components/challenges/info-dialog";
-import { useApi } from "@/lib/api-context";
 import {
 	type CategoryId,
 	categories,
@@ -14,6 +13,7 @@ import {
 	type colorClasses,
 } from "@/lib/data/categories";
 import type { pageObject } from "@/lib/data/page";
+import type { components } from "@/lib/schema.gen";
 import type { ValueOf } from "@/lib/utils";
 
 interface PageHeaderProps {
@@ -21,6 +21,7 @@ interface PageHeaderProps {
 	isCategoryPage: boolean;
 	pageColors: ValueOf<typeof colorClasses>;
 	pageObject: ValueOf<typeof pageObject>;
+	user: components["schemas"]["UserProfileResponse"];
 }
 
 export function PageHeader({
@@ -28,9 +29,8 @@ export function PageHeader({
 	isCategoryPage,
 	pageColors,
 	pageObject,
+	user,
 }: PageHeaderProps) {
-	const { $api } = useApi();
-	const { data } = $api.useQuery("get", "/api/profile");
 	const [isFilterOpen, setIsFilterOpen] = useState(false);
 	const [isInfoOpen, setIsInfoOpen] = useState(false);
 
@@ -53,8 +53,8 @@ export function PageHeader({
 					>
 						<Flag size={18} className="text-red-600" />
 						<span>
-							{data?.challenges_completed.total ?? 0}/
-							{data?.total_challenges.total ?? 0}
+							{user.challenges_completed.total ?? 0}/
+							{user.total_challenges.total ?? 0}
 						</span>
 					</Link>
 
@@ -64,7 +64,7 @@ export function PageHeader({
 						aria-label="View Coins"
 					>
 						<ScottyCoin className="size-5" />
-						<span>{data?.scotty_coins.current ?? 0}</span>
+						<span>{user.scotty_coins.current ?? 0}</span>
 					</Link>
 				</div>
 

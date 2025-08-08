@@ -23,6 +23,23 @@
 		font-family: "Open Sans", ui-sans-serif, system-ui, sans-serif;
 		background-color: #f3f4f6;
 	}
+
+	.print-content {
+		/* Improve text rendering */
+		text-rendering: optimizeLegibility;
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+		image-rendering: crisp-edges;
+
+		/* Force hardware acceleration */
+		transform: translateZ(0);
+		will-change: transform;
+	}
+
+	canvas {
+		/* Ensure QR codes render crisply */
+		image-rendering: crisp-edges;
+	}
 }
 
 @media print {

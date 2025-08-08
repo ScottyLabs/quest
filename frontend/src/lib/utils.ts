@@ -5,3 +5,10 @@ export function typedFromEntries<K extends string | number | symbol, V>(
 }
 
 export type ValueOf<T> = T[keyof T];
+
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+	return twMerge(clsx(inputs));
+}

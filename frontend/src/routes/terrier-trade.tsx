@@ -4,7 +4,7 @@ import { adminMiddleware } from "@/lib/auth";
 
 export const Route = createFileRoute("/terrier-trade")({
 	beforeLoad: async ({ context }) => {
-		return await adminMiddleware(context.baseUrl);
+		return await adminMiddleware(context);
 	},
 	component: TerrierTrade,
 });

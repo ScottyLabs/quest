@@ -5,7 +5,7 @@ import { requireAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/challenges/1")({
 	beforeLoad: async ({ context }) => {
-		return await requireAuth(context.baseUrl);
+		return await requireAuth(context);
 	},
 	component: RouteComponent,
 });

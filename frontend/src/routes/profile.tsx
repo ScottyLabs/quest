@@ -10,7 +10,7 @@ import { LeaderboardFromProfile } from "@/routes/leaderboard";
 
 export const Route = createFileRoute("/profile")({
 	beforeLoad: async ({ context }) => {
-		return await requireAuth(context.baseUrl);
+		return await requireAuth(context);
 	},
 	component: Profile,
 });

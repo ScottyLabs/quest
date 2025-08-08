@@ -6,7 +6,7 @@ import { dormGroups } from "@/lib/data/dorms";
 
 export const Route = createFileRoute("/dorm-select")({
 	beforeLoad: async ({ context }) => {
-		return await requireAuth(context.baseUrl);
+		return await requireAuth(context);
 	},
 	validateSearch: (search: Record<string, unknown>) => {
 		return {

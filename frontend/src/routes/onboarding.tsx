@@ -1,16 +1,14 @@
-import {
-	createFileRoute,
-	useNavigate,
-	useSearch,
-} from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import ScottyCoin from "@/assets/scotty-coin.svg?react";
 
 export const Route = createFileRoute("/onboarding")({
-	validateSearch: (search) => ({
-		from: search.from as string | undefined,
-	}),
+	validateSearch: (search: Record<string, unknown>) => {
+		return {
+			from: typeof search.from === "string" ? search.from : undefined,
+		};
+	},
 	component: Onboarding,
 });
 
@@ -49,7 +47,7 @@ const steps: Step[] = [
 ];
 
 function Onboarding() {
-	const { from } = useSearch({ from: "/onboarding" });
+	const { from } = Route.useSearch();
 	const isFromAbout = from === "about";
 
 	const [currentStep, setCurrentStep] = useState(0);

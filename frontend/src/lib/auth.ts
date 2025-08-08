@@ -1,6 +1,7 @@
 import { redirect } from "@tanstack/react-router";
 import createFetchClient from "openapi-fetch";
 import type { components, paths } from "@/lib/schema.gen";
+import type { RouterContext } from "@/routes/__root";
 
 export interface AuthContext {
 	isAuthenticated: boolean;
@@ -8,7 +9,7 @@ export interface AuthContext {
 }
 
 // Auth middleware function
-export async function requireAuth(baseUrl: string) {
+export async function requireAuth({ baseUrl }: RouterContext) {
 	const fetchClient = createFetchClient<paths>({
 		baseUrl,
 		credentials: "include",
@@ -57,8 +58,8 @@ export async function requireAuth(baseUrl: string) {
 	}
 }
 
-export async function adminMiddleware(baseUrl: string) {
-	const authContext = await requireAuth(baseUrl);
+export async function adminMiddleware(context: RouterContext) {
+	const authContext = await requireAuth(context);
 
 	// Check if user is in the admin group
 	if (
@@ -77,7 +78,7 @@ export async function adminMiddleware(baseUrl: string) {
 }
 
 // Redirect if already authenticated
-export async function redirectIfAuthenticated(baseUrl: string) {
+export async function redirectIfAuthenticated({ baseUrl }: RouterContext) {
 	const fetchClient = createFetchClient<paths>({
 		baseUrl,
 		credentials: "include",

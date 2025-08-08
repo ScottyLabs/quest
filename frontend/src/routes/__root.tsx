@@ -10,7 +10,7 @@ import type { AuthContext } from "@/lib/auth";
 import { categoryIdFromRoute, colorClasses } from "@/lib/data/categories";
 import { pageObject, type ValidPath } from "@/lib/data/page";
 
-interface RouterContext {
+export interface RouterContext {
 	baseUrl: string;
 	auth?: AuthContext;
 }

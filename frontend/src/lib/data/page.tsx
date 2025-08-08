@@ -12,21 +12,6 @@ import type { FileRoutesByFullPath } from "@/routeTree.gen";
 
 export type ValidPath = keyof FileRoutesByFullPath;
 
-export const pageOrder: ValidPath[] = [
-	"/profile",
-	"/leaderboard",
-	"/",
-	"/challenges/1",
-	"/challenges/2",
-	"/challenges/3",
-	"/challenges/4",
-	"/challenges/5",
-	"/challenges/6",
-	"/terrier-trade",
-	"/verify",
-	"/about",
-];
-
 export const navbarPages = [
 	{ to: "/profile", label: "Profile", Icon: User },
 	{ to: "/leaderboard", label: "Leaderboard", Icon: BarChart2 },

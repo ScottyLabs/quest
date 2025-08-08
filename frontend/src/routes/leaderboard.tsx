@@ -9,7 +9,7 @@ import type { components } from "@/lib/schema.gen";
 
 export const Route = createFileRoute("/leaderboard")({
 	beforeLoad: async ({ context }) => {
-		return await requireAuth(context.baseUrl);
+		return await requireAuth(context);
 	},
 	component: Leaderboard,
 });

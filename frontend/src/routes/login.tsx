@@ -4,7 +4,7 @@ import { redirectIfAuthenticated } from "@/lib/auth";
 
 export const Route = createFileRoute("/login")({
 	beforeLoad: async ({ context }) => {
-		return await redirectIfAuthenticated(context.baseUrl);
+		return await redirectIfAuthenticated(context);
 	},
 	validateSearch: (search: Record<string, unknown>) => {
 		return {

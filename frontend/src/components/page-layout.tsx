@@ -22,14 +22,21 @@ export function PageLayout({
 	// The "all" category (corresponding to "/") shares colors with other pages
 	const pageColors = colorClasses[categoryId || "all"];
 
+	// Use profile background color for profile page
+	const backgroundColor =
+		currentPath === "/profile" ? "bg-[#F3E9D2]" : pageColors.secondary;
+
 	return (
-		<div className={`min-h-screen ${pageColors.secondary}`}>
-			<PageHeader
-				categoryId={categoryId}
-				pageColors={pageColors}
-				pageObject={pageData}
-				user={user}
-			/>
+		<div className={`min-h-screen ${backgroundColor}`}>
+			{/* Don't show header for profile page */}
+			{currentPath !== "/profile" && (
+				<PageHeader
+					categoryId={categoryId}
+					pageColors={pageColors}
+					pageObject={pageData}
+					user={user}
+				/>
+			)}
 
 			<div className="pb-32">{children}</div>
 

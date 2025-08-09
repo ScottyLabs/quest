@@ -7,6 +7,7 @@ import CategoryProgressBar from "@/components/profile/category-progress-bar";
 import Stamps from "@/components/profile/stamps";
 import { Card } from "@/components/ui/card";
 import { useApi } from "@/lib/api-context";
+import { requireAuth } from "@/lib/auth";
 import {
 	type DormName,
 	dormColors,
@@ -15,6 +16,9 @@ import {
 } from "@/lib/data/dorms";
 
 export const Route = createFileRoute("/profile")({
+	beforeLoad: async ({ context }) => {
+		return await requireAuth(context);
+	},
 	component: Profile,
 });
 
@@ -133,27 +137,11 @@ export const usePrizeData = () => {
 	return query;
 };
 
-export const useProfileData = () => {
-	const { $api } = useApi();
-	const query = $api.useQuery("get", "/api/profile", {});
-
-	if (query.isError) {
-		console.error("Error fetching profile data:", query.error);
-	}
-
-	return query;
-};
-
 function Profile() {
-	const { data: user, isLoading: isLoadingProfile } = useProfileData();
+	const { user } = Route.useRouteContext();
+
 	const { data: journalData, isLoading: isLoadingJournal } = useJournalData();
 	const { data: prizeData, isLoading: isLoadingPrizes } = usePrizeData();
-
-	if (isLoadingProfile || !user) {
-		return (
-			<div className="flex justify-center items-center h-full">Loading...</div>
-		);
-	}
 
 	const dormGroup = user.dorm
 		? dormGroupFromName[user.dorm as DormName]
@@ -168,17 +156,15 @@ function Profile() {
 	const dormColor = getDormColor(user.dorm);
 
 	return (
-		<PageLayout currentPath="/profile" user={user}>
+		<PageLayout currentPath="/profile" user={user} showPageHeader={false}>
 			<div className="p-4 flex flex-col">
 				{/* Profile Card */}
 				<Card className="rounded-4xl shadow-[0_7px_0_#bbb] p-4 mb-6 mt-4 relative overflow-visible">
 					{/* Decorative SVG at the top */}
-					<div
-						className="w-full flex justify-center -mt-8 mb-2"
-						style={{ position: "relative", zIndex: 1 }}
-					>
+					<div className="relative z-1 w-full flex justify-center -mt-8 mb-2">
 						<StickyNoteTop className=" h-auto max-w-md" />
 					</div>
+
 					<div className="flex flex-row gap-4 items-center">
 						<div className="flex flex-col items-center">
 							<div
@@ -203,7 +189,9 @@ function Profile() {
 								<span className="ml-1 break-words">{dorm}</span>
 							</div>
 							<div className="mb-1 flex flex-wrap">
-								<span className="font-bold flex-shrink-0">Dorm Group:</span>{" "}
+								<span className="font-bold flex-shrink-0">
+									Housing Community:
+								</span>{" "}
 								<span className="ml-1 break-words">{dormGroup}</span>
 							</div>
 						</div>
@@ -223,6 +211,7 @@ function Profile() {
 								{user.challenges_completed.total}/{user.total_challenges.total}
 							</span>
 						</div>
+
 						{/* Category Progress Bars */}
 						<CategoryProgressBar
 							categories={Object.entries(
@@ -237,11 +226,12 @@ function Profile() {
 					{/* Points Information */}
 					<div className="space-y-1">
 						<div className="flex justify-between items-center">
-							<span>Total Scotty Coins:</span>
+							<span>Total ScottyCoins:</span>
 							<span className="font-bold">{user.scotty_coins.current}</span>
 						</div>
 						<div className="flex justify-between items-center">
 							<span>Carnegie Cup Points:</span>
+							{/* TODO: replace this with the current value */}
 							<span className="font-bold">
 								{user.challenges_completed.total}
 							</span>
@@ -250,22 +240,22 @@ function Profile() {
 				</Card>
 
 				{/* Leaderboard Card */}
-				<div className="relative mb-2">
+				<Link to="/leaderboard" className="relative mb-2">
 					<div className="bg-red-700 rounded-2xl shadow-[0_7px_0_#bbb] flex items-center px-4 py-4 mb-4 text-white z-10 relative">
 						<div className="font-bold mr-8">{user.leaderboard_position}</div>
 						<div className="flex-1">
 							<div className="font-semibold">{user.name}</div>
 							<div className="text-md">{user.user_id}</div>
 						</div>
+
 						<div className="text-lg font-bold flex items-center gap-2">
-							{user.scotty_coins.current}
-							<ScottyCoin className="w-7 h-7 relative top-1" />
+							<ScottyCoin className="size-5 my-auto relative top-1" />
+							<p>{user.scotty_coins.current}</p>
 						</div>
-						<Link to="/leaderboard" className="text-white ml-6">
-							<ChevronRight />
-						</Link>
+
+						<ChevronRight />
 					</div>
-				</div>
+				</Link>
 
 				<Stamps week={stamps} />
 
@@ -334,7 +324,7 @@ function Profile() {
 									<img
 										key={entry.challenge_name + entry.note}
 										src={entry.image_url || "/images/scotty-coin.svg"}
-										alt={entry.challenge_name + " - " + entry.note}
+										alt={`${entry.challenge_name} - ${entry.note}`}
 										className="w-80 h-64 object-cover rounded-xl border flex-shrink-0"
 									/>
 								))}

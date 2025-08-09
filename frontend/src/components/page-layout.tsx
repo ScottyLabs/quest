@@ -8,12 +8,14 @@ import type { components } from "@/lib/schema.gen";
 interface PageLayoutProps {
 	currentPath: ValidPath;
 	categoryId?: CategoryId;
+	showPageHeader?: boolean;
 	user: components["schemas"]["UserProfileResponse"];
 }
 
 export function PageLayout({
 	currentPath,
 	categoryId,
+	showPageHeader = true,
 	user,
 	children,
 }: PropsWithChildren<PageLayoutProps>) {
@@ -28,8 +30,7 @@ export function PageLayout({
 
 	return (
 		<div className={`min-h-screen ${backgroundColor}`}>
-			{/* Don't show header for profile page */}
-			{currentPath !== "/profile" && (
+			{showPageHeader && (
 				<PageHeader
 					categoryId={categoryId}
 					pageColors={pageColors}

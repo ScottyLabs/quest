@@ -32,6 +32,7 @@ export function App() {
 		const controlPanel = document.querySelector(
 			".control-panel",
 		) as HTMLElement;
+
 		if (controlPanel) {
 			controlPanel.style.display = "none";
 		}
@@ -50,9 +51,7 @@ export function App() {
 	const printAllChallenges = async () => {
 		const message = `This will open ${challenges.length} print dialogs one by one. Once your browser remembers the initial download location, you can just press and hold enter for 3-4 minutes.`;
 
-		if (!window.confirm(message)) {
-			return;
-		}
+		if (!window.confirm(message)) return;
 
 		setIsAutoPrinting(true);
 		setPrintProgress(0);
@@ -91,6 +90,18 @@ export function App() {
 
 	const currentChallenge = challenges[safeCurrentIndex];
 
+	// Update document title to set default PDF filename
+	useEffect(() => {
+		if (!currentChallenge) return;
+		const sanitizedName = currentChallenge.name
+			.replace(/[^a-z0-9]/gi, "_")
+			.replace(/_+/g, "_")
+			.replace(/^_|_$/g, "")
+			.toLowerCase();
+
+		document.title = `${String(safeCurrentIndex).padStart(3, "0")}_${sanitizedName}`;
+	}, [currentChallenge, safeCurrentIndex]);
+
 	if (!currentChallenge) {
 		return (
 			<div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -115,18 +126,6 @@ export function App() {
 		const newIndex = Math.min(challenges.length - 1, safeCurrentIndex + 1);
 		setCurrentIndex(newIndex);
 	};
-
-	// Update document title to set default PDF filename
-	useEffect(() => {
-		if (currentChallenge) {
-			const sanitizedName = currentChallenge.name
-				.replace(/[^a-z0-9]/gi, "_")
-				.replace(/_+/g, "_")
-				.replace(/^_|_$/g, "")
-				.toLowerCase();
-			document.title = `${String(safeCurrentIndex).padStart(3, "0")}_${sanitizedName}`;
-		}
-	}, [currentChallenge, safeCurrentIndex]);
 
 	return (
 		<div className="min-h-screen bg-gray-100 font-sans">

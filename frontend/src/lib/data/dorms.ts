@@ -21,7 +21,7 @@ export const dorms = [
 	},
 	{
 		name: "Stever",
-		image_path: "/images/dorm-mascots/galaxy.png",
+		image_path: "/images/dorm-mascots/stever.png",
 		group: "Stever",
 	},
 	{

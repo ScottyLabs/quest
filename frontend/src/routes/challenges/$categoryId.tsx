@@ -93,7 +93,7 @@ function RouteComponent() {
 					<ChallengeCard
 						key={challenge.name}
 						challenge={challenge}
-						isLast={index === challenges.length - 1}
+						isLast={index === filtered.length - 1}
 					/>
 				))}
 			</div>

@@ -106,5 +106,31 @@
 }
 
 .card-locked {
-	box-shadow: 0 3px 0 var(--color-locked); /* No hover effect for locked cards */
+	box-shadow: 0 3px 0 var(--color-locked);
+	transition:
+		transform 250ms cubic-bezier(0.4, 0, 0.2, 1),
+		box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1),
+		background-color 250ms cubic-bezier(0.4, 0, 0.2, 1);
+	will-change: transform, box-shadow, background-color;
+}
+
+.card-locked:hover {
+	box-shadow: none;
+	transform: translate3d(0, 3px, 0); /* GPU accelerated */
+}
+
+/* Flying coin animation */
+@keyframes flyToHeader {
+	0% {
+		transform: translate(-50%, -50%) scale(1);
+		opacity: 1;
+	}
+	50% {
+		transform: translate(-50%, -200px) scale(1.2);
+		opacity: 0.8;
+	}
+	100% {
+		transform: translate(-50%, -300px) scale(0.8);
+		opacity: 0;
+	}
 }

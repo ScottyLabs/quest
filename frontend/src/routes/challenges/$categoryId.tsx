@@ -1,5 +1,5 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { ChallengeCard } from "@/components/challenges/card";
 import type { FilterOption } from "@/components/challenges/filter-card";
 import { useFilter } from "@/components/challenges/filter-context";
@@ -60,7 +60,7 @@ function RouteComponent() {
 
 	// TODO: make this /api/challenges in prod
 	const { $api } = useApi();
-	const { data } = $api.useQuery("get", "/api/admin/challenges");
+	const { data, refetch } = $api.useQuery("get", "/api/admin/challenges");
 
 	// TODO: remove this in prod (mock status assignment)
 	const challenges = useMemo(() => {
@@ -82,6 +82,14 @@ function RouteComponent() {
 
 	const filtered = useFilteredChallenges(challenges, filter, categoryId);
 
+	const handleChallengeComplete = useCallback(
+		(challengeName: string, coinsEarned: number) => {
+			// Refresh the challenges data to reflect the completion
+			refetch();
+		},
+		[refetch],
+	);
+
 	return (
 		<PageLayout
 			currentPath="/challenges/$categoryId"
@@ -94,6 +102,7 @@ function RouteComponent() {
 						key={challenge.name}
 						challenge={challenge}
 						isLast={index === filtered.length - 1}
+						onChallengeComplete={handleChallengeComplete}
 					/>
 				))}
 			</div>

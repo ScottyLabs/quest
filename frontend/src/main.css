@@ -76,7 +76,7 @@
 }
 
 /* TODO: create these for other interactive buttons,
-   like the ones on the leaderboard page, about page, and page header */
+   like the ones on the leaderboard page and about page */
 .card-success {
 	box-shadow: 0 3px 0 var(--color-success);
 	transition:

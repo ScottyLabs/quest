@@ -75,109 +75,36 @@
 	}
 }
 
-/* Print styles */
-@media print {
-	/* Hide devtools during print */
-	[data-testid="react-query-devtools"],
-	[data-testid="tanstack-router-devtools"],
-	[data-testid*="devtools"],
-	[data-testid*="Devtools"],
-	[class*="devtools"],
-	[class*="Devtools"],
-	[id*="devtools"],
-	[id*="Devtools"],
-	[data-testid="tanstack-query-devtools"],
-	[data-testid="tanstack-router-devtools"],
-	[data-testid="react-query-devtools"],
-	/* Additional selectors for dev tools */
-		div[style*="position: fixed"][style*="z-index"],
-	div[style*="position:fixed"][style*="z-index"],
-	/* Hide any fixed positioned elements that might be dev tools */
-		div[style*="position: fixed"][style*="bottom"],
-	div[style*="position:fixed"][style*="bottom"],
-	/* Hide elements with high z-index that are likely dev tools */
-		div[style*="z-index: 9999"],
-	div[style*="z-index:9999"],
-	div[style*="z-index: 2147483647"],
-	div[style*="z-index:2147483647"],
-	/* Target TanStack Query DevTools specifically */
-		.tsqd-open-btn-container,
-	.tsqd-open-btn,
-	[class*="tsqd-"],
-	/* Target TanStack Router DevTools */
-		[class*="tsrd-"],
-	/* Target React Query DevTools */
-		[class*="rqd-"],
-	/* Hide any floating buttons or dev tool containers */
-		div[style*="position: fixed"][style*="right"],
-	div[style*="position:fixed"][style*="right"],
-	/* Hide elements with specific dev tool classes */
-		[class*="devtools"],
-	[class*="Devtools"],
-	[class*="DevTools"],
-	/* Hide any elements with high z-index that are likely UI overlays */
-		div[style*="z-index: 999"],
-	div[style*="z-index:999"],
-	div[style*="z-index: 1000"],
-	div[style*="z-index:1000"],
-	div[style*="z-index: 9999"],
-	div[style*="z-index:9999"] {
-		display: none !important;
-	}
+/* TODO: create these for other interactive buttons,
+   like the ones on the leaderboard page, about page, and page header */
+.card-success {
+	box-shadow: 0 3px 0 var(--color-success);
+	transition:
+		transform 250ms cubic-bezier(0.4, 0, 0.2, 1),
+		box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1),
+		background-color 250ms cubic-bezier(0.4, 0, 0.2, 1);
+	will-change: transform, box-shadow, background-color;
 }
 
-/* Slide Left Transition */
-html:active-view-transition-type(slide-left) {
-	&::view-transition-old(main-content) {
-		animation: 300ms cubic-bezier(0.4, 0, 0.2, 1) both slide-out-left;
-	}
-	&::view-transition-new(main-content) {
-		animation: 300ms cubic-bezier(0.4, 0, 0.2, 1) both slide-in-left;
-	}
+.card-success:hover {
+	box-shadow: none;
+	transform: translate3d(0, 3px, 0); /* GPU accelerated */
 }
 
-@keyframes slide-out-left {
-	from {
-		transform: translateX(0);
-	}
-	to {
-		transform: translateX(-100%);
-	}
+.card-default {
+	box-shadow: 0 3px 0 #bbb;
+	transition:
+		transform 250ms cubic-bezier(0.4, 0, 0.2, 1),
+		box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1),
+		background-color 250ms cubic-bezier(0.4, 0, 0.2, 1);
+	will-change: transform, box-shadow, background-color;
 }
 
-@keyframes slide-in-left {
-	from {
-		transform: translateX(100%);
-	}
-	to {
-		transform: translateX(0);
-	}
+.card-default:hover {
+	box-shadow: none;
+	transform: translate3d(0, 3px, 0);
 }
 
-/* Slide Right Transition */
-html:active-view-transition-type(slide-right) {
-	&::view-transition-old(main-content) {
-		animation: 300ms cubic-bezier(0.4, 0, 0.2, 1) both slide-out-right;
-	}
-	&::view-transition-new(main-content) {
-		animation: 300ms cubic-bezier(0.4, 0, 0.2, 1) both slide-in-right;
-	}
-}
-
-@keyframes slide-out-right {
-	from {
-		transform: translateX(0);
-	}
-	to {
-		transform: translateX(100%);
-	}
-}
-
-@keyframes slide-in-right {
-	from {
-		transform: translateX(-100%);
-	}
-	to {
-		transform: translateX(0);
-	}
+.card-locked {
+	box-shadow: 0 3px 0 var(--color-locked); /* No hover effect for locked cards */
 }

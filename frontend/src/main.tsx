@@ -12,10 +12,14 @@ import "@/main.css";
 const queryClient = new QueryClient({
 	defaultOptions: {
 		queries: {
-			// Cache data for 5 minutes before considering it stale
-			staleTime: 5 * 60 * 1000,
-			// Keep data in cache for 10 minutes after component unmounts
-			gcTime: 10 * 60 * 1000,
+			// Cache data for 15 minutes before considering it stale
+			staleTime: 15 * 60 * 1000,
+			// Keep data in cache for 30 minutes after component unmounts
+			gcTime: 30 * 60 * 1000,
+			refetchOnWindowFocus: false,
+			refetchOnMount: false,
+			refetchOnReconnect: false,
+			retry: 1,
 		},
 	},
 });

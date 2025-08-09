@@ -21,7 +21,7 @@ export function ChallengeCard({ challenge, isLast }: ChallengeCardProps) {
 
 	const card =
 		challenge.status === "completed" ? (
-			<div className="shadow-[0_3px_0_var(--color-success)] duration-250 hover:shadow-none hover:translate-y-[3px] transition-all rounded-2xl p-4 bg-success-light hover:bg-success-hover cursor-pointer flex flex-row gap-2">
+			<div className="card-success rounded-2xl p-4 bg-success-light hover:bg-success-hover cursor-pointer flex flex-row gap-2">
 				{/* Check icon */}
 				<div className="relative my-auto size-12">
 					<CheckContainer className="absolute size-full" />
@@ -35,7 +35,7 @@ export function ChallengeCard({ challenge, isLast }: ChallengeCardProps) {
 				</div>
 			</div>
 		) : challenge.status === "locked" ? (
-			<div className="shadow-[0_3px_0_#000] rounded-2xl p-4 bg-locked-light flex flex-row gap-2">
+			<div className="card-locked rounded-2xl p-4 bg-locked-light flex flex-row gap-2">
 				{/* Locked icon */}
 				<div className="relative -m-1 size-12 my-auto shrink-0">
 					<div
@@ -52,7 +52,7 @@ export function ChallengeCard({ challenge, isLast }: ChallengeCardProps) {
 			</div>
 		) : (
 			/* challenge.status === "available" */
-			<div className="shadow-[0_3px_0_#bbb] duration-250 hover:shadow-none hover:translate-y-[3px] transition-all relative rounded-2xl p-4 bg-white hover:bg-gray-100 cursor-pointer flex flex-row gap-4">
+			<div className="card-default relative rounded-2xl p-4 bg-white hover:bg-gray-100 cursor-pointer flex flex-row gap-4">
 				{/* Category icon */}
 				<div className="relative -m-1 size-12 my-auto shrink-0">
 					<div

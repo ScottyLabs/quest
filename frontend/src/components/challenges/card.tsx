@@ -1,34 +1,27 @@
 import { Check, Lock } from "lucide-react";
 import CheckContainer from "@/assets/check-container.svg?react";
 import ScottyCoin from "@/assets/scotty-coin.svg?react";
-import type { Challenge } from "@/components/challenges/layout";
 import {
-	type CategoryId,
 	type CategoryLabel,
 	categoryIdFromLabel,
 	colorClasses,
 } from "@/lib/data/categories";
+import type { components } from "@/lib/schema.gen";
 
 interface ChallengeCardProps {
-	categoryId: CategoryId;
-	challenge: Challenge;
+	// TODO: this type changes in prod along with the endpoint
+	challenge: components["schemas"]["AdminChallengeResponse"];
 	isLast: boolean;
 }
 
-export function ChallengeCard({
-	challenge,
-	categoryId,
-	isLast,
-}: ChallengeCardProps) {
+export function ChallengeCard({ challenge, isLast }: ChallengeCardProps) {
 	// Ensure we're getting the category's challenge color even when the page is "all"
-	if (categoryId === "all") {
-		categoryId = categoryIdFromLabel[challenge.category as CategoryLabel];
-	}
+	const thisId = categoryIdFromLabel[challenge.category as CategoryLabel];
+	const primaryColor = colorClasses[thisId].primary;
 
-	const primaryColor = colorClasses[categoryId].primary;
 	const card =
 		challenge.status === "completed" ? (
-			<div className="shadow-[0_3px_0_#53b752] duration-250 hover:shadow-none transition-all rounded-2xl p-4 bg-success-light hover:bg-success-hover cursor-pointer flex flex-row gap-2">
+			<div className="shadow-[0_3px_0_var(--color-success)] duration-250 hover:shadow-none hover:translate-y-[3px] transition-all rounded-2xl p-4 bg-success-light hover:bg-success-hover cursor-pointer flex flex-row gap-2">
 				{/* Check icon */}
 				<div className="relative my-auto size-12">
 					<CheckContainer className="absolute size-full" />
@@ -59,7 +52,7 @@ export function ChallengeCard({
 			</div>
 		) : (
 			/* challenge.status === "available" */
-			<div className="shadow-[0_3px_0_#bbb] duration-250 hover:shadow-none transition-all relative rounded-2xl p-4 bg-white hover:bg-gray-100 cursor-pointer flex flex-row gap-4">
+			<div className="shadow-[0_3px_0_#bbb] duration-250 hover:shadow-none hover:translate-y-[3px] transition-all relative rounded-2xl p-4 bg-white hover:bg-gray-100 cursor-pointer flex flex-row gap-4">
 				{/* Category icon */}
 				<div className="relative -m-1 size-12 my-auto shrink-0">
 					<div

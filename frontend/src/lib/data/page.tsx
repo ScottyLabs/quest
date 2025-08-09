@@ -16,7 +16,7 @@ export const navbarPages = [
 	{ to: "/profile", label: "Profile", Icon: User },
 	{ to: "/leaderboard", label: "Leaderboard", Icon: BarChart2 },
 	{
-		to: "/",
+		to: "/challenges/$categoryId",
 		label: "Challenges",
 		Icon: Trophy,
 	},

@@ -22,16 +22,11 @@ export function Navbar({ currentPath, pageColors, user }: NavbarProps) {
 
 	return (
 		<div>
-			<div className="fixed bottom-20 left-0 right-0 z-50 w-full h-16 bg-gradient-to-b from-transparent from-10% via-55% via-black/12 to-black/36 pointer-events-none" />
+			<div className="fixed [view-transition-name:navbar] bottom-20 left-0 right-0 z-50 w-full h-16 bg-gradient-to-b from-transparent from-10% via-55% via-black/12 to-black/36 pointer-events-none" />
 			<nav className="fixed [view-transition-name:navbar] bottom-0 left-0 right-0 flex justify-around items-center h-20">
 				{pages.map((page) => {
 					const activeStyles =
-						(page.to === "/" &&
-							(currentPath === "/" || currentPath.startsWith("/challenges"))) ||
-						(page.to !== "/" && currentPath.startsWith(page.to))
-							? pageColors.selected
-							: pageColors.hover;
-
+						page.to === currentPath ? pageColors.selected : pageColors.hover;
 					const challengeStyles =
 						page.label === "Challenges" ? "flex-[1.5]" : "flex-1";
 
@@ -39,6 +34,7 @@ export function Navbar({ currentPath, pageColors, user }: NavbarProps) {
 						<Link
 							key={page.label}
 							to={page.to}
+							params={{ categoryId: "all" }}
 							className={`flex flex-col items-center justify-center h-full transition-colors min-w-0 ${activeStyles} ${challengeStyles}`}
 						>
 							{page.label === "Challenges" ? (

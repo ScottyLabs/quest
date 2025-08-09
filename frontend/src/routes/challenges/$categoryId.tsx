@@ -1,5 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
+import { useMemo } from "react";
 import { ChallengeCard } from "@/components/challenges/card";
+import type { FilterOption } from "@/components/challenges/filter-card";
 import { useFilter } from "@/components/challenges/filter-context";
 import { PageLayout } from "@/components/page-layout";
 import { useApi } from "@/lib/api-context";
@@ -10,6 +12,7 @@ import {
 	categoryIdFromLabel,
 	colorClasses,
 } from "@/lib/data/categories";
+import type { components } from "@/lib/schema.gen";
 
 export const Route = createFileRoute("/challenges/$categoryId")({
 	beforeLoad: async ({ context }) => {
@@ -28,6 +31,27 @@ export const Route = createFileRoute("/challenges/$categoryId")({
 	component: RouteComponent,
 });
 
+function useFilteredChallenges(
+	challenges: components["schemas"]["AdminChallengeResponse"][],
+	filter: FilterOption,
+	categoryId: string,
+) {
+	return useMemo(() => {
+		return challenges.filter((challenge) => {
+			// Apply status filter
+			if (filter !== "all" && challenge.status !== filter) return false;
+
+			// Apply category filter
+			if (categoryId !== "all") {
+				const thisId = categoryIdFromLabel[challenge.category as CategoryLabel];
+				if (thisId !== categoryId) return false;
+			}
+
+			return true;
+		});
+	}, [challenges, filter, categoryId]);
+}
+
 function RouteComponent() {
 	const { user } = Route.useRouteContext();
 	const { categoryId } = Route.useParams();
@@ -38,22 +62,25 @@ function RouteComponent() {
 	const { $api } = useApi();
 	const { data } = $api.useQuery("get", "/api/admin/challenges");
 
-	const challenges = data?.challenges ?? [];
+	// TODO: remove this in prod (mock status assignment)
+	const challenges = useMemo(() => {
+		const baseChallenges = data?.challenges ?? [];
 
-	// TODO: remove this in prod
-	challenges.forEach((challenge) => {
-		const rand = Math.random();
-		challenge.status =
-			rand < 0.3 ? "completed" : rand < 0.6 ? "locked" : "available";
-	});
+		return baseChallenges.map((challenge) => {
+			const rand = Math.random();
+			return {
+				...challenge,
+				status:
+					rand < 0.3
+						? ("completed" as const)
+						: rand < 0.6
+							? ("locked" as const)
+							: ("available" as const),
+			};
+		});
+	}, [data?.challenges]);
 
-	const filtered = challenges
-		.filter((challenge) => filter === "all" || challenge.status === filter)
-		.filter(
-			(challenge) =>
-				categoryId === "all" ||
-				categoryIdFromLabel[challenge.category as CategoryLabel] === categoryId,
-		);
+	const filtered = useFilteredChallenges(challenges, filter, categoryId);
 
 	return (
 		<PageLayout

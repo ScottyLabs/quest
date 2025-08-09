@@ -23,16 +23,20 @@ export function ChallengeOpenCard({
 }: ChallengeOpenCardProps) {
 	const [isScanning, setIsScanning] = useState(false);
 	const [scanResult, setScanResult] = useState("");
+
 	const [error, setError] = useState("");
 	const [showErrorPopup, setShowErrorPopup] = useState(false);
 	const [showSuccessCard, setShowSuccessCard] = useState(false);
 	const [showPhotoEditCard, setShowPhotoEditCard] = useState(false);
+
 	const [isCompleted, setIsCompleted] = useState(
 		challenge.status === "completed",
 	);
 	const [isCompleting, setIsCompleting] = useState(false);
+
 	const [uploadedImage, setUploadedImage] = useState<string | null>(null);
 	const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+
 	const [isEditing, setIsEditing] = useState(false);
 	const [imageJustUploaded, setImageJustUploaded] = useState(false);
 	const [imageTransform, setImageTransform] = useState({
@@ -40,6 +44,7 @@ export function ChallengeOpenCard({
 		x: 0,
 		y: 0,
 	});
+
 	const [isDragging, setIsDragging] = useState(false);
 	const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 	const [initialDistance, setInitialDistance] = useState(0);

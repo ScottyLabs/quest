@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { PageLayout } from "@/components/page-layout";
-import { VerificationList } from "@/components/Verify/verification-card";
+import { VerificationList } from "@/components/verify/verification-card";
 import { useApi } from "@/lib/api-context";
 import { adminMiddleware } from "@/lib/auth";
 import {

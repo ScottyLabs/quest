@@ -7,14 +7,20 @@ import {
 	colorClasses,
 } from "@/lib/data/categories";
 import type { components } from "@/lib/schema.gen";
+import { ChallengeOpenCard } from "./challenge-open-card";
 
 interface ChallengeCardProps {
 	// TODO: this type changes in prod along with the endpoint
 	challenge: components["schemas"]["AdminChallengeResponse"];
 	isLast: boolean;
+	onChallengeComplete?: (challengeName: string, coinsEarned: number) => void;
 }
 
-export function ChallengeCard({ challenge, isLast }: ChallengeCardProps) {
+export function ChallengeCard({
+	challenge,
+	isLast,
+	onChallengeComplete,
+}: ChallengeCardProps) {
 	// Ensure we're getting the category's challenge color even when the page is "all"
 	const thisId = categoryIdFromLabel[challenge.category as CategoryLabel];
 	const primaryColor = colorClasses[thisId].primary;
@@ -79,7 +85,7 @@ export function ChallengeCard({ challenge, isLast }: ChallengeCardProps) {
 				? "bg-locked"
 				: primaryColor;
 
-	return (
+	const cardContent = (
 		<div className="flex flex-row gap-6">
 			<div className="shrink-0 my-auto">
 				<div
@@ -101,4 +107,18 @@ export function ChallengeCard({ challenge, isLast }: ChallengeCardProps) {
 			<div className="flex-grow">{card}</div>
 		</div>
 	);
+
+	// Wrap available and completed challenges with ChallengeOpenCard
+	if (challenge.status === "available" || challenge.status === "completed") {
+		return (
+			<ChallengeOpenCard
+				challenge={challenge}
+				onChallengeComplete={onChallengeComplete}
+			>
+				{cardContent}
+			</ChallengeOpenCard>
+		);
+	}
+
+	return cardContent;
 }

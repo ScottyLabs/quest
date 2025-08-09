@@ -26,6 +26,7 @@ export function ChallengeOpenCard({
 	const [error, setError] = useState("");
 	const [showErrorPopup, setShowErrorPopup] = useState(false);
 	const [showSuccessCard, setShowSuccessCard] = useState(false);
+	const [showPhotoEditCard, setShowPhotoEditCard] = useState(false);
 	const [isCompleted, setIsCompleted] = useState(
 		challenge.status === "completed",
 	);
@@ -41,6 +42,8 @@ export function ChallengeOpenCard({
 	});
 	const [isDragging, setIsDragging] = useState(false);
 	const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+	const [initialDistance, setInitialDistance] = useState(0);
+	const [initialScale, setInitialScale] = useState(1);
 
 	const videoRef = useRef<HTMLVideoElement | null>(null);
 	const overlayCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -150,6 +153,7 @@ export function ChallengeOpenCard({
 		setError("");
 		setShowErrorPopup(false);
 		setShowSuccessCard(false);
+		setShowPhotoEditCard(false);
 		startScanning();
 	};
 
@@ -172,6 +176,7 @@ export function ChallengeOpenCard({
 		setError("");
 		setShowErrorPopup(false);
 		setShowSuccessCard(false);
+		setShowPhotoEditCard(false);
 
 		// Stop video stream
 		if (videoRef.current?.srcObject) {
@@ -189,6 +194,7 @@ export function ChallengeOpenCard({
 				const result = e.target?.result as string;
 				setUploadedImage(result);
 				setImageJustUploaded(true);
+				setShowPhotoEditCard(true);
 				// Reset the imageJustUploaded state after 3 seconds
 				setTimeout(() => {
 					setImageJustUploaded(false);
@@ -205,6 +211,7 @@ export function ChallengeOpenCard({
 	const startEditing = () => {
 		setIsEditing(true);
 		setImageTransform({ scale: 1, x: 0, y: 0 });
+		setShowPhotoEditCard(true);
 	};
 
 	const stopEditing = () => {
@@ -232,6 +239,69 @@ export function ChallengeOpenCard({
 		setIsDragging(false);
 	};
 
+	const handleTouchStart = (e: React.TouchEvent) => {
+		if (!isEditing) return;
+		e.preventDefault();
+
+		if (e.touches.length === 1) {
+			// Single touch - dragging
+			setIsDragging(true);
+			const touch = e.touches[0];
+			if (touch) {
+				setDragStart({
+					x: touch.clientX - imageTransform.x,
+					y: touch.clientY - imageTransform.y,
+				});
+			}
+		} else if (e.touches.length === 2) {
+			// Two touches - pinch to zoom
+			const touch1 = e.touches[0];
+			const touch2 = e.touches[1];
+			if (touch1 && touch2) {
+				const distance = Math.sqrt(
+					(touch2.clientX - touch1.clientX) ** 2 +
+						(touch2.clientY - touch1.clientY) ** 2,
+				);
+				setInitialDistance(distance);
+				setInitialScale(imageTransform.scale);
+			}
+		}
+	};
+
+	const handleTouchMove = (e: React.TouchEvent) => {
+		if (!isEditing) return;
+		e.preventDefault();
+
+		if (e.touches.length === 1 && isDragging) {
+			// Single touch - dragging
+			const touch = e.touches[0];
+			if (touch) {
+				const newX = touch.clientX - dragStart.x;
+				const newY = touch.clientY - dragStart.y;
+				setImageTransform((prev) => ({ ...prev, x: newX, y: newY }));
+			}
+		} else if (e.touches.length === 2) {
+			// Two touches - pinch to zoom
+			const touch1 = e.touches[0];
+			const touch2 = e.touches[1];
+			if (touch1 && touch2 && initialDistance > 0) {
+				const distance = Math.sqrt(
+					(touch2.clientX - touch1.clientX) ** 2 +
+						(touch2.clientY - touch1.clientY) ** 2,
+				);
+				const scale = (distance / initialDistance) * initialScale;
+				const clampedScale = Math.max(0.5, Math.min(3, scale));
+				setImageTransform((prev) => ({ ...prev, scale: clampedScale }));
+			}
+		}
+	};
+
+	const handleTouchEnd = () => {
+		setIsDragging(false);
+		setInitialDistance(0);
+		setInitialScale(1);
+	};
+
 	const handleWheel = (e: React.WheelEvent) => {
 		if (!isEditing) return;
 		e.preventDefault();
@@ -252,8 +322,9 @@ export function ChallengeOpenCard({
 		const img = imageRef.current;
 		const editor = editorRef.current;
 
-		canvas.width = 208; // w-52 = 208px
-		canvas.height = 208;
+		// Use the actual image dimensions for better quality
+		canvas.width = img.naturalWidth || 800;
+		canvas.height = img.naturalHeight || 800;
 
 		// Calculate the visible area
 		const scale = imageTransform.scale;
@@ -265,13 +336,15 @@ export function ChallengeOpenCard({
 		ctx.translate(canvas.width / 2, canvas.height / 2);
 		ctx.scale(scale, scale);
 		ctx.translate(-x / scale, -y / scale);
-		ctx.drawImage(img, -img.width / 2, -img.height / 2);
+		ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
 		ctx.restore();
 
 		// Convert to base64
 		const editedImageData = canvas.toDataURL("image/jpeg", 0.8);
 		setUploadedImage(editedImageData);
 		stopEditing();
+		// Keep the photo edit card open after saving
+		setShowPhotoEditCard(true);
 	};
 
 	const closeErrorPopup = () => {
@@ -284,12 +357,22 @@ export function ChallengeOpenCard({
 		setIsCompleted(true);
 	};
 
+	const handlePhotoEditContinue = () => {
+		setShowPhotoEditCard(false);
+		setIsEditing(false);
+	};
+
+	const handlePhotoEditReplace = () => {
+		openPhotoUpload();
+	};
+
 	const closeModal = () => {
 		setIsScanning(false);
 		setScanResult("");
 		setError("");
 		setShowErrorPopup(false);
 		setShowSuccessCard(false);
+		setShowPhotoEditCard(false);
 		setIsCompleted(challenge.status === "completed");
 		setUploadedImage(null);
 		setIsEditing(false);
@@ -331,45 +414,53 @@ export function ChallengeOpenCard({
 					</div>
 
 					{/* Content */}
-					<div className="flex flex-col justify-start items-center gap-4 px-6">
-						{/* Image placeholder or uploaded image */}
-						<div className="w-full flex flex-col justify-center items-center relative">
-							{uploadedImage ? (
-								<div className="relative" ref={editorRef}>
+					{showPhotoEditCard && uploadedImage ? (
+						<div className="flex flex-col justify-start items-center gap-6 px-6 flex-1">
+							{/* Large Image Holder with Grid Overlay */}
+							<div className="w-full flex flex-col justify-center items-center relative">
+								<div
+									className={`relative w-full aspect-square rounded-3xl overflow-hidden ${isEditing ? "cursor-move ring-2 ring-blue-400 select-none touch-none" : ""}`}
+									{...(isEditing
+										? {
+												onMouseDown: handleMouseDown,
+												onMouseMove: handleMouseMove,
+												onMouseUp: handleMouseUp,
+												onTouchStart: handleTouchStart,
+												onTouchMove: handleTouchMove,
+												onTouchEnd: handleTouchEnd,
+												onWheel: handleWheel,
+												role: "button",
+												tabIndex: 0,
+											}
+										: {})}
+								>
+									<img
+										src={uploadedImage}
+										alt="Challenge completion"
+										className={`w-full h-full object-cover transition-transform duration-200 ${isEditing ? "cursor-move" : ""}`}
+										ref={imageRef}
+										style={
+											isEditing
+												? {
+														transform: `translate(${imageTransform.x}px, ${imageTransform.y}px) scale(${imageTransform.scale})`,
+														transition: "none",
+													}
+												: {}
+										}
+									/>
+									{/* 3x3 Grid Overlay for Cropping */}
 									{isEditing && (
-										<div className="absolute -top-8 left-0 right-0 text-center text-sm text-gray-600 bg-yellow-50 px-2 py-1 rounded">
-											Drag to move • Scroll to zoom • Click ✓ to save
+										<div className="absolute inset-0 pointer-events-none">
+											{/* Vertical lines */}
+											<div className="absolute left-1/3 top-0 bottom-0 w-px bg-white opacity-50"></div>
+											<div className="absolute right-1/3 top-0 bottom-0 w-px bg-white opacity-50"></div>
+											{/* Horizontal lines */}
+											<div className="absolute top-1/3 left-0 right-0 h-px bg-white opacity-50"></div>
+											<div className="absolute bottom-1/3 left-0 right-0 h-px bg-white opacity-50"></div>
 										</div>
 									)}
-									<div
-										className={`w-52 h-52 rounded-3xl overflow-hidden ${isEditing ? "cursor-move ring-2 ring-blue-400" : ""}`}
-										{...(isEditing
-											? {
-													onMouseDown: handleMouseDown,
-													onMouseMove: handleMouseMove,
-													onMouseUp: handleMouseUp,
-													onWheel: handleWheel,
-													role: "button",
-													tabIndex: 0,
-												}
-											: {})}
-									>
-										<img
-											src={uploadedImage}
-											alt="Challenge completion"
-											className={`w-full h-full object-cover transition-transform duration-200 ${isEditing ? "cursor-move" : ""}`}
-											ref={imageRef}
-											style={
-												isEditing
-													? {
-															transform: `translate(${imageTransform.x}px, ${imageTransform.y}px) scale(${imageTransform.scale})`,
-															transition: "none",
-														}
-													: {}
-											}
-										/>
-									</div>
-									{isCompleted && !isEditing && (
+									{/* Edit Button */}
+									{!isEditing && (
 										<button
 											type="button"
 											onClick={startEditing}
@@ -379,176 +470,284 @@ export function ChallengeOpenCard({
 											<Edit className="w-4 h-4 text-gray-600" />
 										</button>
 									)}
-									{isEditing && (
-										<div className="absolute top-2 right-2 flex gap-2">
-											<button
-												type="button"
-												onClick={saveEditedImage}
-												className="w-8 h-8 bg-green-500 rounded-full shadow-lg flex items-center justify-center hover:bg-green-600 transition-colors"
-												title="Save changes"
-											>
-												<Check className="w-4 h-4 text-white" />
-											</button>
-											<button
-												type="button"
-												onClick={stopEditing}
-												className="w-8 h-8 bg-red-500 rounded-full shadow-lg flex items-center justify-center hover:bg-red-600 transition-colors"
-												title="Cancel editing"
-											>
-												<X className="w-4 h-4 text-white" />
-											</button>
-										</div>
-									)}
 								</div>
-							) : (
-								<div className="w-52 h-52 bg-gray-100 rounded-3xl flex items-center justify-center relative">
-									{isCompleted && !uploadedImage && (
-										<Check className="w-16 h-16 text-green-500" />
-									)}
-								</div>
-							)}
+							</div>
+
+							{/* Buttons */}
+							<div className="w-full flex gap-4 mb-6">
+								{isEditing ? (
+									<>
+										<button
+											type="button"
+											onClick={stopEditing}
+											className="flex-1 h-12 px-6 py-3 bg-red-500 rounded-3xl flex justify-center items-center gap-2 hover:bg-red-600 transition-colors"
+										>
+											<X className="w-6 h-6 text-white" />
+											<div className="text-center justify-start text-white text-base font-bold font-['Open_Sans'] leading-normal">
+												Cancel
+											</div>
+										</button>
+										<button
+											type="button"
+											onClick={saveEditedImage}
+											className="flex-1 h-12 px-6 py-3 bg-green-500 rounded-3xl flex justify-center items-center gap-2 hover:bg-green-600 transition-colors"
+										>
+											<Check className="w-6 h-6 text-white" />
+											<div className="text-center justify-start text-white text-base font-bold font-['Open_Sans'] leading-normal">
+												Save
+											</div>
+										</button>
+									</>
+								) : (
+									<>
+										<button
+											type="button"
+											onClick={handlePhotoEditReplace}
+											className="flex-1 h-12 px-6 py-3 bg-gray-500 rounded-3xl flex justify-center items-center gap-2 hover:bg-gray-600 transition-colors"
+										>
+											<div className="w-7 h-7 relative overflow-hidden">
+												<Camera className="w-6 h-6 text-white" />
+											</div>
+											<div className="text-center justify-start text-white text-base font-bold font-['Open_Sans'] leading-normal">
+												Replace
+											</div>
+										</button>
+										<button
+											type="button"
+											onClick={handlePhotoEditContinue}
+											className="flex-1 h-12 px-6 py-3 bg-red-700 rounded-3xl flex justify-center items-center gap-2 hover:bg-red-800 transition-colors"
+										>
+											<div className="text-center justify-start text-white text-base font-bold font-['Open_Sans'] leading-normal">
+												Continue
+											</div>
+										</button>
+									</>
+								)}
+							</div>
 						</div>
-
-						{/* Details */}
-						<div className="flex flex-col justify-center items-center gap-7 w-full">
-							<div className="flex flex-col justify-start items-start gap-6">
-								<div className="flex flex-col justify-start items-start gap-4">
-									<div className="flex flex-col justify-start items-center gap-4">
-										{/* Description */}
-										<div className="flex flex-col justify-start items-start gap-[3px]">
-											<div className="inline-flex justify-center items-center gap-2.5">
-												<div className="justify-start text-gray-800 text-base font-semibold font-['Open_Sans'] tracking-tight">
-													Description:
-												</div>
+					) : (
+						<div className="flex flex-col justify-start items-center gap-4 px-6">
+							{/* Image placeholder or uploaded image */}
+							<div className="w-full flex flex-col justify-center items-center relative">
+								{uploadedImage ? (
+									<div className="relative" ref={editorRef}>
+										{isEditing && (
+											<div className="absolute -top-8 left-0 right-0 text-center text-sm text-gray-600 bg-yellow-50 px-2 py-1 rounded">
+												Drag to move • Scroll to zoom • Click ✓ to save
 											</div>
-											<div className="inline-flex justify-center items-center gap-2.5">
-												<div className="justify-start text-gray-600 text-xs font-semibold font-['Open_Sans'] tracking-tight">
-													{challenge.description}
-												</div>
-											</div>
+										)}
+										<div
+											className={`w-52 h-52 rounded-3xl overflow-hidden ${isEditing ? "cursor-move ring-2 ring-blue-400 select-none touch-none" : ""}`}
+											{...(isEditing
+												? {
+														onMouseDown: handleMouseDown,
+														onMouseMove: handleMouseMove,
+														onMouseUp: handleMouseUp,
+														onTouchStart: handleTouchStart,
+														onTouchMove: handleTouchMove,
+														onTouchEnd: handleTouchEnd,
+														onWheel: handleWheel,
+														role: "button",
+														tabIndex: 0,
+													}
+												: {})}
+										>
+											<img
+												src={uploadedImage}
+												alt="Challenge completion"
+												className={`w-full h-full object-cover transition-transform duration-200 ${isEditing ? "cursor-move" : ""}`}
+												ref={imageRef}
+												style={
+													isEditing
+														? {
+																transform: `translate(${imageTransform.x}px, ${imageTransform.y}px) scale(${imageTransform.scale})`,
+																transition: "none",
+															}
+														: {}
+												}
+											/>
 										</div>
+										{isCompleted && !isEditing && (
+											<button
+												type="button"
+												onClick={startEditing}
+												className="absolute top-2 right-2 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-100 transition-colors"
+												title="Edit image"
+											>
+												<Edit className="w-4 h-4 text-gray-600" />
+											</button>
+										)}
+										{isEditing && (
+											<div className="absolute top-2 right-2 flex gap-2">
+												<button
+													type="button"
+													onClick={saveEditedImage}
+													className="w-8 h-8 bg-green-500 rounded-full shadow-lg flex items-center justify-center hover:bg-green-600 transition-colors"
+													title="Save changes"
+												>
+													<Check className="w-4 h-4 text-white" />
+												</button>
+												<button
+													type="button"
+													onClick={stopEditing}
+													className="w-8 h-8 bg-red-500 rounded-full shadow-lg flex items-center justify-center hover:bg-red-600 transition-colors"
+													title="Cancel editing"
+												>
+													<X className="w-4 h-4 text-white" />
+												</button>
+											</div>
+										)}
 									</div>
+								) : (
+									<div className="w-52 h-52 bg-gray-100 rounded-3xl flex items-center justify-center relative">
+										{isCompleted && !uploadedImage && (
+											<Check className="w-16 h-16 text-green-500" />
+										)}
+									</div>
+								)}
+							</div>
 
-									{/* Location */}
-									<div className="flex flex-col justify-start items-start gap-1">
-										<div className="inline-flex justify-start items-center gap-2">
-											<div className="justify-start">
-												<span className="text-gray-800 text-base font-semibold font-['Open_Sans'] tracking-tight">
-													Location:{" "}
-												</span>
-											</div>
-											<div className="flex justify-start items-center gap-[3px]">
-												<div className="justify-start text-red-700 text-base font-semibold font-['Open_Sans'] underline tracking-tight">
-													{challenge.location}
+							{/* Details */}
+							<div className="flex flex-col justify-center items-center gap-7 w-full">
+								<div className="flex flex-col justify-start items-start gap-6">
+									<div className="flex flex-col justify-start items-start gap-4">
+										<div className="flex flex-col justify-start items-center gap-4">
+											{/* Description */}
+											<div className="flex flex-col justify-start items-start gap-[3px]">
+												<div className="inline-flex justify-center items-center gap-2.5">
+													<div className="justify-start text-gray-800 text-base font-semibold font-['Open_Sans'] tracking-tight">
+														Description:
+													</div>
 												</div>
-												<div className="w-4 h-4 relative overflow-hidden">
-													<ExternalLink className="w-4 h-4 text-rose-700" />
+												<div className="inline-flex justify-center items-center gap-2.5">
+													<div className="justify-start text-gray-600 text-xs font-semibold font-['Open_Sans'] tracking-tight">
+														{challenge.description}
+													</div>
 												</div>
 											</div>
 										</div>
 
-										{/* More Info */}
-										{challenge.more_info_link && (
+										{/* Location */}
+										<div className="flex flex-col justify-start items-start gap-1">
 											<div className="inline-flex justify-start items-center gap-2">
 												<div className="justify-start">
 													<span className="text-gray-800 text-base font-semibold font-['Open_Sans'] tracking-tight">
-														More Info:{" "}
+														Location:{" "}
 													</span>
 												</div>
 												<div className="flex justify-start items-center gap-[3px]">
-													<a
-														href={challenge.more_info_link}
-														target="_blank"
-														rel="noopener noreferrer"
-														className="justify-start text-red-700 text-base font-semibold font-['Open_Sans'] underline tracking-tight"
-													>
-														Learn More
-													</a>
+													<div className="justify-start text-red-700 text-base font-semibold font-['Open_Sans'] underline tracking-tight">
+														{challenge.location}
+													</div>
 													<div className="w-4 h-4 relative overflow-hidden">
 														<ExternalLink className="w-4 h-4 text-rose-700" />
 													</div>
 												</div>
 											</div>
-										)}
-									</div>
-								</div>
 
-								{/* Reward */}
-								{!isCompleted && (
-									<div className="w-full h-11 bg-rose-700 rounded-xl shadow-[0px_6px_0px_0px_rgba(154,16,35,1.00)] flex items-center justify-center px-4">
-										<div className="flex items-center gap-2">
-											<div className="justify-start text-white text-base font-bold font-['Open_Sans'] tracking-tight">
-												Reward: +{challenge.scotty_coins}
-											</div>
-											<ScottyCoin className="w-5 h-5 bg-yellow-400 rounded-full" />
-										</div>
-									</div>
-								)}
-							</div>
-
-							{/* Scan Button or Photo Upload Button */}
-							{!isCompleted ? (
-								<div className="w-full h-12 inline-flex justify-center items-center">
-									<div className="flex-1 h-12 flex justify-center items-center">
-										<button
-											type="button"
-											onClick={openScannerModal}
-											disabled={isCompleting}
-											className="flex-1 h-12 px-8 py-3 bg-red-700 rounded-3xl flex justify-center items-center gap-2 disabled:opacity-50"
-										>
-											<div className="w-7 h-7 relative overflow-hidden">
-												<QrCode className="w-6 h-6 text-white" />
-											</div>
-											<div className="text-center justify-start text-white text-base font-bold font-['Open_Sans'] leading-normal">
-												Scan QR Code
-											</div>
-										</button>
-									</div>
-								</div>
-							) : (
-								<div className="w-full h-12 inline-flex justify-center items-center">
-									<div className="flex-1 h-12 flex justify-center items-center">
-										{uploadedImage ? (
-											imageJustUploaded ? (
-												<div className="flex-1 h-12 px-8 py-3 bg-green-600 rounded-3xl flex justify-center items-center gap-2">
-													<Check className="w-6 h-6 text-white" />
-													<div className="text-center justify-start text-white text-base font-bold font-['Open_Sans'] leading-normal">
-														Image Uploaded!
+											{/* More Info */}
+											{challenge.more_info_link && (
+												<div className="inline-flex justify-start items-center gap-2">
+													<div className="justify-start">
+														<span className="text-gray-800 text-base font-semibold font-['Open_Sans'] tracking-tight">
+															More Info:{" "}
+														</span>
+													</div>
+													<div className="flex justify-start items-center gap-[3px]">
+														<a
+															href={challenge.more_info_link}
+															target="_blank"
+															rel="noopener noreferrer"
+															className="justify-start text-red-700 text-base font-semibold font-['Open_Sans'] underline tracking-tight"
+														>
+															Learn More
+														</a>
+														<div className="w-4 h-4 relative overflow-hidden">
+															<ExternalLink className="w-4 h-4 text-rose-700" />
+														</div>
 													</div>
 												</div>
+											)}
+										</div>
+									</div>
+
+									{/* Reward */}
+									{!isCompleted && (
+										<div className="w-full h-11 bg-rose-700 rounded-xl shadow-[0px_6px_0px_0px_rgba(154,16,35,1.00)] flex items-center justify-center px-4">
+											<div className="flex items-center gap-2">
+												<div className="justify-start text-white text-base font-bold font-['Open_Sans'] tracking-tight">
+													Reward: +{challenge.scotty_coins}
+												</div>
+												<ScottyCoin className="w-5 h-5 bg-yellow-400 rounded-full" />
+											</div>
+										</div>
+									)}
+								</div>
+
+								{/* Scan Button or Photo Upload Button */}
+								{!isCompleted ? (
+									<div className="w-full h-12 inline-flex justify-center items-center">
+										<div className="flex-1 h-12 flex justify-center items-center">
+											<button
+												type="button"
+												onClick={openScannerModal}
+												disabled={isCompleting}
+												className="flex-1 h-12 px-8 py-3 bg-red-700 rounded-3xl flex justify-center items-center gap-2 disabled:opacity-50"
+											>
+												<div className="w-7 h-7 relative overflow-hidden">
+													<QrCode className="w-6 h-6 text-white" />
+												</div>
+												<div className="text-center justify-start text-white text-base font-bold font-['Open_Sans'] leading-normal">
+													Scan QR Code
+												</div>
+											</button>
+										</div>
+									</div>
+								) : (
+									<div className="w-full h-12 inline-flex justify-center items-center">
+										<div className="flex-1 h-12 flex justify-center items-center">
+											{uploadedImage ? (
+												imageJustUploaded ? (
+													<div className="flex-1 h-12 px-8 py-3 bg-green-600 rounded-3xl flex justify-center items-center gap-2">
+														<Check className="w-6 h-6 text-white" />
+														<div className="text-center justify-start text-white text-base font-bold font-['Open_Sans'] leading-normal">
+															Image Uploaded!
+														</div>
+													</div>
+												) : (
+													<button
+														type="button"
+														onClick={openPhotoUpload}
+														className="flex-1 h-12 px-8 py-3 bg-red-700 rounded-3xl flex justify-center items-center gap-2"
+													>
+														<div className="w-7 h-7 relative overflow-hidden">
+															<Camera className="w-6 h-6 text-white" />
+														</div>
+														<div className="text-center justify-start text-white text-base font-bold font-['Open_Sans'] leading-normal">
+															Replace Image
+														</div>
+													</button>
+												)
 											) : (
 												<button
 													type="button"
 													onClick={openPhotoUpload}
-													className="flex-1 h-12 px-8 py-3 bg-red-700 rounded-3xl flex justify-center items-center gap-2"
+													className="flex-1 h-12 px-8 py-3 bg-red-700  rounded-3xl flex justify-center items-center gap-2"
 												>
 													<div className="w-7 h-7 relative overflow-hidden">
 														<Camera className="w-6 h-6 text-white" />
 													</div>
 													<div className="text-center justify-start text-white text-base font-bold font-['Open_Sans'] leading-normal">
-														Replace Image
+														Add Photo
 													</div>
 												</button>
-											)
-										) : (
-											<button
-												type="button"
-												onClick={openPhotoUpload}
-												className="flex-1 h-12 px-8 py-3 bg-red-700  rounded-3xl flex justify-center items-center gap-2"
-											>
-												<div className="w-7 h-7 relative overflow-hidden">
-													<Camera className="w-6 h-6 text-white" />
-												</div>
-												<div className="text-center justify-start text-white text-base font-bold font-['Open_Sans'] leading-normal">
-													Add Photo
-												</div>
-											</button>
-										)}
+											)}
+										</div>
 									</div>
-								</div>
-							)}
+								)}
+							</div>
 						</div>
-					</div>
+					)}
 				</div>
 
 				{/* Hidden file input for photo upload */}
@@ -556,7 +755,6 @@ export function ChallengeOpenCard({
 					ref={fileInputRef}
 					type="file"
 					accept="image/*"
-					capture="environment"
 					onChange={handlePhotoUpload}
 					className="hidden"
 				/>
@@ -715,47 +913,47 @@ export function ChallengeOpenCard({
 						</div>
 					</div>
 				)}
-			</DialogContent>
 
-			{/* Error Popup Modal */}
-			{showErrorPopup && (
-				<div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[60] p-4">
-					<div className="bg-white rounded-2xl max-w-md w-full mx-4 shadow-2xl">
-						{/* Header */}
-						<div className="flex justify-between items-center p-6 border-b">
-							<h3 className="text-lg font-semibold text-red-800">Error</h3>
-							<button
-								type="button"
-								onClick={closeErrorPopup}
-								className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
-							>
-								×
-							</button>
-						</div>
+				{/* Error Popup Modal */}
+				{showErrorPopup && (
+					<div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[60] p-4">
+						<div className="bg-white rounded-2xl max-w-md w-full mx-4 shadow-2xl">
+							{/* Header */}
+							<div className="flex justify-between items-center p-6 border-b">
+								<h3 className="text-lg font-semibold text-red-800">Error</h3>
+								<button
+									type="button"
+									onClick={closeErrorPopup}
+									className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+								>
+									×
+								</button>
+							</div>
 
-						{/* Content */}
-						<div className="p-6">
-							<div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-								<h4 className="text-lg font-semibold text-red-800 mb-2">
-									Challenge Completion Failed
-								</h4>
-								<p className="text-red-600 mb-3">{error}</p>
+							{/* Content */}
+							<div className="p-6">
+								<div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+									<h4 className="text-lg font-semibold text-red-800 mb-2">
+										Challenge Completion Failed
+									</h4>
+									<p className="text-red-600 mb-3">{error}</p>
+								</div>
+							</div>
+
+							{/* Footer */}
+							<div className="flex justify-end gap-2 p-6 border-t">
+								<button
+									type="button"
+									onClick={closeErrorPopup}
+									className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition-colors"
+								>
+									OK
+								</button>
 							</div>
 						</div>
-
-						{/* Footer */}
-						<div className="flex justify-end gap-2 p-6 border-t">
-							<button
-								type="button"
-								onClick={closeErrorPopup}
-								className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition-colors"
-							>
-								OK
-							</button>
-						</div>
 					</div>
-				</div>
-			)}
+				)}
+			</DialogContent>
 		</Dialog>
 	);
 }

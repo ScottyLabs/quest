@@ -1,3 +1,4 @@
+import type { QueryClient } from "@tanstack/react-query";
 import { redirect } from "@tanstack/react-router";
 import createFetchClient from "openapi-fetch";
 import type { components, paths } from "@/lib/schema.gen";
@@ -9,48 +10,47 @@ export interface AuthContext {
 }
 
 // Auth middleware function
-export async function requireAuth({ baseUrl }: RouterContext) {
+export async function requireAuth({ baseUrl, queryClient }: RouterContext) {
+	const queryKey = ["get", "/api/profile", {}];
 	const fetchClient = createFetchClient<paths>({
 		baseUrl,
 		credentials: "include",
 	});
 
 	try {
-		const { data, error } = await fetchClient.GET("/api/profile");
+		// Check cache first
+		const cachedData = queryClient.getQueryData(queryKey);
+		if (cachedData) {
+			const user = cachedData as components["schemas"]["UserProfileResponse"];
+			const authContext = { isAuthenticated: true, user };
 
-		if (data && !error) {
-			const authContext = { isAuthenticated: true, user: data } as AuthContext;
+			return handleAuthSuccess(authContext);
+		}
 
-			// If user has a dorm set, redirect away from dorm selection page
-			if (data.dorm && window.location.pathname === "/dorm-select") {
-				const urlParams = new URLSearchParams(window.location.search);
-				const from = urlParams.get("from") || "/";
+		const data = await queryClient.fetchQuery({
+			queryKey,
+			queryFn: async () => {
+				const response = await fetchClient.GET("/api/profile");
+				if (response.error) throw new Error("Failed to fetch profile");
 
-				throw redirect({ to: from });
-			}
+				return response.data;
+			},
+		});
 
-			// Redirect to dorm selection for all other pages
-			if (!data.dorm && window.location.pathname !== "/dorm-select") {
-				throw redirect({
-					to: "/dorm-select",
-					search: { from: window.location.pathname },
-				});
-			}
-
-			return authContext;
+		if (data) {
+			const authContext = { isAuthenticated: true, user: data };
+			return handleAuthSuccess(authContext);
 		} else {
-			throw redirect({
-				to: "/login",
-				search: { from: window.location.pathname },
-			});
+			throw new Error("No profile data");
 		}
 	} catch (error) {
+		queryClient.removeQueries({ queryKey });
+
 		if (error && typeof error === "object" && "options" in error) {
 			// It's a redirect, re-throw it
 			throw error;
 		}
 
-		// The API call failed, redirect to login
 		throw redirect({
 			to: "/login",
 			search: { from: window.location.pathname },
@@ -78,36 +78,85 @@ export async function adminMiddleware(context: RouterContext) {
 }
 
 // Redirect if already authenticated
-export async function redirectIfAuthenticated({ baseUrl }: RouterContext) {
+export async function redirectIfAuthenticated({
+	baseUrl,
+	queryClient,
+}: RouterContext) {
+	const queryKey = ["get", "/api/profile", {}];
 	const fetchClient = createFetchClient<paths>({
 		baseUrl,
 		credentials: "include",
 	});
 
 	try {
-		const { data, error } = await fetchClient.GET("/api/profile");
+		// Check cache first
+		const cachedData = queryClient.getQueryData(queryKey);
+		if (cachedData) {
+			const user = cachedData as components["schemas"]["UserProfileResponse"];
+			return handleRedirectLogic(user);
+		}
 
-		if (data && !error) {
-			// User is authenticated, but did not select a dorm
-			if (!data.dorm) {
-				throw redirect({
-					to: "/dorm-select",
-					search: { from: window.location.pathname },
-				});
-			}
+		const data = await queryClient.fetchQuery({
+			queryKey,
+			queryFn: async () => {
+				const response = await fetchClient.GET("/api/profile");
+				if (response.error) throw new Error("Failed to fetch profile");
 
-			// User is authenticated and has a dorm, redirect
-			const urlParams = new URLSearchParams(window.location.search);
-			const from = urlParams.get("from") || "/";
+				return response.data;
+			},
+		});
 
-			throw redirect({ to: from });
+		if (data) {
+			return handleRedirectLogic(data);
 		}
 	} catch (error) {
 		if (error && typeof error === "object" && "options" in error) {
 			// It's a redirect, re-throw it
 			throw error;
 		}
-
-		// The API call failed, do nothing
 	}
+}
+
+function handleAuthSuccess(authContext: AuthContext): AuthContext {
+	const { user } = authContext;
+
+	if (user.dorm && window.location.pathname === "/dorm-select") {
+		const urlParams = new URLSearchParams(window.location.search);
+		const from = urlParams.get("from") || "/";
+		throw redirect({ to: from });
+	}
+
+	if (!user.dorm && window.location.pathname !== "/dorm-select") {
+		throw redirect({
+			to: "/dorm-select",
+			search: { from: window.location.pathname },
+		});
+	}
+
+	return authContext;
+}
+
+function handleRedirectLogic(
+	user: components["schemas"]["UserProfileResponse"],
+) {
+	if (!user.dorm) {
+		throw redirect({
+			to: "/dorm-select",
+			search: { from: window.location.pathname },
+		});
+	}
+
+	// User is authenticated and has a dorm, redirect
+	const urlParams = new URLSearchParams(window.location.search);
+	const from = urlParams.get("from") || "/";
+
+	throw redirect({ to: from });
+}
+
+// Call alongside logout
+export function clearAuthCache(queryClient: QueryClient) {
+	queryClient.removeQueries({
+		predicate: (query) =>
+			query.queryKey[0] === "get" && query.queryKey[1] === "/api/profile",
+	});
 }

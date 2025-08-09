@@ -28,7 +28,7 @@ const router = createRouter({
 	routeTree,
 	scrollRestoration: true,
 	defaultViewTransition: true,
-	context: { baseUrl: "" },
+	context: { baseUrl: "http://localhost:3000", queryClient },
 });
 
 // Register the router instance for type safety
@@ -41,7 +41,7 @@ declare module "@tanstack/react-router" {
 function AppWithRouter() {
 	const { baseUrl } = useApi();
 
-	return <RouterProvider router={router} context={{ baseUrl }} />;
+	return <RouterProvider router={router} context={{ baseUrl, queryClient }} />;
 }
 
 // biome-ignore lint/style/noNonNullAssertion: guaranteed to exist in index.html

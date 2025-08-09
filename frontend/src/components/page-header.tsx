@@ -4,7 +4,7 @@ import { useState } from "react";
 import HeaderArc from "@/assets/header-arc.svg?react";
 import ScottyCoin from "@/assets/scotty-coin.svg?react";
 import { FilterCard } from "@/components/challenges/filter-card";
-import { useFilterContext } from "@/components/challenges/filter-layout";
+import { useFilter } from "@/components/challenges/filter-context";
 import { InfoDialog } from "@/components/challenges/info-dialog";
 import {
 	type CategoryId,
@@ -17,8 +17,7 @@ import type { components } from "@/lib/schema.gen";
 import type { ValueOf } from "@/lib/utils";
 
 interface PageHeaderProps {
-	categoryId: CategoryId;
-	isCategoryPage: boolean;
+	categoryId?: CategoryId;
 	pageColors: ValueOf<typeof colorClasses>;
 	pageObject: ValueOf<typeof pageObject>;
 	user: components["schemas"]["UserProfileResponse"];
@@ -26,19 +25,15 @@ interface PageHeaderProps {
 
 export function PageHeader({
 	categoryId,
-	isCategoryPage,
 	pageColors,
 	pageObject,
 	user,
 }: PageHeaderProps) {
 	const [isFilterOpen, setIsFilterOpen] = useState(false);
 	const [isInfoOpen, setIsInfoOpen] = useState(false);
+	const { filter, setFilter } = useFilter();
 
-	const { selectedFilter, setSelectedFilter } = useFilterContext();
-
-	const Icon = isCategoryPage
-		? categoryIconFromId[categoryId]
-		: pageObject.Icon;
+	const Icon = categoryId ? categoryIconFromId[categoryId] : pageObject.Icon;
 
 	return (
 		<>
@@ -47,8 +42,9 @@ export function PageHeader({
 			>
 				<div className="absolute top-6 w-full flex flex-row justify-between items-center px-6">
 					<Link
-						to="/"
-						className="flex items-center w-20 justify-center bg-white duration-250 hover:shadow-none transition-all hover:bg-gray-100 rounded-full px-3 py-2 shadow-[0_3px_0_#bbb] text-sm font-bold gap-1"
+						to="/challenges/$categoryId"
+						params={{ categoryId: "all" }}
+						className="flex items-center w-20 justify-center bg-white duration-250 hover:shadow-none transition-all hover:bg-gray-100 hover:translate-y-[3px] rounded-full px-3 py-2 shadow-[0_3px_0_#bbb] text-sm font-bold gap-1"
 						aria-label="View Challenges"
 					>
 						<Flag size={18} className="text-red-600" />
@@ -60,7 +56,7 @@ export function PageHeader({
 
 					<Link
 						to="/terrier-trade"
-						className="flex items-center w-20 justify-center bg-white duration-250 hover:shadow-none transition-all hover:bg-gray-100 rounded-full px-3 py-2 shadow-[0_3px_0_#bbb] text-sm font-bold gap-2"
+						className="flex items-center w-20 justify-center bg-white duration-250 hover:shadow-none transition-all hover:bg-gray-100 hover:translate-y-[3px] rounded-full px-3 py-2 shadow-[0_3px_0_#bbb] text-sm font-bold gap-2"
 						aria-label="View Coins"
 					>
 						<ScottyCoin className="size-5" />
@@ -86,7 +82,7 @@ export function PageHeader({
 					{/* Title and components positioned inside the arc, below the icon */}
 					<div className={`absolute inset-0 flex items-end px-6 pb-1`}>
 						<div className="mx-auto flex flex-row gap-2">
-							{isCategoryPage && (
+							{categoryId && (
 								<>
 									<button
 										type="button"
@@ -103,7 +99,7 @@ export function PageHeader({
 								{pageObject.label}
 							</span>
 
-							{isCategoryPage && (
+							{categoryId && (
 								<>
 									<span className="text-white my-auto">&middot;</span>
 									<button
@@ -121,7 +117,7 @@ export function PageHeader({
 			</div>
 
 			{/* Challenge category bar */}
-			{isCategoryPage && (
+			{categoryId && (
 				<div className="flex flex-row px-4 mt-4 w-screen mb-2 [scrollbar-width:none] overflow-x-scroll">
 					<div className="flex-grow" />
 
@@ -129,7 +125,8 @@ export function PageHeader({
 						{categories.map((category) => (
 							<Link
 								key={category.label}
-								to={category.to}
+								to="/challenges/$categoryId"
+								params={{ categoryId: category.id }}
 								className={`px-3 py-1 text-white font-bold text-nowrap rounded-md text-sm transition-colors ${categoryId === category.id && pageColors.selected}`}
 							>
 								{category.label}
@@ -142,17 +139,17 @@ export function PageHeader({
 			)}
 
 			{/* Filter Card */}
-			{isCategoryPage && (
+			{categoryId && (
 				<FilterCard
 					isOpen={isFilterOpen}
 					onClose={() => setIsFilterOpen(false)}
-					selectedFilter={selectedFilter}
-					onFilterChange={setSelectedFilter}
+					selectedFilter={filter}
+					onFilterChange={setFilter}
 				/>
 			)}
 
 			{/* Info Dialog */}
-			{isCategoryPage && (
+			{categoryId && (
 				<InfoDialog
 					isOpen={isInfoOpen}
 					onOpenChange={setIsInfoOpen}

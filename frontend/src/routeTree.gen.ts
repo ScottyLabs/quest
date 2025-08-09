@@ -12,19 +12,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as TerrierTradeRouteImport } from './routes/terrier-trade'
 import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as DormSelectRouteImport } from './routes/dorm-select'
 import { Route as CameraTestRouteImport } from './routes/camera-test'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as Challenges6RouteImport } from './routes/challenges/6'
-import { Route as Challenges5RouteImport } from './routes/challenges/5'
-import { Route as Challenges4RouteImport } from './routes/challenges/4'
-import { Route as Challenges3RouteImport } from './routes/challenges/3'
-import { Route as Challenges2RouteImport } from './routes/challenges/2'
-import { Route as Challenges1RouteImport } from './routes/challenges/1'
+import { Route as ChallengesCategoryIdRouteImport } from './routes/challenges/$categoryId'
 
 const VerifyRoute = VerifyRouteImport.update({
   id: '/verify',
@@ -39,11 +33,6 @@ const TerrierTradeRoute = TerrierTradeRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OnboardingRoute = OnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -76,34 +65,9 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const Challenges6Route = Challenges6RouteImport.update({
-  id: '/challenges/6',
-  path: '/challenges/6',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const Challenges5Route = Challenges5RouteImport.update({
-  id: '/challenges/5',
-  path: '/challenges/5',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const Challenges4Route = Challenges4RouteImport.update({
-  id: '/challenges/4',
-  path: '/challenges/4',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const Challenges3Route = Challenges3RouteImport.update({
-  id: '/challenges/3',
-  path: '/challenges/3',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const Challenges2Route = Challenges2RouteImport.update({
-  id: '/challenges/2',
-  path: '/challenges/2',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const Challenges1Route = Challenges1RouteImport.update({
-  id: '/challenges/1',
-  path: '/challenges/1',
+const ChallengesCategoryIdRoute = ChallengesCategoryIdRouteImport.update({
+  id: '/challenges/$categoryId',
+  path: '/challenges/$categoryId',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -114,16 +78,10 @@ export interface FileRoutesByFullPath {
   '/dorm-select': typeof DormSelectRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
-  '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
   '/terrier-trade': typeof TerrierTradeRoute
   '/verify': typeof VerifyRoute
-  '/challenges/1': typeof Challenges1Route
-  '/challenges/2': typeof Challenges2Route
-  '/challenges/3': typeof Challenges3Route
-  '/challenges/4': typeof Challenges4Route
-  '/challenges/5': typeof Challenges5Route
-  '/challenges/6': typeof Challenges6Route
+  '/challenges/$categoryId': typeof ChallengesCategoryIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -132,16 +90,10 @@ export interface FileRoutesByTo {
   '/dorm-select': typeof DormSelectRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
-  '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
   '/terrier-trade': typeof TerrierTradeRoute
   '/verify': typeof VerifyRoute
-  '/challenges/1': typeof Challenges1Route
-  '/challenges/2': typeof Challenges2Route
-  '/challenges/3': typeof Challenges3Route
-  '/challenges/4': typeof Challenges4Route
-  '/challenges/5': typeof Challenges5Route
-  '/challenges/6': typeof Challenges6Route
+  '/challenges/$categoryId': typeof ChallengesCategoryIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -151,16 +103,10 @@ export interface FileRoutesById {
   '/dorm-select': typeof DormSelectRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
-  '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
   '/terrier-trade': typeof TerrierTradeRoute
   '/verify': typeof VerifyRoute
-  '/challenges/1': typeof Challenges1Route
-  '/challenges/2': typeof Challenges2Route
-  '/challenges/3': typeof Challenges3Route
-  '/challenges/4': typeof Challenges4Route
-  '/challenges/5': typeof Challenges5Route
-  '/challenges/6': typeof Challenges6Route
+  '/challenges/$categoryId': typeof ChallengesCategoryIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -171,16 +117,10 @@ export interface FileRouteTypes {
     | '/dorm-select'
     | '/leaderboard'
     | '/login'
-    | '/onboarding'
     | '/profile'
     | '/terrier-trade'
     | '/verify'
-    | '/challenges/1'
-    | '/challenges/2'
-    | '/challenges/3'
-    | '/challenges/4'
-    | '/challenges/5'
-    | '/challenges/6'
+    | '/challenges/$categoryId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -189,16 +129,10 @@ export interface FileRouteTypes {
     | '/dorm-select'
     | '/leaderboard'
     | '/login'
-    | '/onboarding'
     | '/profile'
     | '/terrier-trade'
     | '/verify'
-    | '/challenges/1'
-    | '/challenges/2'
-    | '/challenges/3'
-    | '/challenges/4'
-    | '/challenges/5'
-    | '/challenges/6'
+    | '/challenges/$categoryId'
   id:
     | '__root__'
     | '/'
@@ -207,16 +141,10 @@ export interface FileRouteTypes {
     | '/dorm-select'
     | '/leaderboard'
     | '/login'
-    | '/onboarding'
     | '/profile'
     | '/terrier-trade'
     | '/verify'
-    | '/challenges/1'
-    | '/challenges/2'
-    | '/challenges/3'
-    | '/challenges/4'
-    | '/challenges/5'
-    | '/challenges/6'
+    | '/challenges/$categoryId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -226,16 +154,10 @@ export interface RootRouteChildren {
   DormSelectRoute: typeof DormSelectRoute
   LeaderboardRoute: typeof LeaderboardRoute
   LoginRoute: typeof LoginRoute
-  OnboardingRoute: typeof OnboardingRoute
   ProfileRoute: typeof ProfileRoute
   TerrierTradeRoute: typeof TerrierTradeRoute
   VerifyRoute: typeof VerifyRoute
-  Challenges1Route: typeof Challenges1Route
-  Challenges2Route: typeof Challenges2Route
-  Challenges3Route: typeof Challenges3Route
-  Challenges4Route: typeof Challenges4Route
-  Challenges5Route: typeof Challenges5Route
-  Challenges6Route: typeof Challenges6Route
+  ChallengesCategoryIdRoute: typeof ChallengesCategoryIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -259,13 +181,6 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/onboarding': {
-      id: '/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -310,46 +225,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/challenges/6': {
-      id: '/challenges/6'
-      path: '/challenges/6'
-      fullPath: '/challenges/6'
-      preLoaderRoute: typeof Challenges6RouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/challenges/5': {
-      id: '/challenges/5'
-      path: '/challenges/5'
-      fullPath: '/challenges/5'
-      preLoaderRoute: typeof Challenges5RouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/challenges/4': {
-      id: '/challenges/4'
-      path: '/challenges/4'
-      fullPath: '/challenges/4'
-      preLoaderRoute: typeof Challenges4RouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/challenges/3': {
-      id: '/challenges/3'
-      path: '/challenges/3'
-      fullPath: '/challenges/3'
-      preLoaderRoute: typeof Challenges3RouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/challenges/2': {
-      id: '/challenges/2'
-      path: '/challenges/2'
-      fullPath: '/challenges/2'
-      preLoaderRoute: typeof Challenges2RouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/challenges/1': {
-      id: '/challenges/1'
-      path: '/challenges/1'
-      fullPath: '/challenges/1'
-      preLoaderRoute: typeof Challenges1RouteImport
+    '/challenges/$categoryId': {
+      id: '/challenges/$categoryId'
+      path: '/challenges/$categoryId'
+      fullPath: '/challenges/$categoryId'
+      preLoaderRoute: typeof ChallengesCategoryIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -362,16 +242,10 @@ const rootRouteChildren: RootRouteChildren = {
   DormSelectRoute: DormSelectRoute,
   LeaderboardRoute: LeaderboardRoute,
   LoginRoute: LoginRoute,
-  OnboardingRoute: OnboardingRoute,
   ProfileRoute: ProfileRoute,
   TerrierTradeRoute: TerrierTradeRoute,
   VerifyRoute: VerifyRoute,
-  Challenges1Route: Challenges1Route,
-  Challenges2Route: Challenges2Route,
-  Challenges3Route: Challenges3Route,
-  Challenges4Route: Challenges4Route,
-  Challenges5Route: Challenges5Route,
-  Challenges6Route: Challenges6Route,
+  ChallengesCategoryIdRoute: ChallengesCategoryIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

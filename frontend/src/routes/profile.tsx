@@ -83,7 +83,7 @@ function Profile() {
 					{/* Points Information */}
 					<div className="space-y-1">
 						<div className="flex justify-between items-center">
-							<span>Total Scotty Coins:</span>
+							<span>Total ScottyCoins:</span>
 							<span className="font-bold">{user.scotty_coins.current}</span>
 						</div>
 
@@ -131,7 +131,7 @@ function Profile() {
 									<div className="flex-1">
 										<h3 className="text-lg font-semibold">{reward.name}</h3>
 										<p className="text-sm text-gray-600">
-											Cost: {reward.cost} Scotty Coins
+											Cost: {reward.cost} ScottyCoins
 										</p>
 									</div>
 									<div className="flex items-center justify-between mt-2">

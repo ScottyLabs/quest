@@ -4,7 +4,7 @@ import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
-
+import { FilterProvider } from "@/components/challenges/filter-context";
 import { ApiProvider, useApi } from "@/lib/api-context";
 import { routeTree } from "@/routeTree.gen";
 import "@/main.css";
@@ -49,10 +49,12 @@ if (!rootElement.innerHTML) {
 		<StrictMode>
 			<QueryClientProvider client={queryClient}>
 				<ApiProvider>
-					<AppWithRouter />
+					<FilterProvider>
+						<AppWithRouter />
 
-					<ReactQueryDevtools initialIsOpen={false} />
-					<TanStackRouterDevtools router={router} />
+						<ReactQueryDevtools initialIsOpen={false} />
+						<TanStackRouterDevtools router={router} />
+					</FilterProvider>
 				</ApiProvider>
 			</QueryClientProvider>
 		</StrictMode>,

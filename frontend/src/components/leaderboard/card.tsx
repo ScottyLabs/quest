@@ -40,7 +40,7 @@ export function LeaderboardCard({
 		// biome-ignore lint/a11y/useKeyWithClickEvents: TODO
 		<div
 			onClick={toPath}
-			className={`bg-white rounded-2xl shadow-[0_3px_0_#bbb] duration-250 transition-all p-4 ${isCurrentUser ? "cursor-pointer hover:shadow-none" : ""}`}
+			className={`bg-white rounded-2xl shadow-[0_3px_0_#bbb] duration-250 transition-all p-4 ${isCurrentUser ? "cursor-pointer hover:translate-y-[3px] hover:shadow-none" : ""}`}
 		>
 			<div className="flex items-center justify-between gap-1">
 				<div className="flex items-center space-x-3">

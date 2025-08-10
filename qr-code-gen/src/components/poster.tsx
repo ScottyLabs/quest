@@ -1,12 +1,10 @@
-import {
-	BusFront,
-	Factory,
-	IceCreamCone,
-	PartyPopper,
-	PocketKnife,
-	Soup,
-} from "lucide-react";
 import { QRCode } from "react-qrcode-logo";
+import CampusOfBridges from "@/assets/categories/campus-of-bridges.svg";
+import CoolCornersOfCarnegie from "@/assets/categories/cool-corners-of-carnegie.svg";
+import LetsEat from "@/assets/categories/lets-eat.svg";
+import MinorMajorGeneral from "@/assets/categories/minor-major-general.svg";
+import OffCampusAdventures from "@/assets/categories/off-campus-adventures.svg";
+import TheEssentials from "@/assets/categories/the-essentials.svg";
 
 // Icons are also defined in frontend/src/lib/data/categories.ts
 const categoryInfo = {
@@ -14,37 +12,37 @@ const categoryInfo = {
 		dark: "bg-challenge-1",
 		light: "bg-challenge-1-light",
 		arc: "[--arc-color:theme(colors.challenge-1-light)]",
-		Icon: PartyPopper,
+		iconSrc: TheEssentials,
 	},
 	"Campus of Bridges": {
 		dark: "bg-challenge-2",
 		light: "bg-challenge-2-light",
 		arc: "[--arc-color:theme(colors.challenge-2-light)]",
-		Icon: Factory,
+		iconSrc: CampusOfBridges,
 	},
 	"Let's Eat!": {
 		dark: "bg-challenge-3",
 		light: "bg-challenge-3-light",
 		arc: "[--arc-color:theme(colors.challenge-3-light)]",
-		Icon: Soup,
+		iconSrc: LetsEat,
 	},
 	"Cool Corners of Carnegie": {
 		dark: "bg-challenge-4",
 		light: "bg-challenge-4-light",
 		arc: "[--arc-color:theme(colors.challenge-4-light)]",
-		Icon: IceCreamCone,
+		iconSrc: CoolCornersOfCarnegie,
 	},
 	"Minor-Major General": {
 		dark: "bg-challenge-5",
 		light: "bg-challenge-5-light",
 		arc: "[--arc-color:theme(colors.challenge-5-light)]",
-		Icon: PocketKnife,
+		iconSrc: MinorMajorGeneral,
 	},
 	"Off-Campus Adventures": {
 		dark: "bg-challenge-6",
 		light: "bg-challenge-6-light",
 		arc: "[--arc-color:theme(colors.challenge-6-light)]",
-		Icon: BusFront,
+		iconSrc: OffCampusAdventures,
 	},
 } as const;
 
@@ -59,7 +57,7 @@ export interface Challenge {
 
 export function Poster({ category, name, tagline, secret }: Challenge) {
 	const info = categoryInfo[category as Category];
-	const codeValue = `Scan me from the website in the footer! This challenge: ${secret}`;
+	const codeValue = `Scan me from https://cmu.quest! This challenge: ${secret}`;
 
 	return (
 		<div className="mt-12 font-sans">
@@ -104,7 +102,11 @@ export function Poster({ category, name, tagline, secret }: Challenge) {
 					<div
 						className={`rounded-full border-8 border-white size-[1.25in] mx-auto flex items-center justify-center ${info.dark}`}
 					>
-						<info.Icon className="text-white stroke-2 size-1/2" />
+						<img
+							alt="Category icon"
+							src={info.iconSrc}
+							className="text-white stroke-2 size-1/2"
+						/>
 					</div>
 
 					{/* Category name */}

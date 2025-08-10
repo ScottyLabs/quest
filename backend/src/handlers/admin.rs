@@ -117,7 +117,6 @@ pub async fn put_challenge_geolocation(
     State(state): State<AppState>,
     Json(payload): Json<ChallengeGeolocationPayload>,
 ) -> Result<StatusCode, StatusCode> {
-    // Update challenge geolocation
     state
         .challenge_service
         .update_challenge_geolocation(

@@ -20,20 +20,36 @@ export const callWithGeolocation = async <T>(
 					bestAccuracy = position.coords.accuracy;
 				}
 			},
-			() => {}, // Ignore errors
+			(e) => {
+				console.error(e);
+			},
 			{
 				enableHighAccuracy: true,
 				maximumAge: 0,
 			},
 		);
 
-		setTimeout(() => {
-			navigator.geolocation.clearWatch(watchId);
-			if (bestPosition) {
-				fn(bestPosition).then(resolve);
-			} else {
-				resolve(null);
-			}
-		}, samplePeriod);
+		navigator.geolocation.getCurrentPosition(
+			(position) => {
+				bestPosition = position;
+				bestAccuracy = position.coords.accuracy;
+				// don't start the timer until we have the first position
+				setTimeout(() => {
+					navigator.geolocation.clearWatch(watchId);
+					if (bestPosition) {
+						fn(bestPosition).then(resolve);
+					} else {
+						resolve(null);
+					}
+				}, samplePeriod);
+			},
+			(e) => {
+				console.error(e);
+			},
+			{
+				enableHighAccuracy: true,
+				maximumAge: 0,
+			},
+		);
 	});
 };

@@ -1,6 +1,10 @@
 use std::{error::Error, fs};
 
-use backend::{create_connection, entities::challenges, services::challenge::ChallengeService};
+use backend::{
+    create_connection,
+    entities::challenges,
+    services::{challenge::ChallengeService, reward::RewardService},
+};
 use chrono::NaiveDateTime;
 use sea_orm::ActiveValue::Set;
 use serde::Deserialize;
@@ -62,8 +66,7 @@ impl ChallengeRecord {
     }
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn insert_challenges() -> Result<(), Box<dyn Error + Send + Sync>> {
     println!("Seeding challenges from CSV...");
 
     let db = create_connection().await?;
@@ -140,5 +143,32 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .await?;
 
     println!("Inserted {} challenges", count);
+    Ok(())
+}
+
+async fn insert_rewards() -> Result<(), Box<dyn Error + Send + Sync>> {
+    println!("Seeding rewards from CSV...");
+
+    let db = create_connection().await?;
+    let reward_service = RewardService::new(db);
+
+    let csv_content = fs::read_to_string("data/rewards.csv")
+        .map_err(|e| format!("Failed to read CSV file: {}", e))?;
+
+    let mut csv_reader = csv::Reader::from_reader(csv_content.as_bytes());
+
+    Ok(())
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
+    let (challenges, rewards) = tokio::try_join!(
+        tokio::spawn(insert_challenges()),
+        tokio::spawn(insert_rewards())
+    )?;
+
+	challenges?;
+	rewards?;
+
     Ok(())
 }

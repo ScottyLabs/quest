@@ -56,7 +56,7 @@ export function CountItem({
 	return (
 		<div
 			className={cn(
-				"px-2.5 py-2 rounded-[35px] outline outline-1 outline-offset-[-1px] inline-flex justify-center items-center gap-2.5",
+				"px-2.5 py-2 rounded-[35px] outline-1 outline-offset-[-1px] inline-flex justify-center items-center gap-2.5",
 				backgroundColor,
 				shadowColor,
 				outlineColor,

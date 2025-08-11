@@ -10,8 +10,6 @@ use serde::{Deserialize, Serialize};
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false, column_type = "Text")]
     pub name: String,
-    #[sea_orm(column_type = "Text")]
-    pub slug: String,
     pub cost: i32,
     pub stock: i32,
     pub trade_limit: i32,

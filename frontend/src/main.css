@@ -34,11 +34,22 @@
 
 	--color-default-selected: #831421;
 	--color-challenge-1-selected: #bb2033;
-	--color-challenge-2-selected: #ae8f13;
+	--color-challenge-2-selected: #e6b800;
 	--color-challenge-3-selected: #16c289;
 	--color-challenge-4-selected: #3cb5e4;
 	--color-challenge-5-selected: #4cb4c2;
 	--color-challenge-6-selected: #2c77c0;
+
+	/* used for text in pills */
+	--color-default-highlight: #fde4e7;
+	--color-challenge-1-highlight: #fbe8e4;
+	--color-challenge-2-highlight: #fcf7e8;
+	--color-challenge-3-highlight: #e6f8f2;
+	--color-challenge-4-highlight: #e6fbfd;
+	--color-challenge-5-highlight: #e6fafa;
+	--color-challenge-6-highlight: #e0f2fc;
+	--color-challenge-7-highlight: #fbe8e4;
+	--color-challenge-8-highlight: #f4dcfa;
 
 	--color-housing-1: #ffb22f; /* morewood e tower */
 	--color-housing-2: #d5242c; /* hill */
@@ -84,7 +95,35 @@
 }
 
 /* TODO: create these for other interactive buttons,
-   like the ones on the leaderboard page and about page */
+   like the ones on the leaderboard page */
+.card-selected {
+	box-shadow: 0 4px 0 var(--color-default-selected);
+	transition:
+		transform 250ms cubic-bezier(0.4, 0, 0.2, 1),
+		box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1),
+		background-color 250ms cubic-bezier(0.4, 0, 0.2, 1);
+	will-change: transform, box-shadow, background-color;
+}
+
+.card-selected:hover {
+	box-shadow: none;
+	transform: translate3d(0, 4px, 0); /* GPU accelerated */
+}
+
+.card-confirm {
+	box-shadow: 0 3px 0 var(--color-default-selected);
+	transition:
+		transform 250ms cubic-bezier(0.4, 0, 0.2, 1),
+		box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1),
+		background-color 250ms cubic-bezier(0.4, 0, 0.2, 1);
+	will-change: transform, box-shadow, background-color;
+}
+
+.card-confirm:hover {
+	box-shadow: none;
+	transform: translate3d(0, 3px, 0);
+}
+
 .card-success {
 	box-shadow: 0 3px 0 var(--color-success);
 	transition:
@@ -96,10 +135,10 @@
 
 .card-success:hover {
 	box-shadow: none;
-	transform: translate3d(0, 3px, 0); /* GPU accelerated */
+	transform: translate3d(0, 3px, 0);
 }
 
-.card-default {
+.card-primary {
 	box-shadow: 0 3px 0 #bbb;
 	transition:
 		transform 250ms cubic-bezier(0.4, 0, 0.2, 1),
@@ -108,23 +147,13 @@
 	will-change: transform, box-shadow, background-color;
 }
 
-.card-default:hover {
+.card-primary:hover {
 	box-shadow: none;
 	transform: translate3d(0, 3px, 0);
 }
 
 .card-locked {
-	box-shadow: 0 3px 0 var(--color-locked);
-	transition:
-		transform 250ms cubic-bezier(0.4, 0, 0.2, 1),
-		box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1),
-		background-color 250ms cubic-bezier(0.4, 0, 0.2, 1);
-	will-change: transform, box-shadow, background-color;
-}
-
-.card-locked:hover {
-	box-shadow: none;
-	transform: translate3d(0, 3px, 0); /* GPU accelerated */
+	box-shadow: 0 3px 0 var(--color-locked); /* no hover effect */
 }
 
 /* Flying coin animation */

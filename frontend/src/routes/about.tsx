@@ -27,7 +27,7 @@ function AboutButton({
 	return (
 		<button
 			type="button"
-			className="cursor-pointer w-80 h-20 inline-flex justify-center items-center mb-4 px-4 py-2 bg-default text-white text-2xl font-extrabold rounded-2xl shadow-[0px_7px_0px_0px_var(--color-default-selected)] duration-250 transition-all hover:shadow-none hover:translate-y-[7px] border-4 border-default-selected"
+			className="card-selected border-4 border-default-selected bg-default text-white cursor-pointer w-80 h-20 inline-flex justify-center items-center mb-4 px-4 py-2 text-2xl font-extrabold rounded-2xl"
 			{...props}
 		>
 			{children}

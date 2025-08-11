@@ -1,42 +1,40 @@
-import {
-	BusFront,
-	Factory,
-	IceCreamCone,
-	PartyPopper,
-	PocketKnife,
-	Soup,
-	Trophy,
-} from "lucide-react";
+import All from "@/assets/categories/all.svg?react";
+import CampusOfBridges from "@/assets/categories/campus-of-bridges.svg?react";
+import CoolCornersOfCarnegie from "@/assets/categories/cool-corners-of-carnegie.svg?react";
+import LetsEat from "@/assets/categories/lets-eat.svg?react";
+import MinorMajorGeneral from "@/assets/categories/minor-major-general.svg?react";
+import OffCampusAdventures from "@/assets/categories/off-campus-adventures.svg?react";
+import TheEssentials from "@/assets/categories/the-essentials.svg?react";
 import { typedFromEntries } from "@/lib/utils";
 
 // These icons are also listed in the poster component in qr-code-gen
 export const categories = [
-	{ id: "all", label: "All", Icon: Trophy },
+	{ id: "all", label: "All", Icon: All },
 	{
 		id: "the-essentials",
 		label: "The Essentials",
-		Icon: PartyPopper,
+		Icon: TheEssentials,
 	},
 	{
 		id: "campus-of-bridges",
 		label: "Campus of Bridges",
-		Icon: Factory,
+		Icon: CampusOfBridges,
 	},
-	{ id: "lets-eat", label: "Let's Eat!", Icon: Soup },
+	{ id: "lets-eat", label: "Let's Eat!", Icon: LetsEat },
 	{
 		id: "cool-corners-of-carnegie",
 		label: "Cool Corners of Carnegie",
-		Icon: IceCreamCone,
+		Icon: CoolCornersOfCarnegie,
 	},
 	{
 		id: "minor-major-general",
 		label: "Minor-Major General",
-		Icon: PocketKnife,
+		Icon: MinorMajorGeneral,
 	},
 	{
 		id: "off-campus-adventures",
 		label: "Off-Campus Adventures",
-		Icon: BusFront,
+		Icon: OffCampusAdventures,
 	},
 ] as const;
 
@@ -54,6 +52,7 @@ export const colorClasses = {
 		border: "border-default",
 		arcColor: "[--arc-color:theme(colors.default-light)]",
 		hover: "bg-default hover:bg-default-hover",
+		pill: "bg-default-selected text-default-highlight",
 	},
 	"the-essentials": {
 		text: "text-challenge-1",
@@ -63,6 +62,7 @@ export const colorClasses = {
 		border: "border-challenge-1",
 		arcColor: "[--arc-color:theme(colors.challenge-1-light)]",
 		hover: "bg-challenge-1 hover:bg-challenge-1-hover",
+		pill: "bg-challenge-1-selected text-challenge-1-highlight",
 	},
 	"campus-of-bridges": {
 		text: "text-challenge-2",
@@ -72,6 +72,7 @@ export const colorClasses = {
 		border: "border-challenge-2",
 		arcColor: "[--arc-color:theme(colors.challenge-2-light)]",
 		hover: "bg-challenge-2 hover:bg-challenge-2-hover",
+		pill: "bg-challenge-2-selected text-challenge-2-highlight",
 	},
 	"lets-eat": {
 		text: "text-challenge-3",
@@ -81,6 +82,7 @@ export const colorClasses = {
 		border: "border-challenge-3",
 		arcColor: "[--arc-color:theme(colors.challenge-3-light)]",
 		hover: "bg-challenge-3 hover:bg-challenge-3-hover",
+		pill: "bg-challenge-3-selected text-challenge-3-highlight",
 	},
 	"cool-corners-of-carnegie": {
 		text: "text-challenge-4",
@@ -90,6 +92,7 @@ export const colorClasses = {
 		border: "border-challenge-4",
 		arcColor: "[--arc-color:theme(colors.challenge-4-light)]",
 		hover: "bg-challenge-4 hover:bg-challenge-4-hover",
+		pill: "bg-challenge-4-selected text-challenge-4-highlight",
 	},
 	"minor-major-general": {
 		text: "text-challenge-5",
@@ -99,6 +102,7 @@ export const colorClasses = {
 		border: "border-challenge-5",
 		arcColor: "[--arc-color:theme(colors.challenge-5-light)]",
 		hover: "bg-challenge-5 hover:bg-challenge-5-hover",
+		pill: "bg-challenge-5-selected text-challenge-5-highlight",
 	},
 	"off-campus-adventures": {
 		text: "text-challenge-6",
@@ -108,6 +112,7 @@ export const colorClasses = {
 		border: "border-challenge-6",
 		arcColor: "[--arc-color:theme(colors.challenge-6-light)]",
 		hover: "bg-challenge-6 hover:bg-challenge-6-hover",
+		pill: "bg-challenge-6-selected text-challenge-6-highlight",
 	},
 } as const;
 

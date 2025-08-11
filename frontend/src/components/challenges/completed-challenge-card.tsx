@@ -1,8 +1,8 @@
 import { Camera, Check, Edit, ExternalLink, X } from "lucide-react";
-import type { components } from "@/lib/schema.gen";
+import type { Challenge } from "@/components/challenges/card";
 
 interface CompletedChallengeCardProps {
-	challenge: components["schemas"]["AdminChallengeResponse"];
+	challenge: Challenge;
 	uploadedImage: string | null;
 	imageJustUploaded: boolean;
 	isEditing: boolean;
@@ -151,7 +151,7 @@ export function CompletedChallengeCard({
 									</span>
 								</div>
 								<div className="flex justify-start items-center gap-[3px]">
-									<div className="justify-start text-red-700 text-base font-semibold font-['Open_Sans'] underline tracking-tight">
+									<div className="justify-start text-default text-base font-semibold font-['Open_Sans'] underline tracking-tight">
 										{challenge.location}
 									</div>
 									<div className="w-4 h-4 relative overflow-hidden">
@@ -173,7 +173,7 @@ export function CompletedChallengeCard({
 											href={challenge.more_info_link}
 											target="_blank"
 											rel="noopener noreferrer"
-											className="justify-start text-red-700 text-base font-semibold font-['Open_Sans'] underline tracking-tight"
+											className="justify-start text-default text-base font-semibold font-['Open_Sans'] underline tracking-tight"
 										>
 											Learn More
 										</a>

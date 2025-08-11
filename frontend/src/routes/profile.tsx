@@ -263,7 +263,7 @@ function Profile() {
 
 				{/* Prizes */}
 				<div className="mt-2 mb-2 flex items-center gap-2">
-					<Gift className="w-6 h-6 text-red-700" />
+					<Gift className="w-6 h-6 text-default" />
 					<span className="font-semibold text-lg">Prizes</span>
 				</div>
 				<div className="flex-1 overflow-x-auto mb-4">
@@ -281,7 +281,7 @@ function Profile() {
 						</div>
 					) : (
 						<div className="flex gap-2 h-64">
-							{prizeData.rewards.map((reward) => (
+							{/* {prizeData.rewards.map((reward) => (
 								<div
 									key={reward.slug}
 									className="w-80 h-64 flex-shrink-0 bg-white rounded-xl border p-4 flex flex-col justify-between"
@@ -298,20 +298,20 @@ function Profile() {
 										</span>
 										<Link
 											to={`/terrier-trade`}
-											className="text-red-700 hover:underline"
+											className="text-default hover:underline"
 										>
 											View Details
 										</Link>
 									</div>
 								</div>
-							))}
+							))} */}
 						</div>
 					)}
 				</div>
 
 				{/* Gallery */}
 				<div className="mb-2 flex items-center gap-2">
-					<Camera className="w-6 h-6 text-red-700" />
+					<Camera className="w-6 h-6 text-default" />
 					<span className="font-semibold text-lg">Gallery</span>
 				</div>
 				{journalData?.entries?.length ? (

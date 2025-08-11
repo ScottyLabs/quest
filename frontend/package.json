@@ -7,6 +7,7 @@
 	"scripts": {
 		"dev": "vite",
 		"build": "tsc && vite build",
+		"build:temp": "vite build",
 		"generate-api": "openapi-typescript http://localhost:3000/openapi.json -o src/lib/schema.gen.ts",
 		"preview": "vite preview",
 		"tauri": "tauri"
@@ -34,7 +35,8 @@
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
 		"tailwind-merge": "^3.3.1",
-		"tailwindcss": "^4.1.11"
+		"tailwindcss": "^4.1.11",
+		"vaul": "^1.1.2"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.1.3",

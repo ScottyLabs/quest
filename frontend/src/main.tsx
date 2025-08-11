@@ -44,6 +44,13 @@ function AppWithRouter() {
 	return <RouterProvider router={router} context={{ baseUrl, queryClient }} />;
 }
 
+console.log(
+	"%cScottyLabs\n%cJoin us! %chttps://scottylabs.org",
+	"color: #01A4F8; font-weight: bold; font-size: 48px;",
+	"color: #fff; font-size: 14px;",
+	"color: #01A4F8; font-size: 14px; text-decoration: underline;",
+);
+
 // biome-ignore lint/style/noNonNullAssertion: guaranteed to exist in index.html
 const rootElement = document.getElementById("root")!;
 

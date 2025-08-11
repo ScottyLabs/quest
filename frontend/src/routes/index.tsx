@@ -115,7 +115,7 @@ function Onboarding() {
 						localStorage.setItem("onboardingCompleted", "true");
 						login(from && from !== "/" ? from : "/challenges/all");
 					}}
-					className="text-gray-500 hover:text-red-700 font-medium transition px-2 py-1"
+					className="text-gray-500 hover:text-default font-medium transition px-2 py-1"
 					type="button"
 				>
 					Skip

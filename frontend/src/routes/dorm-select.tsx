@@ -1,5 +1,4 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { useApi } from "@/lib/api-context";
 import { requireAuth } from "@/lib/auth";
@@ -169,7 +168,7 @@ function RouteComponent() {
 													}
 												/>
 											</div>
-											<h5 className="block text-center text-md text-white font-semibold h-12 content-center">
+											<h5 className="block text-center text-md font-semibold h-12 content-center">
 												{dorm.name}
 											</h5>
 										</button>

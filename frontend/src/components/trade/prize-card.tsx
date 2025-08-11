@@ -9,14 +9,14 @@ interface PrizeCardProps {
 }
 
 export function PrizeCard({ prize }: PrizeCardProps) {
-	const isMaxClaimed = prize.claimed === prize.allowedToClaim;
-	const stock = prize.stock ?? prize.remaining;
-	const claimed = prize.transaction_info?.complete_count ?? prize.claimed;
-	const total = prize.total || 35; // Default to 35 if not provided
-	const [isTradeMenuOpen, setIsTradeMenuOpen] = useState(false);
+	// const isMaxClaimed = prize.claimed === prize.allowedToClaim;
+	// const stock = prize.stock ?? prize.remaining;
+	// const claimed = prize.transaction_info?.complete_count ?? prize.claimed;
+	// const total = prize.total || 35; // Default to 35 if not provided
+	// const [isTradeMenuOpen, setIsTradeMenuOpen] = useState(false);
 
-	// Check if this is a Carnegie Cup Points prize
-	const isCarnegieCupPoints = prize.name === "Carnegie Cup Contribution";
+	// // Check if this is a Carnegie Cup Points prize
+	// const isCarnegieCupPoints = prize.name === "Carnegie Cup Contribution";
 
 	return (
 		<>
@@ -40,14 +40,14 @@ export function PrizeCard({ prize }: PrizeCardProps) {
 								<div className="flex justify-center items-center gap-2.5">
 									<div className="justify-start">
 										<span className="text-gray-500 text-xs font-bold font-['Open_Sans'] leading-none tracking-tight">
-											Stock: {stock}
+											{/* Stock: {stock} */}
 										</span>
 									</div>
 								</div>
 							</div>
 
 							{/* Progress bar for claimed vs allowed to claim */}
-							<div className="w-full h-4 bg-gray-300 rounded-full relative">
+							{/* <div className="w-full h-4 bg-gray-300 rounded-full relative">
 								<div
 									className="h-4 bg-amber-400 rounded-full absolute top-0 left-0 transition-all duration-300"
 									style={{
@@ -57,11 +57,11 @@ export function PrizeCard({ prize }: PrizeCardProps) {
 								<span className="absolute inset-0 flex items-center justify-center text-white text-xs font-bold">
 									{claimed}/{prize.allowedToClaim}
 								</span>
-							</div>
+							</div> */}
 						</div>
 					</div>
 					<div className="flex-shrink-0 ml-6">
-						<button
+						{/* <button
 							type="button"
 							onClick={() => setIsTradeMenuOpen(true)}
 							className="w-16 h-12 bg-zinc-100 rounded-xl shadow-[0px_6px_0px_0px_rgba(215,215,215,1.00)] flex items-center justify-center p-3 hover:bg-zinc-200 transition-colors"
@@ -72,12 +72,12 @@ export function PrizeCard({ prize }: PrizeCardProps) {
 								</div>
 								<ScottyCoin className="w-4 h-4" />
 							</div>
-						</button>
+						</button> */}
 					</div>
 				</div>
 			</div>
 
-			{isCarnegieCupPoints ? (
+			{/* {isCarnegieCupPoints ? (
 				<TradeMenuCarnegieCupPoints
 					isOpen={isTradeMenuOpen}
 					onOpenChange={setIsTradeMenuOpen}
@@ -89,7 +89,7 @@ export function PrizeCard({ prize }: PrizeCardProps) {
 					onOpenChange={setIsTradeMenuOpen}
 					prize={prize}
 				/>
-			)}
+			)} */}
 		</>
 	);
 }

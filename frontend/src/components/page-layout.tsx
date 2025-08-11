@@ -41,7 +41,7 @@ export function PageLayout({
 
 			<div className="pb-32">{children}</div>
 
-			<Navbar currentPath={currentPath} pageColors={pageColors} user={user} />
+			<Navbar currentPath={currentPath} pageColors={pageColors} />
 		</div>
 	);
 }

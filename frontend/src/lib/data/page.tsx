@@ -2,7 +2,6 @@ import {
 	BarChart2,
 	Info,
 	type LucideIcon,
-	ScanQrCode,
 	ShoppingCart,
 	Trophy,
 	User,
@@ -24,11 +23,6 @@ export const navbarPages = [
 		to: "/terrier-trade",
 		label: "Terrier Trade",
 		Icon: ShoppingCart,
-	},
-	{
-		to: "/verify",
-		label: "Verify",
-		Icon: ScanQrCode,
 	},
 	{ to: "/about", label: "About", Icon: Info },
 ] as const;

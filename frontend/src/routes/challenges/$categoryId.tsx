@@ -1,7 +1,8 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { Search, X } from "lucide-react";
+import { Loader2, Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
-import { ChallengeCard } from "@/components/challenges/card";
+import { ChallengeDrawer } from "@/components/challenge-drawer";
+import { type Challenge, ChallengeCard } from "@/components/challenges/card";
 import { useFilter } from "@/components/challenges/filter-context";
 import { PageLayout } from "@/components/page-layout";
 import { useApi } from "@/lib/api-context";
@@ -12,6 +13,7 @@ import {
 	categoryIdFromLabel,
 	colorClasses,
 } from "@/lib/data/categories";
+import { useGeolocation } from "@/lib/native/geolocation";
 
 export const Route = createFileRoute("/challenges/$categoryId")({
 	beforeLoad: async ({ context }) => {
@@ -35,7 +37,13 @@ function RouteComponent() {
 	const { categoryId } = Route.useParams();
 
 	const { filter } = useFilter();
+
+	// biome-ignore lint/style/noNonNullAssertion: won't be accessing this unless it's not null
+	const [challenge, setChallenge] = useState<Challenge>(null!);
+
+	const [open, setOpen] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
+	const { isQuerying, queryPosition } = useGeolocation();
 
 	// TODO: make this /api/challenges in prod
 	const { $api } = useApi();
@@ -119,6 +127,10 @@ function RouteComponent() {
 						key={challenge.name}
 						challenge={challenge}
 						isLast={index === filtered.length - 1}
+						onClick={() => {
+							setChallenge(challenge);
+							setOpen(true);
+						}}
 					/>
 				))}
 
@@ -129,6 +141,35 @@ function RouteComponent() {
 					</div>
 				)}
 			</div>
+
+			<ChallengeDrawer
+				open={open}
+				setOpen={setOpen}
+				challenge={challenge}
+			>
+				<p className="mt-2 mb-2 text-gray-700 text-sm">
+					Are you at this challenge? Press the "complete" button below to open
+					the QR code scanner and confirm your physical location.
+				</p>
+				<p className="mb-4 text-gray-500 text-xs">
+					Please wait until your precise location is determined before you close
+					the drawer.
+				</p>
+
+				<button
+					type="button"
+					disabled={isQuerying /*|| isPending || isSuccess*/}
+					className="card-confirm border-2 border-default-selected bg-default text-white cursor-pointer py-2 text-lg font-bold rounded-2xl mb-4"
+				>
+					{isQuerying ? (
+						<Loader2 className="mx-auto animate-spin size-7 text-white" />
+					) : (
+						/*isSuccess ? (
+						"Challenge completed successfully"
+					) :*/ "Complete challenge"
+					)}
+				</button>
+			</ChallengeDrawer>
 		</PageLayout>
 	);
 }

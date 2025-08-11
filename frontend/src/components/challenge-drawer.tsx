@@ -49,6 +49,7 @@ export const ChallengeDrawer = ({
 									categoryId: label(challenge),
 								}}
 								className={`px-3 py-1 mt-4 mb-2 text-sm w-fit rounded-full ${colorClasses[label(challenge)].pill}`}
+								onClick={() => setOpen(false)}
 							>
 								{challenge.category}
 							</Link>

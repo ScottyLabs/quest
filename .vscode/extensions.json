@@ -5,6 +5,7 @@
 		"rust-lang.rust-analyzer",
 		"tauri-apps.tauri-vscode",
 		"naumovs.color-highlight",
-		"mechatroner.rainbow-csv"
+		"mechatroner.rainbow-csv",
+		"william-voyek.vscode-nginx"
 	]
 }

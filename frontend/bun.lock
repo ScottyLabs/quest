@@ -27,6 +27,7 @@
         "react-dom": "^18.3.1",
         "tailwind-merge": "^3.3.1",
         "tailwindcss": "^4.1.11",
+        "vaul": "^1.1.2",
       },
       "devDependencies": {
         "@biomejs/biome": "^2.1.3",
@@ -1168,6 +1169,8 @@
     "varname": ["varname@2.0.3", "", {}, "sha512-+DofT9mJAUALhnr9ipZ5Z2icwaEZ7DAajOZT4ffXy3MQqnXtG3b7atItLQEJCkfcJTOf9WcsywneOEibD4eqJg=="],
 
     "vary": ["vary@1.1.2", "", {}, "sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg=="],
+
+    "vaul": ["vaul@1.1.2", "", { "dependencies": { "@radix-ui/react-dialog": "^1.1.1" }, "peerDependencies": { "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc", "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc" } }, "sha512-ZFkClGpWyI2WUQjdLJ/BaGuV6AVQiJ3uELGk3OYtP+B6yCO7Cmn9vPFXVJkRaGkOJu3m8bQMgtyzNHixULceQA=="],
 
     "vite": ["rolldown-vite@7.0.12", "", { "dependencies": { "fdir": "^6.4.6", "lightningcss": "^1.30.1", "picomatch": "^4.0.3", "postcss": "^8.5.6", "rolldown": "1.0.0-beta.30", "tinyglobby": "^0.2.14" }, "optionalDependencies": { "fsevents": "~2.3.3" }, "peerDependencies": { "@types/node": "^20.19.0 || >=22.12.0", "esbuild": "^0.25.0", "jiti": ">=1.21.0", "less": "^4.0.0", "sass": "^1.70.0", "sass-embedded": "^1.70.0", "stylus": ">=0.54.8", "sugarss": "^5.0.0", "terser": "^5.16.0", "tsx": "^4.8.1", "yaml": "^2.4.2" }, "optionalPeers": ["@types/node", "esbuild", "jiti", "less", "sass", "sass-embedded", "stylus", "sugarss", "terser", "tsx", "yaml"], "bin": { "vite": "bin/vite.js" } }, "sha512-Gr40FRnE98FwPJcMwcJgBwP6U7Qxw/VEtDsFdFjvGUTdgI/tTmF7z7dbVo/ajItM54G+Zo9w5BIrUmat6MbuWQ=="],
 

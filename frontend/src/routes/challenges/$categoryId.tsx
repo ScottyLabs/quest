@@ -1,6 +1,6 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useCallback, useMemo } from "react";
-import { ChallengeCard } from "@/components/challenges/card";
+import { type Challenge, ChallengeCard } from "@/components/challenges/card";
 import type { FilterOption } from "@/components/challenges/filter-card";
 import { useFilter } from "@/components/challenges/filter-context";
 import { PageLayout } from "@/components/page-layout";
@@ -12,7 +12,6 @@ import {
 	categoryIdFromLabel,
 	colorClasses,
 } from "@/lib/data/categories";
-import type { components } from "@/lib/schema.gen";
 
 export const Route = createFileRoute("/challenges/$categoryId")({
 	beforeLoad: async ({ context }) => {
@@ -32,7 +31,7 @@ export const Route = createFileRoute("/challenges/$categoryId")({
 });
 
 function useFilteredChallenges(
-	challenges: components["schemas"]["AdminChallengeResponse"][],
+	challenges: Challenge[],
 	filter: FilterOption,
 	categoryId: string,
 ) {
@@ -82,13 +81,8 @@ function RouteComponent() {
 
 	const filtered = useFilteredChallenges(challenges, filter, categoryId);
 
-	const handleChallengeComplete = useCallback(
-		(challengeName: string, coinsEarned: number) => {
-			// Refresh the challenges data to reflect the completion
-			refetch();
-		},
-		[refetch],
-	);
+	// Refresh the challenges data to reflect the completion
+	const handleChallengeComplete = useCallback(() => refetch(), [refetch]);
 
 	return (
 		<PageLayout

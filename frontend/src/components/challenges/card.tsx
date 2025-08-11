@@ -1,32 +1,61 @@
-import { Check, Lock } from "lucide-react";
+import { Check, Lock, Trophy } from "lucide-react";
+import type { MouseEventHandler } from "react";
 import CheckContainer from "@/assets/check-container.svg?react";
 import ScottyCoin from "@/assets/scotty-coin.svg?react";
 import {
 	type CategoryLabel,
+	categoryIconFromId,
 	categoryIdFromLabel,
 	colorClasses,
 } from "@/lib/data/categories";
 import type { components } from "@/lib/schema.gen";
-import { ChallengeOpenCard } from "./challenge-open-card";
+
+export type Challenge = components["schemas"]["AdminChallengeResponse"];
 
 interface ChallengeCardProps {
-	// TODO: this type changes in prod along with the endpoint
-	challenge: components["schemas"]["AdminChallengeResponse"];
+	challenge: Challenge;
 	isLast: boolean;
-	onChallengeComplete?: (challengeName: string, coinsEarned: number) => void;
+	isVerifyMode?: boolean;
+	onClick?: MouseEventHandler<HTMLDivElement>;
 }
 
 export function ChallengeCard({
 	challenge,
 	isLast,
-	onChallengeComplete,
+	isVerifyMode,
+	onClick,
 }: ChallengeCardProps) {
 	// Ensure we're getting the category's challenge color even when the page is "all"
 	const thisId = categoryIdFromLabel[challenge.category as CategoryLabel];
 	const primaryColor = colorClasses[thisId].primary;
 
+	const CategoryIcon = categoryIconFromId[thisId];
+
 	const card =
-		challenge.status === "completed" ? (
+		isVerifyMode || challenge.status === "available" ? (
+			<div className="card-primary relative rounded-2xl p-4 bg-white hover:bg-gray-100 cursor-pointer flex flex-row gap-4">
+				{/* Category icon */}
+				<div className="relative -m-1 size-12 my-auto shrink-0">
+					<div
+						className={`absolute size-7/8 left-1/8 top-1/16 -rotate-20 rounded-lg ${primaryColor}`}
+					>
+						<CategoryIcon className="absolute size-1/2 rotate-20 left-1/4 top-1/4 text-white" />
+					</div>
+				</div>
+
+				<div className="pl-4 my-auto flex-grow">
+					<h1 className="font-bold max-w-7/8">{challenge.name}</h1>
+					<p className="text-xs text-gray-500">{challenge.tagline}</p>
+				</div>
+
+				{!isVerifyMode && (
+					<div className="absolute right-4 my-auto flex gap-2">
+						<ScottyCoin className="size-5 my-auto" />
+						<p className="text-sm font-bold">+{challenge.scotty_coins}</p>
+					</div>
+				)}
+			</div>
+		) : challenge.status === "completed" ? (
 			<div className="card-success rounded-2xl p-4 bg-success-light hover:bg-success-hover cursor-pointer flex flex-row gap-2">
 				{/* Check icon */}
 				<div className="relative my-auto size-12">
@@ -40,7 +69,8 @@ export function ChallengeCard({
 					</h1>
 				</div>
 			</div>
-		) : challenge.status === "locked" ? (
+		) : (
+			/* challenge.status === "locked" */
 			<div className="card-locked rounded-2xl p-4 bg-locked-light flex flex-row gap-2">
 				{/* Locked icon */}
 				<div className="relative -m-1 size-12 my-auto shrink-0">
@@ -56,47 +86,31 @@ export function ChallengeCard({
 					</p>
 				</div>
 			</div>
-		) : (
-			/* challenge.status === "available" */
-			<div className="card-default relative rounded-2xl p-4 bg-white hover:bg-gray-100 cursor-pointer flex flex-row gap-4">
-				{/* Category icon */}
-				<div className="relative -m-1 size-12 my-auto shrink-0">
-					<div
-						className={`absolute size-7/8 left-1/8 top-1/16 -rotate-20 rounded-lg ${primaryColor}`}
-					/>
-				</div>
-
-				<div className="pl-4 my-auto flex-grow">
-					<h1 className="font-bold max-w-7/8">{challenge.name}</h1>
-					<p className="text-xs text-gray-500">{challenge.tagline}</p>
-				</div>
-
-				<div className="absolute right-4 my-auto flex gap-2">
-					<ScottyCoin className="size-5 my-auto" />
-					<p className="text-sm font-bold">+{challenge.scotty_coins}</p>
-				</div>
-			</div>
 		);
 
 	const iconColor =
-		challenge.status === "completed"
-			? "bg-success"
-			: challenge.status === "locked"
-				? "bg-locked"
-				: primaryColor;
+		isVerifyMode || challenge.status === "available"
+			? primaryColor
+			: challenge.status === "completed"
+				? "bg-success"
+				: "bg-locked";
 
-	const cardContent = (
+	const Icon = !isVerifyMode
+		? challenge.status === "available"
+			? Trophy
+			: challenge.status === "completed"
+				? Check
+				: Lock
+		: null;
+
+	return (
 		<div className="flex flex-row gap-6">
 			<div className="shrink-0 my-auto">
 				<div
 					className={`relative size-10 rounded-full border-4 border-white shadow-[0_3px_0_#bbb] ${iconColor}`}
 				>
-					{challenge.status === "completed" ? (
-						<Check className="absolute left-1/4 top-1/4 text-white size-1/2 stroke-4" />
-					) : (
-						challenge.status === "locked" && (
-							<Lock className="absolute left-1/4 top-1/4 text-white size-1/2 stroke-3" />
-						)
+					{Icon && (
+						<Icon className="absolute left-1/4 top-1/4 text-white size-1/2 stroke-3" />
 					)}
 
 					{!isLast && (
@@ -104,21 +118,12 @@ export function ChallengeCard({
 					)}
 				</div>
 			</div>
-			<div className="flex-grow">{card}</div>
+
+			{/** biome-ignore lint/a11y/noStaticElementInteractions: button component adds unwanted styles */}
+			{/** biome-ignore lint/a11y/useKeyWithClickEvents: TODO */}
+			<div className="flex-grow" onClick={onClick}>
+				{card}
+			</div>
 		</div>
 	);
-
-	// Wrap available and completed challenges with ChallengeOpenCard
-	if (challenge.status === "available" || challenge.status === "completed") {
-		return (
-			<ChallengeOpenCard
-				challenge={challenge}
-				onChallengeComplete={onChallengeComplete}
-			>
-				{cardContent}
-			</ChallengeOpenCard>
-		);
-	}
-
-	return cardContent;
 }

@@ -57,6 +57,7 @@ export function FilterCard({
 							Filter Challenges
 						</h3>
 					</div>
+
 					<Button
 						variant="ghost"
 						size="sm"

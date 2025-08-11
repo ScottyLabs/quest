@@ -261,7 +261,7 @@ function Profile() {
 
 				{/* Prizes */}
 				<div className="mt-2 mb-2 flex items-center gap-2">
-					<Gift className="w-6 h-6 text-red-700" />
+					<Gift className="w-6 h-6 text-default" />
 					<span className="font-semibold text-lg">Prizes</span>
 				</div>
 				<div className="flex-1 overflow-x-auto mb-4">
@@ -296,7 +296,7 @@ function Profile() {
 										</span>
 										<Link
 											to={`/terrier-trade`}
-											className="text-red-700 hover:underline"
+											className="text-default hover:underline"
 										>
 											View Details
 										</Link>
@@ -309,7 +309,7 @@ function Profile() {
 
 				{/* Gallery */}
 				<div className="mb-2 flex items-center gap-2">
-					<Camera className="w-6 h-6 text-red-700" />
+					<Camera className="w-6 h-6 text-default" />
 					<span className="font-semibold text-lg">Gallery</span>
 				</div>
 				{journalData?.entries?.length ? (

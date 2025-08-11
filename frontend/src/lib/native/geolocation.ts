@@ -1,55 +1,81 @@
-// Finds the user's most precise geolocation that was sampled
-// over the course of waiting for the sample period
-export const callWithGeolocation = async <T>(
-	fn: (position: GeolocationPosition) => Promise<T>,
-	samplePeriod: number = 5000,
-): Promise<T | null> => {
-	return new Promise((resolve) => {
-		if (!navigator.geolocation) {
-			resolve(null);
-			return;
-		}
+import { useCallback, useRef, useState } from "react";
 
-		let bestPosition: GeolocationPosition | null = null;
-		let bestAccuracy = Infinity;
+type UseGeolocationResult<T> = {
+	position: GeolocationPosition | null;
+	isQuerying: boolean;
+	queryPosition: (
+		timeoutMs: number,
+		fn: (position: GeolocationPosition) => Promise<T>,
+	) => Promise<T | null>;
+};
 
-		const watchId = navigator.geolocation.watchPosition(
-			(position) => {
-				if (position.coords.accuracy < bestAccuracy) {
-					bestPosition = position;
-					bestAccuracy = position.coords.accuracy;
+export function useGeolocation<T = unknown>(): UseGeolocationResult<T> {
+	const [position, setPosition] = useState<GeolocationPosition | null>(null);
+	const [isQuerying, setIsQuerying] = useState(false);
+
+	const watchIdRef = useRef<number | null>(null);
+	const bestPositionRef = useRef<GeolocationPosition | null>(null);
+
+	const queryPosition = useCallback(
+		(
+			timeoutMs: number,
+			fn: (position: GeolocationPosition) => Promise<T>,
+		): Promise<T | null> => {
+			return new Promise((resolve) => {
+				if (!navigator.geolocation) {
+					console.error("Geolocation not supported");
+					resolve(null);
+					return;
 				}
-			},
-			(e) => {
-				console.error(e);
-			},
-			{
-				enableHighAccuracy: true,
-				maximumAge: 0,
-			},
-		);
 
-		navigator.geolocation.getCurrentPosition(
-			(position) => {
-				bestPosition = position;
-				bestAccuracy = position.coords.accuracy;
-				// don't start the timer until we have the first position
-				setTimeout(() => {
-					navigator.geolocation.clearWatch(watchId);
-					if (bestPosition) {
-						fn(bestPosition).then(resolve);
+				setIsQuerying(true);
+				bestPositionRef.current = null;
+
+				const finish = async () => {
+					if (watchIdRef.current != null) {
+						navigator.geolocation.clearWatch(watchIdRef.current);
+						watchIdRef.current = null;
+					}
+					setIsQuerying(false);
+					setPosition(bestPositionRef.current);
+
+					if (bestPositionRef.current) {
+						try {
+							const result = await fn(bestPositionRef.current);
+							resolve(result);
+						} catch (error) {
+							console.error("Error in callback function:", error);
+							resolve(null);
+						}
 					} else {
 						resolve(null);
 					}
-				}, samplePeriod);
-			},
-			(e) => {
-				console.error(e);
-			},
-			{
-				enableHighAccuracy: true,
-				maximumAge: 0,
-			},
-		);
-	});
-};
+				};
+
+				watchIdRef.current = navigator.geolocation.watchPosition(
+					(pos) => {
+						if (
+							!bestPositionRef.current ||
+							pos.coords.accuracy < bestPositionRef.current.coords.accuracy
+						) {
+							bestPositionRef.current = pos;
+						}
+					},
+					(err) => {
+						console.error("Geolocation error:", err);
+						finish();
+					},
+					{
+						enableHighAccuracy: true,
+						maximumAge: 0,
+					},
+				);
+
+				setTimeout(finish, timeoutMs);
+			});
+		},
+		[],
+	);
+
+	return { position, isQuerying, queryPosition };
+}

@@ -1,6 +1,6 @@
-import { Camera, Check, Edit, ExternalLink, QrCode, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
-import ScottyCoin from "@/assets/scotty-coin.svg?react";
+import type { Challenge } from "@/components/challenges/card";
 import {
 	Dialog,
 	DialogClose,
@@ -8,7 +8,6 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { callWithQR } from "@/lib/native/scanner";
-import type { components } from "@/lib/schema.gen";
 import { CompletedChallengeCard } from "./completed-challenge-card";
 import { ErrorPopup } from "./error-popup";
 import { IncompleteChallengeCard } from "./incomplete-challenge-card";
@@ -17,7 +16,7 @@ import { QRScannerModal } from "./qr-scanner-modal";
 import { SuccessPopup } from "./success-popup";
 
 interface ChallengeOpenCardProps {
-	challenge: components["schemas"]["AdminChallengeResponse"];
+	challenge: Challenge;
 	children: React.ReactNode;
 	onChallengeComplete?: (challengeName: string, coinsEarned: number) => void;
 }
@@ -29,16 +28,20 @@ export function ChallengeOpenCard({
 }: ChallengeOpenCardProps) {
 	const [isScanning, setIsScanning] = useState(false);
 	const [scanResult, setScanResult] = useState("");
+
 	const [error, setError] = useState("");
 	const [showErrorPopup, setShowErrorPopup] = useState(false);
 	const [showSuccessCard, setShowSuccessCard] = useState(false);
 	const [showPhotoEditCard, setShowPhotoEditCard] = useState(false);
+
 	const [isCompleted, setIsCompleted] = useState(
 		challenge.status === "completed",
 	);
 	const [isCompleting, setIsCompleting] = useState(false);
+
 	const [uploadedImage, setUploadedImage] = useState<string | null>(null);
 	const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+
 	const [isEditing, setIsEditing] = useState(false);
 	const [imageJustUploaded, setImageJustUploaded] = useState(false);
 	const [imageTransform, setImageTransform] = useState({
@@ -46,6 +49,7 @@ export function ChallengeOpenCard({
 		x: 0,
 		y: 0,
 	});
+
 	const [isDragging, setIsDragging] = useState(false);
 	const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 	const [initialDistance, setInitialDistance] = useState(0);
@@ -133,6 +137,7 @@ export function ChallengeOpenCard({
 					setIsScanning(false);
 					setScanResult("");
 					setError("");
+
 					// Stop video stream
 					if (videoRef.current?.srcObject) {
 						const stream = videoRef.current.srcObject as MediaStream;
@@ -164,12 +169,12 @@ export function ChallengeOpenCard({
 	};
 
 	const openScannerModal = () => {
-		if (isCompleted) {
-			return;
-		}
+		if (isCompleted) return;
+
 		setIsScanning(true);
 		setScanResult("");
 		setError("");
+
 		// Start scanning after a small delay to ensure modal is rendered
 		setTimeout(() => {
 			startScanning();
@@ -194,6 +199,7 @@ export function ChallengeOpenCard({
 
 	const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const file = event.target.files?.[0];
+
 		if (file) {
 			const reader = new FileReader();
 			reader.onload = (e) => {
@@ -201,10 +207,9 @@ export function ChallengeOpenCard({
 				setUploadedImage(result);
 				setImageJustUploaded(true);
 				setShowPhotoEditCard(true);
+
 				// Reset the imageJustUploaded state after 3 seconds
-				setTimeout(() => {
-					setImageJustUploaded(false);
-				}, 3000);
+				setTimeout(() => setImageJustUploaded(false), 3000);
 			};
 			reader.readAsDataURL(file);
 		}
@@ -281,6 +286,7 @@ export function ChallengeOpenCard({
 		if (e.touches.length === 1 && isDragging) {
 			// Single touch - dragging
 			const touch = e.touches[0];
+
 			if (touch) {
 				const newX = touch.clientX - dragStart.x;
 				const newY = touch.clientY - dragStart.y;
@@ -295,6 +301,7 @@ export function ChallengeOpenCard({
 					(touch2.clientX - touch1.clientX) ** 2 +
 						(touch2.clientY - touch1.clientY) ** 2,
 				);
+
 				const scale = (distance / initialDistance) * initialScale;
 				const clampedScale = Math.max(0.5, Math.min(3, scale));
 				setImageTransform((prev) => ({ ...prev, scale: clampedScale }));
@@ -311,6 +318,7 @@ export function ChallengeOpenCard({
 	const handleWheel = (e: React.WheelEvent) => {
 		if (!isEditing) return;
 		e.preventDefault();
+
 		const delta = e.deltaY > 0 ? 0.9 : 1.1;
 		setImageTransform((prev) => ({
 			...prev,
@@ -326,7 +334,6 @@ export function ChallengeOpenCard({
 		if (!ctx) return;
 
 		const img = imageRef.current;
-		const editor = editorRef.current;
 
 		// Use the actual image dimensions for better quality
 		canvas.width = img.naturalWidth || 800;
@@ -411,6 +418,7 @@ export function ChallengeOpenCard({
 								{challenge.name}
 							</div>
 						</div>
+
 						<DialogClose
 							className="w-10 h-10 relative overflow-hidden flex-shrink-0 ml-4 flex items-center justify-center"
 							onClick={closeModal}

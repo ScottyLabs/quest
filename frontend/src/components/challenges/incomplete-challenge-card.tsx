@@ -1,9 +1,9 @@
 import { ExternalLink, QrCode } from "lucide-react";
 import ScottyCoin from "@/assets/scotty-coin.svg?react";
-import type { components } from "@/lib/schema.gen";
+import type { Challenge } from "@/components/challenges/card";
 
 interface IncompleteChallengeCardProps {
-	challenge: components["schemas"]["AdminChallengeResponse"];
+	challenge: Challenge;
 	onScanClick: () => void;
 	isCompleting: boolean;
 }
@@ -34,6 +34,7 @@ export function IncompleteChallengeCard({
 										Description:
 									</div>
 								</div>
+
 								<div className="inline-flex justify-center items-center gap-2.5">
 									<div className="justify-start text-gray-600 text-xs font-semibold font-['Open_Sans'] tracking-tight">
 										{challenge.description}
@@ -50,10 +51,16 @@ export function IncompleteChallengeCard({
 										Location:{" "}
 									</span>
 								</div>
+
 								<div className="flex justify-start items-center gap-[3px]">
-									<div className="justify-start text-red-700 text-base font-semibold font-['Open_Sans'] underline tracking-tight">
+									<a
+										href={challenge.maps_link ?? "https://cmumaps.com"}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="justify-start text-default text-base font-semibold font-['Open_Sans'] underline tracking-tight"
+									>
 										{challenge.location}
-									</div>
+									</a>
 									<div className="w-4 h-4 relative overflow-hidden">
 										<ExternalLink className="w-4 h-4 text-rose-700" />
 									</div>
@@ -68,12 +75,13 @@ export function IncompleteChallengeCard({
 											More Info:{" "}
 										</span>
 									</div>
+
 									<div className="flex justify-start items-center gap-[3px]">
 										<a
 											href={challenge.more_info_link}
 											target="_blank"
 											rel="noopener noreferrer"
-											className="justify-start text-red-700 text-base font-semibold font-['Open_Sans'] underline tracking-tight"
+											className="justify-start text-default text-base font-semibold font-['Open_Sans'] underline tracking-tight"
 										>
 											Learn More
 										</a>
@@ -87,7 +95,7 @@ export function IncompleteChallengeCard({
 					</div>
 
 					{/* Reward */}
-					<div className="w-full h-11 bg-rose-700 rounded-xl shadow-[0px_6px_0px_0px_rgba(154,16,35,1.00)] flex items-center justify-center px-4">
+					<div className="w-full h-11 bg-rose-700 rounded-xl shadow-[0px_7px_0px_0px_var(--color-default-selected)] flex items-center justify-center px-4">
 						<div className="flex items-center gap-2">
 							<div className="justify-start text-white text-base font-bold font-['Open_Sans'] tracking-tight">
 								Reward: +{challenge.scotty_coins}

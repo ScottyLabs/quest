@@ -12,7 +12,6 @@ pub struct RewardsListResponse {
 #[derive(Serialize, ToSchema)]
 pub struct RewardResponse {
     pub name: String,
-    pub slug: String,
     pub cost: i32,
     pub stock: i32,
     pub trade_limit: i32,
@@ -92,7 +91,6 @@ pub async fn get_rewards(
 
         reward_responses.push(RewardResponse {
             name: reward.name.clone(),
-            slug: reward.slug,
             cost: reward.cost,
             stock: reward.stock,
             trade_limit: reward.trade_limit,

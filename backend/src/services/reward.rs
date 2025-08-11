@@ -1,5 +1,5 @@
 use crate::entities::{prelude::*, reward};
-use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
+use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, sea_query::OnConflict};
 
 #[derive(Clone)]
 pub struct RewardService {
@@ -9,6 +9,30 @@ pub struct RewardService {
 impl RewardService {
     pub fn new(db: DatabaseConnection) -> Self {
         Self { db }
+    }
+
+    // Used for seeding
+    pub async fn upsert_rewards_batch(
+        &self,
+        rewards: Vec<reward::ActiveModel>,
+    ) -> Result<usize, sea_orm::DbErr> {
+        let count = rewards.len();
+
+        // Use insert_many with ON CONFLICT DO UPDATE
+        Reward::insert_many(rewards)
+            .on_conflict(
+                OnConflict::column(reward::Column::Name)
+                    .update_columns([
+                        reward::Column::Cost,
+                        reward::Column::Stock,
+                        reward::Column::TradeLimit,
+                    ])
+                    .to_owned(),
+            )
+            .exec(&self.db)
+            .await?;
+
+        Ok(count)
     }
 
     pub async fn get_reward_by_name(

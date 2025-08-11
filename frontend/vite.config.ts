@@ -2,6 +2,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
+import mkcert from "vite-plugin-mkcert";
 import svgr from "vite-plugin-svgr";
 import tsConfigPaths from "vite-tsconfig-paths";
 
@@ -14,6 +15,7 @@ export default defineConfig(async () => ({
 			target: "react",
 			autoCodeSplitting: true,
 		}),
+		// mkcert(),
 		react(),
 		svgr(),
 		tailwindcss(),

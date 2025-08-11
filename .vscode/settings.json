@@ -49,5 +49,6 @@
 	},
 	"[json]": {
 		"editor.defaultFormatter": "biomejs.biome"
-	}
+	},
+	"discord.enabled": true
 }

@@ -1,5 +1,3 @@
-import { useRef } from "react";
-
 interface QRScannerModalProps {
 	isScanning: boolean;
 	scanResult: string;

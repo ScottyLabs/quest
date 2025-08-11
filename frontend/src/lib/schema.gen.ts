@@ -426,7 +426,6 @@ export interface components {
             /** Format: int32 */
             cost: number;
             name: string;
-            slug: string;
             /** Format: int32 */
             stock: number;
             /** Format: int32 */

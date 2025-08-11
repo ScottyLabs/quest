@@ -281,9 +281,9 @@ function Profile() {
 						</div>
 					) : (
 						<div className="flex gap-2 h-64">
-							{/* {prizeData.rewards.map((reward) => (
+							{prizeData.rewards.map((reward) => (
 								<div
-									key={reward.slug}
+									key={reward.name}
 									className="w-80 h-64 flex-shrink-0 bg-white rounded-xl border p-4 flex flex-col justify-between"
 								>
 									<div className="flex-1">
@@ -304,7 +304,7 @@ function Profile() {
 										</Link>
 									</div>
 								</div>
-							))} */}
+							))}
 						</div>
 					)}
 				</div>

@@ -120,18 +120,18 @@ export async function redirectIfAuthenticated({
 function handleAuthSuccess(authContext: AuthContext): AuthContext {
 	const { user } = authContext;
 
-	// if (user.dorm && window.location.pathname === "/dorm-select") {
-	// 	const urlParams = new URLSearchParams(window.location.search);
-	// 	const from = urlParams.get("from") || "/";
-	// 	throw redirect({ to: from });
-	// }
+	if (user.dorm && window.location.pathname === "/dorm-select") {
+		const urlParams = new URLSearchParams(window.location.search);
+		const from = urlParams.get("from") || "/";
+		throw redirect({ to: from });
+	}
 
-	// if (!user.dorm && window.location.pathname !== "/dorm-select") {
-	// 	throw redirect({
-	// 		to: "/dorm-select",
-	// 		search: { from: window.location.pathname },
-	// 	});
-	// }
+	if (!user.dorm && window.location.pathname !== "/dorm-select") {
+		throw redirect({
+			to: "/dorm-select",
+			search: { from: window.location.pathname },
+		});
+	}
 
 	return authContext;
 }

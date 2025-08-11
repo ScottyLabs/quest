@@ -1,30 +1,20 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { colorClasses } from "@/lib/data/categories";
-import { navbarPages as allPages, type ValidPath } from "@/lib/data/page";
-import type { components } from "@/lib/schema.gen";
+import { navbarPages, type ValidPath } from "@/lib/data/page";
 import type { ValueOf } from "@/lib/utils";
 
 interface NavbarProps {
 	currentPath: ValidPath;
 	pageColors: ValueOf<typeof colorClasses>;
-	user: components["schemas"]["UserProfileResponse"];
 }
 
-export function Navbar({ currentPath, pageColors, user }: NavbarProps) {
-	const pages = allPages.filter((page) => {
-		// Show /terrier-trade if not admin, show /verify if admin
-		if (user.groups.includes("O-Quest Admin")) {
-			return page.label !== "Terrier Trade";
-		}
-		return page.label !== "Verify";
-	});
-
+export function Navbar({ currentPath, pageColors }: NavbarProps) {
 	return (
 		<div>
 			<div className="fixed [view-transition-name:navbar-shadow] bottom-20 left-0 right-0 z-50 w-full h-16 bg-gradient-to-b from-transparent from-10% via-55% via-black/12 to-black/36 pointer-events-none" />
 			<nav className="fixed [view-transition-name:navbar] bottom-0 left-0 right-0 flex justify-around items-center h-20">
-				{pages.map((page) => {
+				{navbarPages.map((page) => {
 					const activeStyles =
 						page.to === currentPath ? pageColors.selected : pageColors.hover;
 					const challengeStyles =

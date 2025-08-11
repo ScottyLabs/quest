@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 FROM chef AS planner
-COPY backend/ ./
+COPY . ./
 RUN cargo chef prepare --recipe-path recipe.json
 
 FROM chef AS builder
@@ -21,7 +21,7 @@ COPY --from=planner /app/recipe.json recipe.json
 RUN cargo chef cook --release --recipe-path recipe.json
 
 # Build application
-COPY backend/ ./
+COPY . ./
 RUN cargo build --release
 
 FROM debian:bookworm-slim AS runtime

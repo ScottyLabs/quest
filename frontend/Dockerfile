@@ -10,7 +10,7 @@ RUN bun install --frozen-lockfile
 COPY . .
 
 # Build the application
-RUN bun run build
+RUN bun run build:temp
 
 FROM nginx:alpine AS production
 

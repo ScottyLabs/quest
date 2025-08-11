@@ -1,7 +1,8 @@
+import { X } from "lucide-react";
+
 interface QRScannerModalProps {
 	isScanning: boolean;
 	scanResult: string;
-	error: string;
 	onClose: () => void;
 	onResetAndScanAgain: () => void;
 	videoRef: React.RefObject<HTMLVideoElement>;
@@ -11,7 +12,6 @@ interface QRScannerModalProps {
 export function QRScannerModal({
 	isScanning,
 	scanResult,
-	error,
 	onClose,
 	onResetAndScanAgain,
 	videoRef,
@@ -23,13 +23,11 @@ export function QRScannerModal({
 				{/* Header */}
 				<div className="flex justify-between items-center p-4 border-b">
 					<h3 className="text-lg font-semibold">QR Code Scanner</h3>
-					<button
-						type="button"
+
+					<X
 						onClick={onClose}
 						className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
-					>
-						×
-					</button>
+					/>
 				</div>
 
 				{/* Video Container */}
@@ -47,7 +45,7 @@ export function QRScannerModal({
 					/>
 
 					{/* Scanning indicator */}
-					{isScanning && !scanResult && !error && (
+					{isScanning && !scanResult && (
 						<div className="absolute inset-0 flex items-center justify-center">
 							<div className="bg-black bg-opacity-50 text-white px-4 py-2 rounded-lg">
 								<div className="flex items-center space-x-2">
@@ -89,7 +87,7 @@ export function QRScannerModal({
 						</div>
 					)}
 
-					{isScanning && !scanResult && !error && (
+					{isScanning && !scanResult && (
 						<div className="text-center text-gray-600">
 							<p className="text-sm">Point your camera at a QR code</p>
 							<p className="text-xs mt-1">

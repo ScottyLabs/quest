@@ -6,7 +6,7 @@ import { PageLayout } from "@/components/page-layout";
 import CategoryProgressBar from "@/components/profile/category-progress-bar";
 import Stamps from "@/components/profile/stamps";
 import { Card } from "@/components/ui/card";
-import { useApi } from "@/lib/api-context";
+import { useApi } from "@/lib/app-context";
 import { requireAuth } from "@/lib/auth";
 import {
 	type DormName,

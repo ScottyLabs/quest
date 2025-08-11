@@ -4,8 +4,7 @@ import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
-import { FilterProvider } from "@/components/challenges";
-import { ApiProvider, useApi } from "@/lib/api-context";
+import { AppProvider, useApi } from "@/lib/app-context";
 import { routeTree } from "@/routeTree.gen";
 import "@/main.css";
 
@@ -59,14 +58,12 @@ if (!rootElement.innerHTML) {
 	root.render(
 		<StrictMode>
 			<QueryClientProvider client={queryClient}>
-				<ApiProvider>
-					<FilterProvider>
-						<AppWithRouter />
+				<AppProvider>
+					<AppWithRouter />
 
-						<ReactQueryDevtools initialIsOpen={false} />
-						<TanStackRouterDevtools router={router} />
-					</FilterProvider>
-				</ApiProvider>
+					<ReactQueryDevtools initialIsOpen={false} />
+					<TanStackRouterDevtools router={router} />
+				</AppProvider>
 			</QueryClientProvider>
 		</StrictMode>,
 	);

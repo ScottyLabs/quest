@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import ScottyCoin from "@/assets/scotty-coin.svg?react";
-import { useApi } from "@/lib/api-context";
+import { useApi } from "@/lib/app-context";
 
 export const Route = createFileRoute("/")({
 	validateSearch: (search: Record<string, unknown>) => {

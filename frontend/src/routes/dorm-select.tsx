@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { useApi } from "@/lib/api-context";
+import { useApi } from "@/lib/app-context";
 import { requireAuth } from "@/lib/auth";
 import {
 	type DormGroup,

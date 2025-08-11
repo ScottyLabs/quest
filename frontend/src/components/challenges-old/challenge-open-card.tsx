@@ -7,7 +7,7 @@ import {
 	DialogContent,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { useApi } from "@/lib/api-context";
+import { useApi } from "@/lib/app-context";
 import { callWithQR } from "@/lib/native/scanner";
 import { CompletedChallengeCard } from "./completed-challenge-card";
 import { IncompleteChallengeCard } from "./incomplete-challenge-card";

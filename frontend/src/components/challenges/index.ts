@@ -1,12 +1,5 @@
 // Filter Components
-export type { FilterOption } from "@/components/challenges/filters/filter-card";
-export { FilterCard } from "@/components/challenges/filters/filter-card";
-export {
-	AppProvider,
-	FilterProvider,
-	useAppContext,
-	useFilter,
-} from "@/components/challenges/filters/filter-context";
+export { FilterCard } from "@/components/challenges/filter-card";
 
 // Hooks
 export { useChallenges } from "@/components/challenges/hooks/use-challenges";

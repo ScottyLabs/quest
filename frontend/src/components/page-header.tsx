@@ -3,7 +3,7 @@ import { Filter, Flag, Info } from "lucide-react";
 import { useState } from "react";
 import HeaderArc from "@/assets/header-arc.svg?react";
 import ScottyCoin from "@/assets/scotty-coin.svg?react";
-import { FilterCard, useFilter } from "@/components/challenges";
+import { FilterCard } from "@/components/challenges";
 import { InfoDialog } from "@/components/challenges/info-dialog";
 import { ModePill } from "@/components/mode-pill";
 import {
@@ -15,6 +15,7 @@ import {
 import type { pageObject } from "@/lib/data/page";
 import type { components } from "@/lib/schema.gen";
 import type { ValueOf } from "@/lib/utils";
+import { useAppContext } from "@/lib/app-context";
 
 interface PageHeaderProps {
 	categoryId?: CategoryId;
@@ -31,7 +32,7 @@ export function PageHeader({
 }: PageHeaderProps) {
 	const [isFilterOpen, setIsFilterOpen] = useState(false);
 	const [isInfoOpen, setIsInfoOpen] = useState(false);
-	const { filter, setFilter } = useFilter();
+	const { filter, setFilter } = useAppContext();
 
 	const Icon = categoryId ? categoryIconFromId[categoryId] : pageObject.Icon;
 

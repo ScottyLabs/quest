@@ -6,13 +6,13 @@ import {
 	ChallengeDrawer,
 	ChallengesDrawerContent,
 	ChallengesMode,
-	useAppContext,
 	VerifyDrawerContent,
 	VerifyMode,
 } from "@/components/challenges";
 import { PageLayout } from "@/components/page-layout";
 import { requireAuth } from "@/lib/auth";
 import { type CategoryId, colorClasses } from "@/lib/data/categories";
+import { useAppContext } from "@/lib/app-context";
 
 export const Route = createFileRoute("/challenges/$categoryId")({
 	beforeLoad: async ({ context }) => {

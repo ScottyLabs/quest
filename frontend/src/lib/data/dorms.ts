@@ -125,7 +125,7 @@ export const dormGroups = dorms.reduce(
 		acc[group].push({ name: dorm.name, image_path: dorm.image_path });
 		return acc;
 	},
-	{} as Record<string, { name: string; image_path: string }[]>,
+	{} as Record<DormGroup, { name: DormName; image_path: string }[]>,
 );
 
 export const dormImagePaths = dorms.reduce(

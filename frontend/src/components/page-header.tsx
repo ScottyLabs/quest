@@ -3,9 +3,9 @@ import { Filter, Flag, Info } from "lucide-react";
 import { useState } from "react";
 import HeaderArc from "@/assets/header-arc.svg?react";
 import ScottyCoin from "@/assets/scotty-coin.svg?react";
-import { FilterCard } from "@/components/challenges/filter-card";
-import { useFilter } from "@/components/challenges/filter-context";
+import { FilterCard, useFilter } from "@/components/challenges";
 import { InfoDialog } from "@/components/challenges/info-dialog";
+import { ModePill } from "@/components/mode-pill";
 import {
 	type CategoryId,
 	categories,
@@ -54,14 +54,17 @@ export function PageHeader({
 						</span>
 					</Link>
 
-					<Link
-						to="/terrier-trade"
-						className="flex card-primary items-center w-20 justify-center bg-white hover:bg-gray-100 rounded-full px-3 py-2 text-sm font-bold gap-2"
-						aria-label="View Coins"
-					>
-						<ScottyCoin className="size-5" />
-						<span>{user.scotty_coins.current ?? 0}</span>
-					</Link>
+					<div className="flex gap-2">
+						<ModePill isAdmin={user.groups.includes("O-Quest Admin")} />
+						<Link
+							to="/terrier-trade"
+							className="flex card-primary items-center w-20 justify-center bg-white hover:bg-gray-100 rounded-full px-3 py-2 text-sm font-bold gap-2"
+							aria-label="View Coins"
+						>
+							<ScottyCoin className="size-5" />
+							<span>{user.scotty_coins.current ?? 0}</span>
+						</Link>
+					</div>
 				</div>
 
 				{/* Main icon row */}
@@ -74,7 +77,6 @@ export function PageHeader({
 						</div>
 					</div>
 				</div>
-
 				{/* Decorative arc with title inside */}
 				<div className="w-full overflow-hidden absolute h-[50%] bottom-0">
 					<HeaderArc className={`w-full h-full ${pageColors.arcColor}`} />

@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as TerrierTradeRouteImport } from './routes/terrier-trade'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LoginRouteImport } from './routes/login'
@@ -19,11 +18,6 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChallengesCategoryIdRouteImport } from './routes/challenges/$categoryId'
 
-const VerifyRoute = VerifyRouteImport.update({
-  id: '/verify',
-  path: '/verify',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const TerrierTradeRoute = TerrierTradeRouteImport.update({
   id: '/terrier-trade',
   path: '/terrier-trade',
@@ -73,7 +67,6 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/terrier-trade': typeof TerrierTradeRoute
-  '/verify': typeof VerifyRoute
   '/challenges/$categoryId': typeof ChallengesCategoryIdRoute
 }
 export interface FileRoutesByTo {
@@ -84,7 +77,6 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/terrier-trade': typeof TerrierTradeRoute
-  '/verify': typeof VerifyRoute
   '/challenges/$categoryId': typeof ChallengesCategoryIdRoute
 }
 export interface FileRoutesById {
@@ -96,7 +88,6 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/terrier-trade': typeof TerrierTradeRoute
-  '/verify': typeof VerifyRoute
   '/challenges/$categoryId': typeof ChallengesCategoryIdRoute
 }
 export interface FileRouteTypes {
@@ -109,7 +100,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/profile'
     | '/terrier-trade'
-    | '/verify'
     | '/challenges/$categoryId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -120,7 +110,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/profile'
     | '/terrier-trade'
-    | '/verify'
     | '/challenges/$categoryId'
   id:
     | '__root__'
@@ -131,7 +120,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/profile'
     | '/terrier-trade'
-    | '/verify'
     | '/challenges/$categoryId'
   fileRoutesById: FileRoutesById
 }
@@ -143,19 +131,11 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ProfileRoute: typeof ProfileRoute
   TerrierTradeRoute: typeof TerrierTradeRoute
-  VerifyRoute: typeof VerifyRoute
   ChallengesCategoryIdRoute: typeof ChallengesCategoryIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/verify': {
-      id: '/verify'
-      path: '/verify'
-      fullPath: '/verify'
-      preLoaderRoute: typeof VerifyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/terrier-trade': {
       id: '/terrier-trade'
       path: '/terrier-trade'
@@ -223,7 +203,6 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ProfileRoute: ProfileRoute,
   TerrierTradeRoute: TerrierTradeRoute,
-  VerifyRoute: VerifyRoute,
   ChallengesCategoryIdRoute: ChallengesCategoryIdRoute,
 }
 export const routeTree = rootRouteImport

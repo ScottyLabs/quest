@@ -2,11 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PageLayout } from "@/components/page-layout";
 import { PrizeCard } from "@/components/trade/prize-card";
 import { useApi } from "@/lib/api-context";
-import { adminMiddleware } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/terrier-trade")({
 	beforeLoad: async ({ context }) => {
-		return await adminMiddleware(context);
+		return await requireAuth(context);
 	},
 	component: TerrierTrade,
 });

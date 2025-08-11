@@ -8,12 +8,12 @@ import {
 } from "react";
 import { Drawer } from "vaul";
 import ScottyCoin from "@/assets/scotty-coin.svg?react";
-import type { Challenge } from "@/components/challenges/card";
 import {
 	type CategoryLabel,
 	categoryIdFromLabel,
 	colorClasses,
 } from "@/lib/data/categories";
+import type { Challenge } from "./card";
 
 interface DrawerProps {
 	open: boolean;

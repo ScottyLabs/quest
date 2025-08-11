@@ -1,6 +1,6 @@
 import { Camera, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ChallengeOpenCard } from "@/components/challenges/challenge-open-card";
+import { ChallengeOpenCard } from "@/components/challenges-old/challenge-open-card";
 import type { components } from "@/lib/schema.gen";
 
 interface GalleryFocusedProps {

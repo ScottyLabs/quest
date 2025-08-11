@@ -1,7 +1,8 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import ScottyCoin from "@/assets/scotty-coin.svg?react";
+import { useApi } from "@/lib/api-context";
 
 export const Route = createFileRoute("/")({
 	validateSearch: (search: Record<string, unknown>) => {
@@ -48,23 +49,14 @@ const steps: Step[] = [
 
 function Onboarding() {
 	const { from } = Route.useSearch();
+	const { login } = useApi();
 	const isFromAbout = from === "about";
 
 	const [currentStep, setCurrentStep] = useState(0);
-	const navigate = useNavigate();
 	const [imgSize, setImgSize] = useState<{
 		width: number;
 		height: number;
 	} | null>(null);
-
-	const goHome = useCallback(
-		() =>
-			navigate({
-				to: "/challenges/$categoryId",
-				params: { categoryId: "all" },
-			}),
-		[navigate],
-	);
 
 	// Check if user has completed onboarding on component mount
 	useEffect(() => {
@@ -74,10 +66,10 @@ function Onboarding() {
 			);
 
 			if (hasCompletedOnboarding === "true") {
-				goHome();
+				login(from && from !== "/" ? from : "/challenges/all");
 			}
 		}
-	}, [isFromAbout, goHome]);
+	}, [isFromAbout, login, from]);
 
 	const nextStep = () =>
 		setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
@@ -87,9 +79,8 @@ function Onboarding() {
 		const currentStepData = steps[currentStep];
 
 		if (currentStepData?.action === "login") {
-			// Mark onboarding as completed when user clicks "Log In"
 			localStorage.setItem("onboardingCompleted", "true");
-			goHome();
+			login(from && from !== "/" ? from : "/challenges/all");
 		} else {
 			nextStep();
 		}
@@ -122,7 +113,7 @@ function Onboarding() {
 				<button
 					onClick={() => {
 						localStorage.setItem("onboardingCompleted", "true");
-						goHome();
+						login(from && from !== "/" ? from : "/challenges/all");
 					}}
 					className="text-gray-500 hover:text-default font-medium transition px-2 py-1"
 					type="button"

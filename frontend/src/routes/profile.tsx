@@ -80,12 +80,14 @@ function getDormShadowColor(dormName: string | null | undefined): string {
 
 	// Color mapping for primary and selected colors
 	const colorMap: Record<string, { primary: string; selected: string }> = {
-		"bg-housing-1": { primary: "#ffb22f", selected: "#9e7105" }, // Morewood
+		"bg-housing-1": { primary: "#ffb22f", selected: "#9e7105" }, // Morewood E-Tower
 		"bg-housing-2": { primary: "#d5242c", selected: "#691418" }, // Hill
 		"bg-housing-3": { primary: "#083372", selected: "#022557" }, // Donner + West Wing
 		"bg-housing-4": { primary: "#189846", selected: "#06794a" }, // Stever
 		"bg-housing-5": { primary: "#caa3e8", selected: "#4d2e65" }, // Mudge
-		"bg-housing-6": { primary: "#e71763", selected: "#81133b" }, // Res on Fifth
+		"bg-housing-6": { primary: "#e71763", selected: "#81133b" }, // Fifth Avenue/RANCH
+		"bg-housing-7": { primary: "#f3ba4f", selected: "#8a5a03" }, // Morewood Gardens
+		"bg-housing-8": { primary: "#742c2a", selected: "#5c1f1f" }, // WhescoMM
 	};
 
 	const primaryColor = dormColors[dormGroup].primary;
@@ -279,9 +281,9 @@ function Profile() {
 						</div>
 					) : (
 						<div className="flex gap-2 h-64">
-							{/* {prizeData.rewards.map((reward) => (
+							{prizeData.rewards.map((reward) => (
 								<div
-									key={reward.slug}
+									key={reward.name}
 									className="w-80 h-64 flex-shrink-0 bg-white rounded-xl border p-4 flex flex-col justify-between"
 								>
 									<div className="flex-1">
@@ -302,7 +304,7 @@ function Profile() {
 										</Link>
 									</div>
 								</div>
-							))} */}
+							))}
 						</div>
 					)}
 				</div>

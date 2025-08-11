@@ -90,7 +90,7 @@ export function TradeMenu({ isOpen, onOpenChange, prize }: TradeMenuProps) {
 											Claimed:{" "}
 										</span>
 										<span className="text-Tertiary text-xs font-bold font-['Open_Sans'] tracking-tight">
-											{prize.claimed}/{prize.allowedToClaim}
+											{/* {prize.claimed}/{prize.allowedToClaim} */}
 										</span>
 										<br />
 										<span className="text-Tertiary text-xs font-normal font-['Open_Sans'] tracking-tight">
@@ -102,11 +102,11 @@ export function TradeMenu({ isOpen, onOpenChange, prize }: TradeMenuProps) {
 									</div>
 								</div>
 								{/* Prize image placeholder */}
-								<img
+								{/* <img
 									className="w-16 h-16 rounded-[5px] flex-shrink-0"
 									src={prize.imageUrl || "https://placehold.co/71x65"}
 									alt={prize.name}
-								/>
+								/> */}
 							</div>
 
 							{/* Description section */}

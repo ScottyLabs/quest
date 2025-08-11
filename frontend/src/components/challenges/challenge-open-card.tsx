@@ -7,9 +7,9 @@ import {
 	DialogContent,
 	DialogTrigger,
 } from "@/components/ui/dialog";
+import { useApi } from "@/lib/api-context";
 import { callWithQR } from "@/lib/native/scanner";
 import { CompletedChallengeCard } from "./completed-challenge-card";
-import { ErrorPopup } from "./error-popup";
 import { IncompleteChallengeCard } from "./incomplete-challenge-card";
 import { PhotoEditCard } from "./photo-edit-card";
 import { QRScannerModal } from "./qr-scanner-modal";
@@ -26,11 +26,11 @@ export function ChallengeOpenCard({
 	children,
 	onChallengeComplete,
 }: ChallengeOpenCardProps) {
+	const { $api } = useApi();
+
 	const [isScanning, setIsScanning] = useState(false);
 	const [scanResult, setScanResult] = useState("");
 
-	const [error, setError] = useState("");
-	const [showErrorPopup, setShowErrorPopup] = useState(false);
 	const [showSuccessCard, setShowSuccessCard] = useState(false);
 	const [showPhotoEditCard, setShowPhotoEditCard] = useState(false);
 
@@ -66,47 +66,22 @@ export function ChallengeOpenCard({
 		return qrData;
 	}, []);
 
-	const completeChallenge = useCallback(async () => {
-		setIsCompleting(true);
-		try {
-			// Call the completion API
-			const response = await fetch("/api/complete", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					challenge_name: challenge.name,
-					verification_code: challenge.secret,
-					image_data: uploadedImage || "", // Base64 image data
-					note: "",
-				}),
-			});
+	const {
+		mutate: completeChallenge,
+		isPending,
+		isSuccess,
+	} = $api.useMutation("post", "/api/complete");
 
-			const result = await response.json();
-			if (result.success) {
-				setIsCompleted(true);
-				if (onChallengeComplete) {
-					onChallengeComplete(challenge.name, challenge.scotty_coins);
-				}
-			} else {
-				setError(result.message || "Failed to complete challenge");
-				setShowErrorPopup(true);
-			}
-		} catch (err) {
-			setError("Failed to complete challenge");
-			setShowErrorPopup(true);
-			console.error("Completion error:", err);
-		} finally {
-			setIsCompleting(false);
-		}
-	}, [
-		challenge.name,
-		challenge.secret,
-		challenge.scotty_coins,
-		uploadedImage,
-		onChallengeComplete,
-	]);
+	const onComplete = () => {
+		completeChallenge({
+			body: {
+				challenge_name: challenge.name,
+				verification_code: challenge.secret,
+				image_data: uploadedImage || "", // Base64 image data
+				note: "",
+			},
+		});
+	};
 
 	const startScanning = useCallback(async () => {
 		// If challenge is already completed, don't scan again
@@ -115,8 +90,7 @@ export function ChallengeOpenCard({
 		}
 
 		if (!videoRef.current || !overlayCanvasRef.current) {
-			setError("Video or overlay canvas not available");
-			setShowErrorPopup(true);
+			console.error("Video or overlay canvas not available");
 			return;
 		}
 
@@ -136,7 +110,6 @@ export function ChallengeOpenCard({
 					setShowSuccessCard(true);
 					setIsScanning(false);
 					setScanResult("");
-					setError("");
 
 					// Stop video stream
 					if (videoRef.current?.srcObject) {
@@ -145,24 +118,21 @@ export function ChallengeOpenCard({
 						videoRef.current.srcObject = null;
 					}
 				} else {
-					setError("Invalid QR code. Please try again.");
-					setShowErrorPopup(true);
+					console.error("Invalid QR code. Please try again.");
+					return;
 				}
 			} else {
-				setError("No QR code found or camera access denied");
-				setShowErrorPopup(true);
+				console.error("No QR code found or camera access denied");
+				return;
 			}
 		} catch (err) {
-			setError("An error occurred while scanning");
-			setShowErrorPopup(true);
-			console.error("QR scan error:", err);
+			console.error("An error occurred while scanning:", err);
+			return;
 		}
 	}, [handleQRCode, challenge.secret, isCompleted]);
 
 	const resetAndScanAgain = () => {
 		setScanResult("");
-		setError("");
-		setShowErrorPopup(false);
 		setShowSuccessCard(false);
 		setShowPhotoEditCard(false);
 		startScanning();
@@ -173,7 +143,6 @@ export function ChallengeOpenCard({
 
 		setIsScanning(true);
 		setScanResult("");
-		setError("");
 
 		// Start scanning after a small delay to ensure modal is rendered
 		setTimeout(() => {
@@ -184,8 +153,6 @@ export function ChallengeOpenCard({
 	const closeScannerModal = () => {
 		setIsScanning(false);
 		setScanResult("");
-		setError("");
-		setShowErrorPopup(false);
 		setShowSuccessCard(false);
 		setShowPhotoEditCard(false);
 
@@ -360,11 +327,6 @@ export function ChallengeOpenCard({
 		setShowPhotoEditCard(true);
 	};
 
-	const closeErrorPopup = () => {
-		setShowErrorPopup(false);
-		setError("");
-	};
-
 	const handleContinueToCompletion = () => {
 		setShowSuccessCard(false);
 		setIsCompleted(true);
@@ -382,8 +344,6 @@ export function ChallengeOpenCard({
 	const closeModal = () => {
 		setIsScanning(false);
 		setScanResult("");
-		setError("");
-		setShowErrorPopup(false);
 		setShowSuccessCard(false);
 		setShowPhotoEditCard(false);
 		setIsCompleted(challenge.status === "completed");
@@ -491,7 +451,6 @@ export function ChallengeOpenCard({
 					<QRScannerModal
 						isScanning={isScanning}
 						scanResult={scanResult}
-						error={error}
 						onClose={closeScannerModal}
 						onResetAndScanAgain={resetAndScanAgain}
 						videoRef={videoRef}
@@ -505,11 +464,6 @@ export function ChallengeOpenCard({
 						challenge={challenge}
 						onContinue={handleContinueToCompletion}
 					/>
-				)}
-
-				{/* Error Popup Modal */}
-				{showErrorPopup && (
-					<ErrorPopup error={error} onClose={closeErrorPopup} />
 				)}
 			</DialogContent>
 		</Dialog>

@@ -142,14 +142,10 @@ function RouteComponent() {
 				)}
 			</div>
 
-			<ChallengeDrawer
-				open={open}
-				setOpen={setOpen}
-				challenge={challenge}
-			>
+			<ChallengeDrawer open={open} setOpen={setOpen} challenge={challenge}>
 				<p className="mt-2 mb-2 text-gray-700 text-sm">
-					Are you at this challenge? Press the "complete" button below to open
-					the QR code scanner and confirm your physical location.
+					Have you found this challenge? Press the "complete" button below to
+					open the QR code scanner and verify your location.
 				</p>
 				<p className="mb-4 text-gray-500 text-xs">
 					Please wait until your precise location is determined before you close

@@ -40,12 +40,14 @@
 	--color-challenge-5-selected: #4cb4c2;
 	--color-challenge-6-selected: #2c77c0;
 
-	--color-housing-1: #ffb22f; /* morewood */
+	--color-housing-1: #ffb22f; /* morewood e tower */
 	--color-housing-2: #d5242c; /* hill */
-	--color-housing-3: #083372; /* donner + west wing */
+	--color-housing-3: #083372; /* donner  */
 	--color-housing-4: #189846; /* stever */
 	--color-housing-5: #caa3e8; /* mudge */
 	--color-housing-6: #e71763; /* rez */
+	--color-housing-7: #f3ba4f; /* morewood gardens */
+	--color-housing-8: #742c2a; /* whescomm */
 
 	--color-housing-1-light: #f4e7d3;
 	--color-housing-2-light: #c0a4a4;
@@ -53,6 +55,8 @@
 	--color-housing-4-light: #b4f1ca;
 	--color-housing-5-light: #a68fc3;
 	--color-housing-6-light: #efc3ea;
+	--color-housing-7-light: #f9e2b8;
+	--color-housing-8-light: #e2b2b2;
 
 	--color-housing-1-selected: #9e7105;
 	--color-housing-2-selected: #691418;
@@ -60,6 +64,8 @@
 	--color-housing-4-selected: #06794a;
 	--color-housing-5-selected: #4d2e65;
 	--color-housing-6-selected: #81133b;
+	--color-housing-7-selected: #9e6b2f;
+	--color-housing-8-selected: #5c1f1f;
 
 	--color-housing-1-muted: #dfdacb;
 	--color-housing-2-muted: #f2cdcd;
@@ -67,6 +73,8 @@
 	--color-housing-4-muted: #c8dbcf;
 	--color-housing-5-muted: #d5c6e7;
 	--color-housing-6-muted: #f7e1f4;
+	--color-housing-7-muted: #f9e2b8;
+	--color-housing-8-muted: #f2d0d0;
 }
 
 @layer base {

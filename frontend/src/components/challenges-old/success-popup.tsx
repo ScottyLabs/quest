@@ -1,6 +1,6 @@
 import { Check } from "lucide-react";
 import ScottyCoin from "@/assets/scotty-coin.svg?react";
-import type { Challenge } from "@/components/challenges/card";
+import type { Challenge } from "@/components/challenges";
 
 interface SuccessPopupProps {
 	challenge: Challenge;

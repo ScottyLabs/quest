@@ -58,25 +58,6 @@ export async function requireAuth({ baseUrl, queryClient }: RouterContext) {
 	}
 }
 
-export async function adminMiddleware(context: RouterContext) {
-	const authContext = await requireAuth(context);
-
-	// Check if user is in the admin group
-	if (
-		!authContext.user.groups.includes("O-Quest Admin") &&
-		window.location.pathname === "/verify"
-	) {
-		throw redirect({ to: "/terrier-trade" });
-	} else if (
-		authContext.user.groups.includes("O-Quest Admin") &&
-		window.location.pathname === "/terrier-trade"
-	) {
-		throw redirect({ to: "/verify" });
-	}
-
-	return authContext;
-}
-
 // Redirect if already authenticated
 export async function redirectIfAuthenticated({
 	baseUrl,

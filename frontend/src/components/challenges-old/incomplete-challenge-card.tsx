@@ -1,6 +1,6 @@
 import { ExternalLink, QrCode } from "lucide-react";
 import ScottyCoin from "@/assets/scotty-coin.svg?react";
-import type { Challenge } from "@/components/challenges/card";
+import type { Challenge } from "@/components/challenges";
 
 interface IncompleteChallengeCardProps {
 	challenge: Challenge;

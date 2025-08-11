@@ -4,7 +4,7 @@ import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
-import { FilterProvider } from "@/components/challenges/filter-context";
+import { FilterProvider } from "@/components/challenges";
 import { ApiProvider, useApi } from "@/lib/api-context";
 import { routeTree } from "@/routeTree.gen";
 import "@/main.css";

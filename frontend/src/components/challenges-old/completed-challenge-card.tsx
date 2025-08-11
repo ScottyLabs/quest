@@ -1,5 +1,5 @@
 import { Camera, Check, Edit, ExternalLink, X } from "lucide-react";
-import type { Challenge } from "@/components/challenges/card";
+import type { Challenge } from "@/components/challenges";
 
 interface CompletedChallengeCardProps {
 	challenge: Challenge;

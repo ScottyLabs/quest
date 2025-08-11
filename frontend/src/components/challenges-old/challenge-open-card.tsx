@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
-import type { Challenge } from "@/components/challenges/card";
+import type { Challenge } from "@/components/challenges";
 import {
 	Dialog,
 	DialogClose,

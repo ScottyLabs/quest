@@ -28,11 +28,11 @@ const MascotData: Record<DormName, { mascotName: string; chant: string }> = {
 	},
 	"Morewood E-Tower": {
 		mascotName: "Yuxiang the Pineapple",
-		chant: "“Who's Got The Power?! E-Tower!!”",
+		chant: '"Who\'s Got The Power?! E-Tower!!"',
 	},
 	Donner: {
 		mascotName: "Donner the Whale",
-		chant: '"“Yeah, Donner!!”',
+		chant: '"Yeah, Donner!!"',
 	},
 	Stever: {
 		mascotName: "Stever the Cactus",

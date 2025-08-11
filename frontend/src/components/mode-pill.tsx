@@ -1,4 +1,4 @@
-import { useAppContext } from "@/components/challenges";
+import { useAppContext } from "@/lib/app-context";
 
 interface ModePillProps {
 	isAdmin: boolean;

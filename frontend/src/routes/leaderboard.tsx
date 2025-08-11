@@ -3,7 +3,7 @@ import { EllipsisVertical } from "lucide-react";
 import { LeaderboardCard } from "@/components/leaderboard/card";
 import { CardFromUser } from "@/components/leaderboard/card-from-user";
 import { PageLayout } from "@/components/page-layout";
-import { useApi } from "@/lib/api-context";
+import { useApi } from "@/lib/app-context";
 import { requireAuth } from "@/lib/auth";
 import type { components } from "@/lib/schema.gen";
 

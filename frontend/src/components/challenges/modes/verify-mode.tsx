@@ -4,7 +4,7 @@ import {
 	ChallengesList,
 	useChallenges,
 } from "@/components/challenges";
-import { useApi } from "@/lib/api-context";
+import { useApi } from "@/lib/app-context";
 import type { CategoryId } from "@/lib/data/categories";
 import { useGeolocation } from "@/lib/native/geolocation";
 

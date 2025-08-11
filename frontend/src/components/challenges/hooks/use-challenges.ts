@@ -1,6 +1,5 @@
 import { useMemo } from "react";
-import { useFilter } from "@/components/challenges";
-import { useApi } from "@/lib/api-context";
+import { useApi, useAppContext } from "@/lib/app-context";
 import {
 	type CategoryId,
 	type CategoryLabel,
@@ -18,7 +17,7 @@ export function useChallenges({
 	categoryId,
 	mode = "challenges",
 }: UseChallengesOptions) {
-	const { filter } = useFilter();
+	const { filter } = useAppContext();
 	const { $api } = useApi();
 	const { data, isLoading } = $api.useQuery("get", "/api/admin/challenges");
 

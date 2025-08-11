@@ -1,9 +1,7 @@
 import { Check, Filter, Lock, X } from "lucide-react";
 import ScottyCoin from "@/assets/scotty-coin.svg?react";
 import { Button } from "@/components/ui/button";
-import type { components } from "@/lib/schema.gen";
-
-export type FilterOption = components["schemas"]["ChallengeStatus"] | "all";
+import type { FilterOption } from "@/lib/app-context";
 
 const filterOptions: {
 	value: FilterOption;

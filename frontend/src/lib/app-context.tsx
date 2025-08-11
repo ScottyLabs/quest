@@ -1,9 +1,13 @@
 import createFetchClient from "openapi-fetch";
 import createClient from "openapi-react-query";
-import { createContext, type ReactNode, useContext } from "react";
-import type { paths } from "@/lib/schema.gen";
+import { createContext, type ReactNode, useContext, useState } from "react";
+import type { components, paths } from "@/lib/schema.gen";
 
 const CLIENT = "quest";
+
+// App state types
+export type FilterOption = components["schemas"]["ChallengeStatus"] | "all";
+export type AdminMode = "challenges" | "verify";
 
 const getApiConfig = (): string => {
 	const { hostname } = window.location;
@@ -63,20 +67,52 @@ const createApiClient = (baseUrl: string) => {
 };
 
 // Context setup
-type ApiContextType = ReturnType<typeof createApiClient>;
-const ApiContext = createContext<ApiContextType | null>(null);
+type AppContextType = ReturnType<typeof createApiClient> & {
+	filter: FilterOption;
+	setFilter: (filter: FilterOption) => void;
+	adminMode: AdminMode;
+	setAdminMode: (mode: AdminMode) => void;
+};
+const AppContext = createContext<AppContextType | null>(null);
 
-export function ApiProvider({ children }: { children: ReactNode }) {
+export function AppProvider({ children }: { children: ReactNode }) {
 	const client = createApiClient(getApiConfig());
+	const [filter, setFilter] = useState<FilterOption>("all");
+	const [adminMode, setAdminMode] = useState<AdminMode>("challenges");
 
-	return <ApiContext.Provider value={client}>{children}</ApiContext.Provider>;
+	const contextValue: AppContextType = {
+		...client,
+		filter,
+		setFilter,
+		adminMode,
+		setAdminMode,
+	};
+
+	return (
+		<AppContext.Provider value={contextValue}>{children}</AppContext.Provider>
+	);
 }
 
+// Hooks
 export function useApi() {
-	const context = useContext(ApiContext);
+	const context = useContext(AppContext);
 	if (!context) {
-		throw new Error("useApi must be used within an ApiProvider");
+		throw new Error("useApi must be used within an AppProvider");
 	}
 
 	return context;
 }
+
+export const useAppContext = () => {
+	const context = useContext(AppContext);
+	if (!context) {
+		throw new Error("useAppContext must be used within an AppProvider");
+	}
+
+	return {
+		filter: context.filter,
+		setFilter: context.setFilter,
+		adminMode: context.adminMode,
+		setAdminMode: context.setAdminMode,
+	};
+};

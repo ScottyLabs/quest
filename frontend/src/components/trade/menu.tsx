@@ -1,32 +1,17 @@
 import { Minus, Plus } from "lucide-react";
 import { useState } from "react";
+import { Redeem } from "@/components/trade/redeem";
 import {
 	ButtonSwitch,
 	type ButtonSwitchOption,
 } from "@/components/ui/button-switch";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Redeem } from "./redeem";
-
-interface Prize {
-	name: string;
-	cost: number;
-	claimed: number;
-	allowedToClaim: number;
-	remaining: number;
-	total: number;
-	imageUrl: string;
-	stock?: number;
-	transaction_info?: {
-		total_purchased: number;
-		complete_count: number;
-		incomplete_count: number;
-	};
-}
+import type { components } from "@/lib/schema.gen";
 
 interface TradeMenuProps {
 	isOpen: boolean;
 	onOpenChange: (open: boolean) => void;
-	prize: Prize;
+	prize: components["schemas"]["RewardResponse"];
 }
 
 export function TradeMenu({ isOpen, onOpenChange, prize }: TradeMenuProps) {

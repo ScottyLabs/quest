@@ -47,9 +47,7 @@ function RouteComponent() {
 			(challenge) =>
 				challenge.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
 				challenge.tagline.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				challenge?.description
-					.toLowerCase()
-					.includes(searchQuery.toLowerCase()),
+				challenge.description.toLowerCase().includes(searchQuery.toLowerCase()),
 		);
 	}, [data, searchQuery]);
 

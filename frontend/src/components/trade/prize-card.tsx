@@ -1,26 +1,14 @@
-import { BadgeCheck } from "lucide-react";
 import { useState } from "react";
 import ScottyCoin from "@/assets/scotty-coin.svg?react";
-import { TradeMenu } from "./trade-menu";
-import { TradeMenuCarnegieCupPoints } from "./trade-menu-carnegie-cup-points";
+import { TradeMenu } from "@/components/trade/menu";
+import { TradeMenuCarnegieCupPoints } from "@/components/trade/menu-carnegie-cup";
+import type { components } from "@/lib/schema.gen";
 
-interface Prize {
-	name: string;
-	cost: number;
-	claimed: number;
-	allowedToClaim: number;
-	remaining: number;
-	total: number;
-	imageUrl: string;
-	stock?: number;
-	transaction_info?: {
-		total_purchased: number;
-		complete_count: number;
-		incomplete_count: number;
-	};
+interface PrizeCardProps {
+	prize: components["schemas"]["RewardResponse"];
 }
 
-export function PrizeCard({ prize }: { prize: Prize }) {
+export function PrizeCard({ prize }: PrizeCardProps) {
 	const isMaxClaimed = prize.claimed === prize.allowedToClaim;
 	const stock = prize.stock ?? prize.remaining;
 	const claimed = prize.transaction_info?.complete_count ?? prize.claimed;
@@ -28,7 +16,7 @@ export function PrizeCard({ prize }: { prize: Prize }) {
 	const [isTradeMenuOpen, setIsTradeMenuOpen] = useState(false);
 
 	// Check if this is a Carnegie Cup Points prize
-	const isCarnegieCupPoints = prize.name === "Carnegie Cup Points";
+	const isCarnegieCupPoints = prize.name === "Carnegie Cup Contribution";
 
 	return (
 		<>

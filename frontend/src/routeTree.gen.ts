@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as TerrierTradeRouteImport } from './routes/terrier-trade'
 import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as DormSelectRouteImport } from './routes/dorm-select'
 import { Route as AboutRouteImport } from './routes/about'
@@ -32,11 +31,6 @@ const TerrierTradeRoute = TerrierTradeRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LeaderboardRoute = LeaderboardRouteImport.update({
@@ -70,7 +64,6 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/dorm-select': typeof DormSelectRoute
   '/leaderboard': typeof LeaderboardRoute
-  '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/terrier-trade': typeof TerrierTradeRoute
   '/verify': typeof VerifyRoute
@@ -81,7 +74,6 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/dorm-select': typeof DormSelectRoute
   '/leaderboard': typeof LeaderboardRoute
-  '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/terrier-trade': typeof TerrierTradeRoute
   '/verify': typeof VerifyRoute
@@ -93,7 +85,6 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/dorm-select': typeof DormSelectRoute
   '/leaderboard': typeof LeaderboardRoute
-  '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/terrier-trade': typeof TerrierTradeRoute
   '/verify': typeof VerifyRoute
@@ -106,7 +97,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/dorm-select'
     | '/leaderboard'
-    | '/login'
     | '/profile'
     | '/terrier-trade'
     | '/verify'
@@ -117,7 +107,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/dorm-select'
     | '/leaderboard'
-    | '/login'
     | '/profile'
     | '/terrier-trade'
     | '/verify'
@@ -128,7 +117,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/dorm-select'
     | '/leaderboard'
-    | '/login'
     | '/profile'
     | '/terrier-trade'
     | '/verify'
@@ -140,7 +128,6 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   DormSelectRoute: typeof DormSelectRoute
   LeaderboardRoute: typeof LeaderboardRoute
-  LoginRoute: typeof LoginRoute
   ProfileRoute: typeof ProfileRoute
   TerrierTradeRoute: typeof TerrierTradeRoute
   VerifyRoute: typeof VerifyRoute
@@ -168,13 +155,6 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/leaderboard': {
@@ -220,7 +200,6 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   DormSelectRoute: DormSelectRoute,
   LeaderboardRoute: LeaderboardRoute,
-  LoginRoute: LoginRoute,
   ProfileRoute: ProfileRoute,
   TerrierTradeRoute: TerrierTradeRoute,
   VerifyRoute: VerifyRoute,

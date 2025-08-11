@@ -1,4 +1,3 @@
-import { Minus, Plus } from "lucide-react";
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
@@ -8,28 +7,13 @@ import {
 	dormGroupFromName,
 	dorms,
 } from "@/lib/data/dorms";
+import type { components } from "@/lib/schema.gen";
 import { Redeem } from "./redeem";
-
-interface Prize {
-	name: string;
-	cost: number;
-	claimed: number;
-	allowedToClaim: number;
-	remaining: number;
-	total: number;
-	imageUrl: string;
-	stock?: number;
-	transaction_info?: {
-		total_purchased: number;
-		complete_count: number;
-		incomplete_count: number;
-	};
-}
 
 interface TradeMenuCarnegieCupPointsProps {
 	isOpen: boolean;
 	onOpenChange: (open: boolean) => void;
-	prize: Prize;
+	prize: components["schemas"]["RewardResponse"];
 }
 
 export function TradeMenuCarnegieCupPoints({

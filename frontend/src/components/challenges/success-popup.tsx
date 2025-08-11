@@ -1,9 +1,9 @@
 import { Check } from "lucide-react";
 import ScottyCoin from "@/assets/scotty-coin.svg?react";
-import type { components } from "@/lib/schema.gen";
+import type { Challenge } from "@/components/challenges/card";
 
 interface SuccessPopupProps {
-	challenge: components["schemas"]["AdminChallengeResponse"];
+	challenge: Challenge;
 	onContinue: () => void;
 }
 
@@ -40,7 +40,7 @@ export function SuccessPopup({ challenge, onContinue }: SuccessPopupProps) {
 						</div>
 
 						{/* Reward Display */}
-						<div className="w-full h-11 bg-rose-700 rounded-xl shadow-[0px_6px_0px_0px_rgba(154,16,35,1.00)] flex items-center justify-center px-4">
+						<div className="w-full h-11 bg-rose-700 rounded-xl shadow-[0px_7px_0px_0px_var(--color-default-selected)] flex items-center justify-center px-4">
 							<div className="flex items-center gap-2">
 								<div className="justify-start text-white text-base font-bold font-['Open_Sans'] tracking-tight">
 									Reward: +{challenge.scotty_coins}

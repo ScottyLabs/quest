@@ -71,17 +71,20 @@ export function PhotoEditCard({
 								: {}
 						}
 					/>
+
 					{/* 3x3 Grid Overlay for Cropping */}
 					{isEditing && (
 						<div className="absolute inset-0 pointer-events-none">
 							{/* Vertical lines */}
 							<div className="absolute left-1/3 top-0 bottom-0 w-px bg-white opacity-50"></div>
 							<div className="absolute right-1/3 top-0 bottom-0 w-px bg-white opacity-50"></div>
+
 							{/* Horizontal lines */}
 							<div className="absolute top-1/3 left-0 right-0 h-px bg-white opacity-50"></div>
 							<div className="absolute bottom-1/3 left-0 right-0 h-px bg-white opacity-50"></div>
 						</div>
 					)}
+
 					{/* Edit Button */}
 					{!isEditing && (
 						<button
@@ -110,6 +113,7 @@ export function PhotoEditCard({
 								Cancel
 							</div>
 						</button>
+
 						<button
 							type="button"
 							onClick={onSaveEditedImage}
@@ -135,6 +139,7 @@ export function PhotoEditCard({
 								Replace
 							</div>
 						</button>
+
 						<button
 							type="button"
 							onClick={onPhotoEditContinue}

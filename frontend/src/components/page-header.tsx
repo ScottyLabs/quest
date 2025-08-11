@@ -44,7 +44,7 @@ export function PageHeader({
 					<Link
 						to="/challenges/$categoryId"
 						params={{ categoryId: "all" }}
-						className="flex card-default items-center w-20 justify-center bg-white hover:bg-gray-100 rounded-full px-3 py-2 text-sm font-bold gap-1"
+						className="flex card-primary items-center w-20 justify-center bg-white hover:bg-gray-100 rounded-full px-3 py-2 text-sm font-bold gap-1"
 						aria-label="View Challenges"
 					>
 						<Flag size={18} className="text-red-600" />
@@ -56,7 +56,7 @@ export function PageHeader({
 
 					<Link
 						to="/terrier-trade"
-						className="flex card-default items-center w-20 justify-center bg-white hover:bg-gray-100 rounded-full px-3 py-2 text-sm font-bold gap-2"
+						className="flex card-primary items-center w-20 justify-center bg-white hover:bg-gray-100 rounded-full px-3 py-2 text-sm font-bold gap-2"
 						aria-label="View Coins"
 					>
 						<ScottyCoin className="size-5" />
@@ -65,7 +65,7 @@ export function PageHeader({
 				</div>
 
 				{/* Main icon row */}
-				<div className="pointer-events-none  absolute z-2 flex flex-row items-center justify-center w-full my-2 ">
+				<div className="pointer-events-none absolute z-2 flex flex-row items-center justify-center w-full my-2 ">
 					<div className="flex flex-col items-center">
 						<div
 							className={`rounded-full p-3 border-4 text-white border-white shadow ${pageColors.primary}`}

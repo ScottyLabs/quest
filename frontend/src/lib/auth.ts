@@ -52,7 +52,7 @@ export async function requireAuth({ baseUrl, queryClient }: RouterContext) {
 		}
 
 		throw redirect({
-			to: "/login",
+			to: "/",
 			search: { from: window.location.pathname },
 		});
 	}

@@ -2,22 +2,17 @@ export const dorms = [
 	{
 		name: "Morewood Gardens",
 		image_path: "/images/dorm-mascots/flower.png",
-		group: "Morewood",
+		group: "Morewood Gardens",
 	},
 	{
 		name: "Morewood E-Tower",
 		image_path: "/images/dorm-mascots/pineapple.png",
-		group: "Morewood",
+		group: "Morewood E-Tower",
 	},
 	{
 		name: "Donner",
 		image_path: "/images/dorm-mascots/whale.png",
-		group: "Donner + West Wing",
-	},
-	{
-		name: "West Wing",
-		image_path: "/images/dorm-mascots/galaxy.png",
-		group: "Donner + West Wing",
+		group: "Donner",
 	},
 	{
 		name: "Stever",
@@ -32,12 +27,12 @@ export const dorms = [
 	{
 		name: "Res on Fifth",
 		image_path: "/images/dorm-mascots/flamingo.png",
-		group: "Res on Fifth",
+		group: "Fifth Avenue/RANCH",
 	},
 	{
 		name: "Whesco",
 		image_path: "/images/dorm-mascots/uglypenguin.png",
-		group: "The Hill",
+		group: "WhescoMM",
 	},
 	{
 		name: "Hammerschlag",
@@ -48,6 +43,11 @@ export const dorms = [
 		name: "McGill and Boss",
 		image_path: "/images/dorm-mascots/redpanda.png",
 		group: "The Hill",
+	},
+	{
+		name: "Margaret Morrison",
+		image_path: "/images/dorm-mascots/aimagpie.png",
+		group: "WhescoMM",
 	},
 ] as const;
 
@@ -63,7 +63,7 @@ interface ColorSet {
 }
 
 export const dormColors: Record<DormGroup, ColorSet> = {
-	Morewood: {
+	"Morewood E-Tower": {
 		primary: "bg-housing-1",
 		light: "bg-housing-1-light",
 		text: "text-housing-1-selected",
@@ -77,7 +77,7 @@ export const dormColors: Record<DormGroup, ColorSet> = {
 		selected: "bg-housing-2-selected",
 		muted: "bg-housing-2-muted",
 	},
-	"Donner + West Wing": {
+	Donner: {
 		primary: "bg-housing-3",
 		light: "bg-housing-3-light",
 		text: "text-housing-3-selected",
@@ -98,12 +98,26 @@ export const dormColors: Record<DormGroup, ColorSet> = {
 		selected: "bg-housing-5-selected",
 		muted: "bg-housing-5-muted",
 	},
-	"Res on Fifth": {
+	"Fifth Avenue/RANCH": {
 		primary: "bg-housing-6",
 		light: "bg-housing-6-light",
 		text: "text-housing-6-selected",
 		selected: "bg-housing-6-selected",
 		muted: "bg-housing-6-muted",
+	},
+	"Morewood Gardens": {
+		primary: "bg-housing-7",
+		light: "bg-housing-7-light",
+		text: "text-housing-7-selected",
+		selected: "bg-housing-7-selected",
+		muted: "bg-housing-7-muted",
+	},
+	WhescoMM: {
+		primary: "bg-housing-8",
+		light: "bg-housing-8-light",
+		text: "text-housing-8-selected",
+		selected: "bg-housing-8-selected",
+		muted: "bg-housing-8-muted",
 	},
 };
 

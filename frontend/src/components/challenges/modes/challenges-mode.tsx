@@ -18,11 +18,20 @@ export function ChallengesMode({
 	setChallenge,
 	setOpen,
 }: ChallengesModeProps) {
-	const { challenges } = useChallenges({
+	const { challenges, isLoading } = useChallenges({
 		searchQuery,
 		categoryId,
 		mode: "challenges",
 	});
+
+	// Show loading state for initial load
+	if (isLoading && challenges.length === 0) {
+		return (
+			<div className="flex justify-center py-8">
+				<Loader2 className="animate-spin text-gray-400 size-8" />
+			</div>
+		);
+	}
 
 	return (
 		<ChallengesList

@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import type { Challenge } from "@/components/challenges";
 import { useApi, useAppContext } from "@/lib/app-context";
 import {
 	type CategoryId,
@@ -12,6 +13,17 @@ interface UseChallengesOptions {
 	mode?: "challenges" | "verify";
 }
 
+// Stable hash function for consistent status assignment
+function hashString(str: string): number {
+	let hash = 0;
+	for (let i = 0; i < str.length; i++) {
+		const char = str.charCodeAt(i);
+		hash = (hash << 5) - hash + char;
+		hash = hash & hash; // convert to 32-bit integer
+	}
+	return Math.abs(hash);
+}
+
 export function useChallenges({
 	searchQuery,
 	categoryId,
@@ -21,52 +33,53 @@ export function useChallenges({
 	const { $api } = useApi();
 	const { data, isLoading } = $api.useQuery("get", "/api/admin/challenges");
 
-	// Base challenges with mock status assignment (TODO: remove in prod)
-	const baseChallenges = useMemo(() => {
+	const normalizedSearchQuery = useMemo(
+		() => searchQuery.toLowerCase().trim(),
+		[searchQuery],
+	);
+
+	const filteredChallenges = useMemo(() => {
 		const challenges = data?.challenges ?? [];
 
-		return challenges.map((challenge) => {
-			const rand = Math.random();
-			return {
-				...challenge,
-				status:
-					rand < 0.3
-						? ("completed" as const)
-						: rand < 0.6
-							? ("locked" as const)
-							: ("available" as const),
-			};
-		});
-	}, [data?.challenges]);
+		// Apply all filters
+		return challenges.reduce((acc, challenge) => {
+			// Assign status deterministically based on challenge name
+			// TODO: Remove this mock status assignment in prod
+			const hash = hashString(challenge.name);
+			const statusValue = hash % 100;
+			const status =
+				statusValue < 33
+					? ("completed" as const)
+					: statusValue < 66
+						? ("locked" as const)
+						: ("available" as const);
 
-	// Apply all filters
-	const filteredChallenges = useMemo(() => {
-		return baseChallenges.filter((challenge) => {
+			const processedChallenge = { ...challenge, status };
+
 			// Apply status filter (only for challenges mode)
-			if (
-				mode === "challenges" &&
-				filter !== "all" &&
-				challenge.status !== filter
-			) {
-				return false;
+			if (mode === "challenges" && filter !== "all" && status !== filter) {
+				return acc;
 			}
 
-			// Apply category filter
+			// Apple category filter
 			if (categoryId && categoryId !== "all") {
 				const thisId = categoryIdFromLabel[challenge.category as CategoryLabel];
-				if (thisId !== categoryId) return false;
+				if (thisId !== categoryId) return acc;
 			}
 
 			// Apply search filter
-			if (!searchQuery.trim()) return true;
+			if (normalizedSearchQuery) {
+				const searchableText =
+					`${challenge.name} ${challenge.tagline} ${challenge.description}`.toLowerCase();
+				if (!searchableText.includes(normalizedSearchQuery)) {
+					return acc;
+				}
+			}
 
-			return (
-				challenge.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				challenge.tagline.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				challenge.description.toLowerCase().includes(searchQuery.toLowerCase())
-			);
-		});
-	}, [baseChallenges, filter, categoryId, searchQuery, mode]);
+			acc.push(processedChallenge);
+			return acc;
+		}, [] as Challenge[]);
+	}, [categoryId, data?.challenges, filter, mode, normalizedSearchQuery]);
 
 	return {
 		challenges: filteredChallenges,

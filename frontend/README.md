@@ -1,5 +1,9 @@
 # O-Quest Frontend
 
+## PWA
+
+Icons were generated with [RealFaviconGenerator](https://realfavicongenerator.net/). Further instructions are available [here](https://vite-pwa-org.netlify.app/guide/pwa-minimal-requirements.html).
+
 ## API Client
 
 Each of the following instructions assume you are in this directory.

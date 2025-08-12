@@ -2,6 +2,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
+import { VitePWA } from "vite-plugin-pwa";
 import svgr from "vite-plugin-svgr";
 import tsConfigPaths from "vite-tsconfig-paths";
 
@@ -16,6 +17,40 @@ export default defineConfig(async () => ({
 		}),
 		react(),
 		svgr(),
+		VitePWA({
+			devOptions: {
+				enabled: true,
+			},
+			includeAssets: [
+				"apple-touch-icon.png",
+				"favicon-96x96.png",
+				"favicon.ico",
+				"favicon.svg",
+				"web-app-manifest-192x192.png",
+				"web-app-manifest-512x512.png",
+			],
+			manifest: {
+				name: "O-Quest",
+				short_name: "O-Quest",
+				icons: [
+					{
+						src: "/web-app-manifest-192x192.png",
+						sizes: "192x192",
+						type: "image/png",
+						purpose: "maskable",
+					},
+					{
+						src: "/web-app-manifest-512x512.png",
+						sizes: "512x512",
+						type: "image/png",
+						purpose: "maskable",
+					},
+				],
+				theme_color: "#202326",
+				background_color: "#202326",
+				display: "standalone",
+			},
+		}),
 		tailwindcss(),
 		tsConfigPaths({
 			projects: ["./tsconfig.json"],

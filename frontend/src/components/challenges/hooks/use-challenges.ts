@@ -39,19 +39,9 @@ export function useChallenges({
 		});
 	}, [data?.challenges]);
 
-	// Apply mode-specific filtering
-	const modeFilteredChallenges = useMemo(() => {
-		if (mode === "verify") {
-			// For verify mode, only show challenges without location data
-			return baseChallenges.filter((challenge) => !challenge.location_accuracy);
-		}
-		// For challenges mode, show all challenges
-		return baseChallenges;
-	}, [baseChallenges, mode]);
-
 	// Apply all filters
 	const filteredChallenges = useMemo(() => {
-		return modeFilteredChallenges.filter((challenge) => {
+		return baseChallenges.filter((challenge) => {
 			// Apply status filter (only for challenges mode)
 			if (
 				mode === "challenges" &&
@@ -76,7 +66,7 @@ export function useChallenges({
 				challenge.description.toLowerCase().includes(searchQuery.toLowerCase())
 			);
 		});
-	}, [modeFilteredChallenges, filter, categoryId, searchQuery, mode]);
+	}, [baseChallenges, filter, categoryId, searchQuery, mode]);
 
 	return {
 		challenges: filteredChallenges,

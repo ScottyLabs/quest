@@ -88,7 +88,7 @@ export function VerifyDrawerContent({ challenge }: VerifyDrawerContentProps) {
 				) : isSuccess ? (
 					"Location set successfully"
 				) : (
-					"Set location (irreversible)"
+					"Set location"
 				)}
 			</button>
 		</>

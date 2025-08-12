@@ -59,3 +59,5 @@ jobs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
+        build-args: |
+          ${{ matrix.service.name == 'qr-code-gen' && format('VITE_DATA_BASE64={0}', secrets.VITE_DATA_BASE64) || '' }}

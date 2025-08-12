@@ -9,6 +9,10 @@ RUN bun install --frozen-lockfile
 # Copy source code
 COPY . .
 
+# Accept build argument and set as environment variable
+ARG VITE_DATA_BASE64
+ENV VITE_DATA_BASE64=$VITE_DATA_BASE64
+
 # Build the application
 RUN bun run build
 

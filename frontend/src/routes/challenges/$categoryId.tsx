@@ -10,9 +10,9 @@ import {
 	VerifyMode,
 } from "@/components/challenges";
 import { PageLayout } from "@/components/page-layout";
+import { useAppContext } from "@/lib/app-context";
 import { requireAuth } from "@/lib/auth";
 import { type CategoryId, colorClasses } from "@/lib/data/categories";
-import { useAppContext } from "@/lib/app-context";
 
 export const Route = createFileRoute("/challenges/$categoryId")({
 	beforeLoad: async ({ context }) => {

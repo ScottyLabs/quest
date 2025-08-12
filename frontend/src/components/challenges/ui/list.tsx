@@ -74,7 +74,7 @@ export function ChallengesList({
 					challenge={challenge}
 					isLast={index === visibleChallenges.length - 1 && !hasMore}
 					onClick={() => {
-						if (challenge.status === "locked") return;
+						if (!isVerifyMode && challenge.status === "locked") return;
 
 						setChallenge(challenge);
 						setOpen(true);

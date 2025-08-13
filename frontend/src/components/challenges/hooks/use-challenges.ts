@@ -46,20 +46,13 @@ export function useChallenges({
 			// Assign status deterministically based on challenge name
 			// TODO: Remove this mock status assignment in prod
 			const hash = hashString(challenge.name);
-			const statusValue = hash % 100;
-			const status =
-				statusValue < 33
-					? ("completed" as const)
-					: statusValue < 66
-						? ("locked" as const)
-						: ("available" as const);
+			const status = hash % 2 ? ("locked" as const) : ("available" as const);
 
 			const processedChallenge = { ...challenge, status };
 
 			// Apply status filter (only for challenges mode)
-			if (mode === "challenges" && filter !== "all" && status !== filter) {
+			if (mode === "challenges" && filter !== "all" && status !== filter)
 				return acc;
-			}
 
 			// Apple category filter
 			if (categoryId && categoryId !== "all") {
@@ -69,11 +62,12 @@ export function useChallenges({
 
 			// Apply search filter
 			if (normalizedSearchQuery) {
-				const searchableText =
-					`${challenge.name} ${challenge.tagline} ${challenge.description}`.toLowerCase();
-				if (!searchableText.includes(normalizedSearchQuery)) {
+				if (
+					!`${challenge.name} ${challenge.tagline} ${challenge.description}`
+						.toLowerCase()
+						.includes(normalizedSearchQuery)
+				)
 					return acc;
-				}
 			}
 
 			acc.push(processedChallenge);

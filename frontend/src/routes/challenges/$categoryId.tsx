@@ -4,8 +4,8 @@ import { useCallback, useMemo, useState } from "react";
 import {
 	type Challenge,
 	ChallengeDrawer,
-	ChallengesDrawerContent,
 	ChallengesMode,
+	DrawerContentSelector,
 	VerifyDrawerContent,
 	VerifyMode,
 } from "@/components/challenges";
@@ -74,7 +74,7 @@ function RouteComponent() {
 		return adminMode === "verify" ? (
 			<VerifyDrawerContent challenge={challenge} />
 		) : (
-			<ChallengesDrawerContent />
+			<DrawerContentSelector challenge={challenge} />
 		);
 	}, [adminMode, challenge]);
 

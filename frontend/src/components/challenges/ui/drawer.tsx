@@ -34,6 +34,14 @@ export const ChallengeDrawer = ({
 	const label = (challenge: Challenge) =>
 		categoryIdFromLabel[challenge.category as CategoryLabel];
 
+	const unlockedAt = challenge?.unlock_timestamp
+		? new Date(challenge.unlock_timestamp).toLocaleString()
+		: null;
+
+	const completedAt = challenge?.completed_at
+		? new Date(challenge.completed_at).toLocaleString()
+		: null;
+
 	return (
 		<Drawer.Root open={open} onOpenChange={setOpen}>
 			<Drawer.Portal>
@@ -135,10 +143,8 @@ export const ChallengeDrawer = ({
 						{children}
 
 						<small className="text-xs italic text-gray-500 mb-4">
-							This challenge was unlocked at{" "}
-							{challenge?.unlock_timestamp &&
-								new Date(challenge?.unlock_timestamp).toLocaleString()}
-							.
+							This challenge was unlocked at {unlockedAt}
+							{completedAt ? `, and completed at ${completedAt}.` : "."}
 						</small>
 					</Drawer.Content>
 				)}

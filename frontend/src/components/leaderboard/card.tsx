@@ -75,9 +75,8 @@ export function LeaderboardCard({
 
 			<div className="flex items-center justify-between text-sm mt-1">
 				<div>
-					<span className="text-gray-600">Dorm: </span>
 					<span className={`font-medium ${textColor}`}>
-						{entry.dorm ?? "No dorm"}
+						{dormGroup ?? "No dorm"}
 					</span>
 				</div>
 

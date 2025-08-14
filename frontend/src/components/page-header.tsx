@@ -62,7 +62,7 @@ export function PageHeader({
 							className="flex card-primary items-center w-20 justify-center bg-white hover:bg-gray-100 rounded-full px-3 py-2 text-sm font-bold gap-2"
 							aria-label="View Coins"
 						>
-							<ScottyCoin className="size-5" />
+							<ScottyCoin className="size-5 shrink-0" />
 							<span>{user.scotty_coins.current ?? 0}</span>
 						</Link>
 					</div>

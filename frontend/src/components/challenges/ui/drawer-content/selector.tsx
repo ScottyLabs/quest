@@ -1,6 +1,6 @@
 import type { Challenge } from "@/components/challenges";
-import { AvailableDrawerContent } from "@/components/challenges/ui/drawer-content/available";
-import { CompletedDrawerContent } from "@/components/challenges/ui/drawer-content/completed";
+import { Available } from "@/components/challenges/ui/drawer-content/available";
+import { Completed } from "@/components/challenges/ui/drawer-content/completed";
 
 interface DrawerContentSelectorProps {
 	challenge: Challenge;
@@ -10,10 +10,10 @@ export function DrawerContentSelector({
 	challenge,
 }: DrawerContentSelectorProps) {
 	if (challenge.status === "available") {
-		return <AvailableDrawerContent />;
+		return <Available challenge={challenge} />;
 	}
 
 	if (challenge.status === "completed") {
-		return <CompletedDrawerContent />;
+		return <Completed challenge={challenge} />;
 	}
 }

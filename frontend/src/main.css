@@ -156,6 +156,11 @@
 	box-shadow: 0 3px 0 var(--color-locked); /* no hover effect */
 }
 
+.card-success-disabled {
+	box-shadow: none;
+	transform: translate3d(0, 3px, 0); /* always in pressed state */
+}
+
 /* Flying coin animation */
 @keyframes flyToHeader {
 	0% {

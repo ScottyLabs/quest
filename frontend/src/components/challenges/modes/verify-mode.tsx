@@ -62,6 +62,12 @@ export function VerifyDrawerContent({ challenge }: VerifyDrawerContentProps) {
 		isSuccess,
 	} = $api.useMutation("put", "/api/admin/challenges/geolocation");
 
+	// Check if challenge already has location data set
+	const hasLocationData =
+		challenge.latitude != null &&
+		challenge.longitude != null &&
+		challenge.location_accuracy != null;
+
 	const handleSetLocation = () => {
 		queryPosition(5000, async (pos) => {
 			await updateGeolocation({
@@ -77,25 +83,45 @@ export function VerifyDrawerContent({ challenge }: VerifyDrawerContentProps) {
 
 	return (
 		<>
-			<p className="mt-2 mb-2 text-gray-700 text-sm">
+			<p className="mb-2 text-gray-700 text-sm">
 				Is this one of your assigned posters? Hold your phone up to where you
 				posted it, enable location permissions, and press the button below.
 			</p>
 			<p className="mb-4 text-gray-500 text-xs">
-				Please wait until your precise location is determined before you close
-				the drawer.
+				{hasLocationData || isSuccess ? (
+					<>
+						Has someone already set this location?{" "}
+						<button
+							type="button"
+							onClick={handleSetLocation}
+							disabled={isQuerying || isPending}
+							className="underline hover:text-gray-700 transition-colors"
+						>
+							Reset it
+						</button>
+					</>
+				) : (
+					"Please wait until your precise location is determined before you close the drawer."
+				)}
 			</p>
 
 			<button
 				type="button"
-				disabled={isQuerying || isPending || isSuccess}
+				disabled={isQuerying || isPending || hasLocationData || isSuccess}
 				onClick={handleSetLocation}
-				className="card-confirm border-2 border-default-selected bg-default text-white cursor-pointer py-2 text-lg font-bold rounded-2xl mb-4"
+				className={`w-full py-2 text-lg font-bold rounded-2xl mb-4 flex items-center justify-center gap-2 ${
+					(hasLocationData || isSuccess) && !(isQuerying || isPending)
+						? "bg-gray-200 text-gray-500 cursor-not-allowed"
+						: "card-confirm border-2 border-default-selected bg-default text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+				}`}
 			>
 				{isQuerying || isPending ? (
-					<Loader2 className="mx-auto animate-spin size-7 text-white" />
-				) : isSuccess ? (
-					"Location set successfully"
+					<>
+						<Loader2 className="animate-spin size-5" />
+						Getting location...
+					</>
+				) : hasLocationData || isSuccess ? (
+					"Location set"
 				) : (
 					"Set location"
 				)}

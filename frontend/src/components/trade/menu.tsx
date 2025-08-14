@@ -77,15 +77,15 @@ export function TradeMenu({
 						</div>
 					) : transaction ? (
 						<Redeemed
-							setDrawerOpen={(open) => {
-								open || resetRedeem();
+							closeDrawer={() => {
+								resetRedeem();
 								refetchPrizes();
-								onOpenChange(open);
+								onOpenChange(false);
 							}}
 							prize={{
 								name: prize.name,
 								amount: quantity,
-								date: Date.now().toString(),
+								transaction_id: transaction.transaction_id,
 							}}
 						/>
 					) : (

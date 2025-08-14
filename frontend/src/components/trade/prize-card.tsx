@@ -17,14 +17,17 @@ interface PrizeCardProps {
 
 export function PrizeCard({ prize }: PrizeCardProps) {
 	const { $api } = useApi();
-	const { adminMode: adminModeStr } = useAppContext();
-	const isVerify = adminModeStr === "verify";
 	const { data: userProfile } = $api.useQuery("get", "/api/profile");
+
+	const { adminMode } = useAppContext();
+	const isVerify = adminMode === "verify";
+
 	const userDorm = (userProfile?.dorm as DormName) || "";
 	const userDormGroup =
 		(Object.entries(dormGroups).find(([, dorms]) =>
 			dorms.find((d) => d.name === userDorm),
 		)?.[0] as DormGroup) || "";
+
 	const houseColorLightBg = dormColors[userDormGroup]?.light || "bg-white"; // for background
 	const houseColorPrimaryBg = dormColors[userDormGroup]?.primary || "bg-white"; // for progress bar
 
@@ -83,6 +86,7 @@ export function PrizeCard({ prize }: PrizeCardProps) {
 							</div>
 						</div>
 					</div>
+
 					<div className="flex-shrink-0 ml-6">
 						<button
 							type="button"
@@ -103,6 +107,7 @@ export function PrizeCard({ prize }: PrizeCardProps) {
 					</div>
 				</div>
 			</div>
+
 			<TradeMenu
 				isOpen={isTradeMenuOpen}
 				onOpenChange={setIsTradeMenuOpen}

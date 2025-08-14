@@ -1,5 +1,8 @@
 use std::collections::HashMap;
 
+use crate::services::traits::{
+    ChallengeServiceTrait, CompletionServiceTrait, LeaderboardServiceTrait,
+};
 use crate::{AppState, AuthClaims, entities::user};
 use axum::{Extension, Json, extract::State, http::StatusCode};
 use chrono::NaiveDateTime;

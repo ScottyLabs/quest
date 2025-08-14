@@ -1,6 +1,9 @@
 use std::error::Error;
 
-use backend::{create_connection, entities::challenges, services::challenge::ChallengeService};
+use backend::{
+    create_connection, entities::challenges, services::challenge::ChallengeService,
+    services::traits::ChallengeServiceTrait,
+};
 use base64::{Engine, engine::general_purpose};
 use serde::Serialize;
 

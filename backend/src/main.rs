@@ -1,4 +1,5 @@
 use axum::http::Method;
+use std::sync::Arc;
 use tokio::signal;
 use tower_http::cors::CorsLayer;
 use utoipa::OpenApi;
@@ -6,6 +7,10 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 use utoipa_swagger_ui::SwaggerUi;
 
 use backend::auth::{build_oauth2_resource_server, dev_auth_middleware};
+use backend::cache::{
+    CacheManager, CachedChallengeService, CachedCompletionService, CachedLeaderboardService,
+    CachedRewardService,
+};
 use backend::doc::ApiDoc;
 use backend::middleware::admin;
 use backend::services::{
@@ -45,6 +50,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenvy::dotenv().ok();
 
     let db = create_connection().await?;
+
+    // Create cache manager
+    let cache_manager = Arc::new(CacheManager::new());
+
     let storage_service = StorageService::new(
         &dotenvy::var("MINIO_ENDPOINT").expect("MINIO_ENDPOINT must be set"),
         &dotenvy::var("MINIO_ACCESS_KEY").expect("MINIO_ACCESS_KEY must be set"),
@@ -52,14 +61,27 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         dotenvy::var("MINIO_BUCKET").expect("MINIO_BUCKET must be set"),
     )?;
 
+    // Create base services
+    let user_service = UserService::new(db.clone()); // not cached
+    let challenge_service = ChallengeService::new(db.clone());
+    let completion_service = CompletionService::new(db.clone());
+    let reward_service = RewardService::new(db.clone());
+    let transaction_service = TransactionService::new(db.clone()); // not cached
+    let leaderboard_service = LeaderboardService::new(db.clone());
+
+    // Wrap with caching
     let state = backend::AppState {
-        user_service: UserService::new(db.clone()),
-        challenge_service: ChallengeService::new(db.clone()),
-        completion_service: CompletionService::new(db.clone()),
-        reward_service: RewardService::new(db.clone()),
-        transaction_service: TransactionService::new(db.clone()),
-        leaderboard_service: LeaderboardService::new(db.clone()),
+        user_service,
+        challenge_service: CachedChallengeService::new(challenge_service, cache_manager.clone()),
+        completion_service: CachedCompletionService::new(completion_service, cache_manager.clone()),
+        reward_service: CachedRewardService::new(reward_service, cache_manager.clone()),
+        transaction_service,
+        leaderboard_service: CachedLeaderboardService::new(
+            leaderboard_service,
+            cache_manager.clone(),
+        ),
         storage_service,
+        cache_manager,
     };
 
     let admin_routes = OpenApiRouter::new()

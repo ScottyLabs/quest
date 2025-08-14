@@ -1,13 +1,19 @@
 use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 
 pub mod auth;
+pub mod cache;
 pub mod doc;
 pub mod entities;
 pub mod handlers;
 pub mod middleware;
 pub mod services;
 
+use cache::{
+    CacheManager, CachedChallengeService, CachedCompletionService, CachedLeaderboardService,
+    CachedRewardService,
+};
 use services::{
     challenge::ChallengeService, completion::CompletionService, leaderboard::LeaderboardService,
     reward::RewardService, storage::StorageService, transaction::TransactionService,
@@ -17,12 +23,13 @@ use services::{
 #[derive(Clone)]
 pub struct AppState {
     pub user_service: UserService,
-    pub challenge_service: ChallengeService,
-    pub completion_service: CompletionService,
-    pub reward_service: RewardService,
+    pub challenge_service: CachedChallengeService<ChallengeService>,
+    pub completion_service: CachedCompletionService<CompletionService>,
+    pub reward_service: CachedRewardService<RewardService>,
     pub transaction_service: TransactionService,
-    pub leaderboard_service: LeaderboardService,
+    pub leaderboard_service: CachedLeaderboardService<LeaderboardService>,
     pub storage_service: StorageService,
+    pub cache_manager: Arc<CacheManager>,
 }
 
 #[derive(Clone, Serialize, Deserialize)]

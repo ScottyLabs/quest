@@ -1,8 +1,10 @@
+use crate::services::traits::LeaderboardServiceTrait;
+use async_trait::async_trait;
 use sea_orm::{ConnectionTrait, DatabaseConnection, FromQueryResult, Statement};
 use serde::Serialize;
 use utoipa::ToSchema;
 
-#[derive(Debug, FromQueryResult, Serialize, ToSchema)]
+#[derive(Debug, FromQueryResult, Serialize, ToSchema, Clone)]
 pub struct LeaderboardEntry {
     pub rank: i64,
     pub user_id: String,
@@ -22,8 +24,11 @@ impl LeaderboardService {
     pub fn new(db: DatabaseConnection) -> Self {
         Self { db }
     }
+}
 
-    pub async fn get_leaderboard_page(
+#[async_trait]
+impl LeaderboardServiceTrait for LeaderboardService {
+    async fn get_leaderboard_page(
         &self,
         limit: u64,
         after_rank: Option<i64>,
@@ -90,12 +95,8 @@ impl LeaderboardService {
         .await
     }
 
-    pub async fn get_user_leaderboard_position(
-        &self,
-        user_id: &str,
-    ) -> Result<i64, sea_orm::DbErr> {
-        let query = format!(
-            r#"
+    async fn get_user_leaderboard_position(&self, user_id: &str) -> Result<i64, sea_orm::DbErr> {
+        let query = r#"
 			WITH user_stats AS (
 				SELECT
 					u.user_id,
@@ -141,7 +142,7 @@ impl LeaderboardService {
 			)
 			SELECT rank FROM ranked_users WHERE user_id = $1
 			"#
-        );
+        .to_string();
 
         let rank = self
             .db

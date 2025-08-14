@@ -1,3 +1,4 @@
+use crate::services::traits::{ChallengeServiceTrait, CompletionServiceTrait};
 use crate::{AppState, AuthClaims, handlers::challenges::ChallengeStatus};
 use axum::{Extension, Json, extract::State, http::StatusCode};
 use chrono::{NaiveDateTime, Utc};
@@ -128,6 +129,9 @@ pub async fn put_challenge_geolocation(
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
+    // Invalidate challenge caches after geolocation update
+    state.cache_manager.invalidate_challenges().await;
+
     Ok(StatusCode::NO_CONTENT)
 }
 
@@ -165,7 +169,15 @@ pub async fn verify_transaction(
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
     let (success, message) = match updated_transaction {
-        Some(_) => (true, "Transaction verified successfully".to_string()),
+        Some(transaction) => {
+            // Invalidate caches after transaction verification
+            state
+                .cache_manager
+                .invalidate_user_data(&transaction.user_id)
+                .await;
+            state.cache_manager.invalidate_leaderboard().await;
+            (true, "Transaction verified successfully".to_string())
+        }
         None => (false, "Transaction not found".to_string()),
     };
 

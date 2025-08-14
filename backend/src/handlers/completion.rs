@@ -1,3 +1,4 @@
+use crate::services::traits::{ChallengeServiceTrait, CompletionServiceTrait};
 use crate::{AppState, AuthClaims};
 use axum::{Extension, Json, extract::State, http::StatusCode};
 use chrono::{NaiveDateTime, Utc};
@@ -114,6 +115,10 @@ pub async fn create_completion(
         )
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    // Invalidate caches affected by this completion
+    state.cache_manager.invalidate_user_data(&claims.sub).await;
+    state.cache_manager.invalidate_leaderboard().await;
 
     Ok(Json(CreateCompletionResponse {
         success: true,

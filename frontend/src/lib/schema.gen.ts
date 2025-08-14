@@ -474,6 +474,7 @@ export interface components {
             note?: string | null;
         };
         UserProfileResponse: {
+            andrew_id: string;
             challenges_completed: components["schemas"]["ChallengeCompletionStats"];
             dorm?: string | null;
             groups: string[];

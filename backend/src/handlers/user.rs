@@ -12,6 +12,7 @@ use utoipa::ToSchema;
 #[derive(Serialize, ToSchema)]
 pub struct UserProfileResponse {
     pub user_id: String,
+    pub andrew_id: String,
     pub dorm: Option<String>,
     pub name: String,
     pub scotty_coins: CoinsSummaryResponse,
@@ -101,9 +102,16 @@ pub async fn get_profile(
     .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
     let current_scotty_coins = coins_earned - coins_spent;
+    let andrew_id = claims
+        .email
+        .split_once('@')
+        .map(|(local, _)| local)
+        .unwrap_or("unknown")
+        .to_string();
 
     Ok(Json(UserProfileResponse {
         user_id: user.user_id,
+        andrew_id,
         dorm: user.dorm,
         name: user.name,
         scotty_coins: CoinsSummaryResponse {

@@ -119,7 +119,7 @@ function Profile() {
 									{user.name}
 								</h2>
 								<p className="text-lg text-gray-600 font-medium">
-									{user.user_id}
+									{user.andrew_id}
 								</p>
 							</div>
 

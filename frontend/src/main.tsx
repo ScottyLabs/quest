@@ -27,7 +27,7 @@ const router = createRouter({
 	routeTree,
 	scrollRestoration: true,
 	defaultViewTransition: true,
-	context: { baseUrl: "https://api.quest.scottylabs.org", queryClient },
+	context: { baseUrl: "https://api.cmu.quest", queryClient },
 });
 
 // Register the router instance for type safety

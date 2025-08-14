@@ -23,6 +23,7 @@ function TerrierTrade() {
 	const otherPrizes = prizes.filter(
 		(prize) => prize.name !== "Carnegie Cup Contribution",
 	);
+
 	return (
 		<PageLayout currentPath="/terrier-trade" user={user}>
 			<div className="[view-transition-name:main-content]">

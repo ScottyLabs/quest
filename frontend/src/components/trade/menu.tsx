@@ -134,7 +134,7 @@ export function TradeMenu({
 							<button
 								type="button"
 								className={
-									"self-center card-selected border-4 border text-white cursor-pointer w-80 h-20 inline-flex justify-center items-center mb-4 px-4 py-2 text-2xl font-extrabold rounded-2xl disabled:opacity-50 " +
+									"self-center card-selected border-4 text-white cursor-pointer w-80 h-20 inline-flex justify-center items-center mb-4 px-4 py-2 text-2xl font-extrabold rounded-2xl disabled:opacity-50 " +
 									(startScanQR
 										? " border-red-700 bg-red-500 "
 										: "border-green-600 bg-green-400")
@@ -148,7 +148,8 @@ export function TradeMenu({
 								canvasRef={canvasRef}
 								onCancel={handleQRScanCancelled}
 							/>
-							{confirmData && confirmData.success ? (
+
+							{confirmData?.success ? (
 								<button
 									type="button"
 									disabled
@@ -194,6 +195,7 @@ export function TradeMenu({
 					)}
 				</Drawer.Content>
 			</Drawer.Portal>
+
 			{/* Hidden video and canvas refs for QR scanning */}
 			<video ref={videoRef} className="hidden" muted>
 				<track kind="captions" />

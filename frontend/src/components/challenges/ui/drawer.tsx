@@ -38,19 +38,17 @@ export const ChallengeDrawer = ({
 		? new Date(challenge.unlock_timestamp).toLocaleString()
 		: null;
 
-	const completedAt = challenge?.completed_at
-		? new Date(challenge.completed_at).toLocaleString()
-		: null;
-
 	return (
 		<Drawer.Root open={open} onOpenChange={setOpen}>
 			<Drawer.Portal>
 				<Drawer.Overlay className="z-50 fixed inset-0 bg-black/40" />
 				{challenge && (
 					<Drawer.Content className="z-50 bg-white flex flex-col fixed bottom-0 left-0 right-0 h-[82vh] rounded-t-2xl">
-						<div className="flex-none px-6 pt-6 pb-4">
+						<div className="flex-none px-6 pt-4 pb-2">
 							<Drawer.Handle />
+						</div>
 
+						<div className="flex-1 overflow-y-auto px-6 pb-6">
 							<div className="flex justify-between">
 								<Link
 									to="/challenges/$categoryId"
@@ -70,7 +68,6 @@ export const ChallengeDrawer = ({
 									</div>
 								)}
 							</div>
-
 							<Drawer.Title className="text-2xl font-bold mb-1">
 								{challenge.name}
 							</Drawer.Title>
@@ -87,8 +84,7 @@ export const ChallengeDrawer = ({
 									{challenge.location}
 								</a>
 							</div>
-
-							<div className="bg-gray-50 rounded-2xl p-4 shadow-[0_3px_0_#bbb] border-2 border-[#bbb] mb-2">
+							<div className="bg-gray-50 rounded-2xl p-4 shadow-[0_3px_0_#bbb] border-2 border-[#bbb] mb-4">
 								<div className="text-sm text-gray-700 mb-1">
 									{(() => {
 										const desc = challenge.description ?? "";
@@ -140,14 +136,11 @@ export const ChallengeDrawer = ({
 									</div>
 								)}
 							</div>
-						</div>
 
-						<div className="flex-1 overflow-y-auto px-6 pb-6">
 							{children}
 
 							<small className="text-xs italic text-gray-500 block">
-								This challenge was unlocked at {unlockedAt}
-								{completedAt ? `, and completed at ${completedAt}.` : "."}
+								This challenge was unlocked at {unlockedAt}.
 							</small>
 						</div>
 					</Drawer.Content>

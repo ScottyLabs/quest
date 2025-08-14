@@ -1,7 +1,14 @@
 import { useState } from "react";
+import RedeemedCheck from "@/assets/redeemed-check.svg?react";
 import ScottyCoin from "@/assets/scotty-coin.svg?react";
 import { TradeMenu } from "@/components/trade/menu";
-import { TradeMenuCarnegieCupPoints } from "@/components/trade/menu-carnegie-cup";
+import { useApi, useAppContext } from "@/lib/app-context";
+import {
+	type DormGroup,
+	type DormName,
+	dormColors,
+	dormGroups,
+} from "@/lib/data/dorms";
 import type { components } from "@/lib/schema.gen";
 
 interface PrizeCardProps {
@@ -9,19 +16,35 @@ interface PrizeCardProps {
 }
 
 export function PrizeCard({ prize }: PrizeCardProps) {
-	// const isMaxClaimed = prize.claimed === prize.allowedToClaim;
-	// const stock = prize.stock ?? prize.remaining;
-	// const claimed = prize.transaction_info?.complete_count ?? prize.claimed;
-	// const total = prize.total || 35; // Default to 35 if not provided
-	// const [isTradeMenuOpen, setIsTradeMenuOpen] = useState(false);
+	const { $api } = useApi();
+	const adminMode = useAppContext();
+	const { data: userProfile } = $api.useQuery("get", "/api/profile");
+	const userCoins = userProfile?.scotty_coins?.current || 0;
+	const userDorm = (userProfile?.dorm as DormName) || "";
+	const userDormGroup =
+		(Object.entries(dormGroups).find(([, dorms]) =>
+			dorms.find((d) => d.name === userDorm),
+		)?.[0] as DormGroup) || "";
+	const houseColorLightBg = dormColors[userDormGroup]?.light || "bg-white"; // for background
+	const houseColorPrimaryBg = dormColors[userDormGroup]?.primary || "bg-white"; // for progress bar
 
-	// // Check if this is a Carnegie Cup Points prize
-	// const isCarnegieCupPoints = prize.name === "Carnegie Cup Contribution";
+	const isCarnegieCup = prize.name === "Carnegie Cup Contribution";
+	const isMaxClaimed =
+		prize.transaction_info.complete_count >= prize.trade_limit;
+	const isAffordable = prize.cost <= userCoins;
+	const stock = prize.stock ?? 0; // Default to 0 if stock is not provided
+	const claimed = prize.transaction_info?.total_purchased ?? 0; // Default to 0 if not provided
+	const [isTradeMenuOpen, setIsTradeMenuOpen] = useState(false);
 
 	return (
 		<>
 			<div className="w-full max-w-2xl mx-auto relative rounded-[20px] h-24">
-				<div className="w-full pl-6 pr-6 py-6 left-0 top-0 absolute bg-white rounded-[20px] inline-flex justify-between items-center shadow-[0_3px_0_#bbb] h-full">
+				<div
+					className={
+						"w-full pl-6 pr-6 py-6 left-0 top-0 absolute rounded-[20px] inline-flex justify-between items-center shadow-[0_3px_0_#bbb] h-full " +
+						(isCarnegieCup ? houseColorLightBg : "bg-white")
+					}
+				>
 					<div className="flex justify-start items-start gap-6 flex-1">
 						<div className="flex-shrink-0 flex items-center justify-center">
 							<div className="relative -m-1 size-12">
@@ -40,56 +63,56 @@ export function PrizeCard({ prize }: PrizeCardProps) {
 								<div className="flex justify-center items-center gap-2.5">
 									<div className="justify-start">
 										<span className="text-gray-500 text-xs font-bold font-['Open_Sans'] leading-none tracking-tight">
-											{/* Stock: {stock} */}
+											Stock: {!isCarnegieCup ? stock : "∞"}
 										</span>
 									</div>
 								</div>
 							</div>
 
 							{/* Progress bar for claimed vs allowed to claim */}
-							{/* <div className="w-full h-4 bg-gray-300 rounded-full relative">
+							<div className="w-full h-4 bg-gray-300 rounded-full relative">
 								<div
-									className="h-4 bg-amber-400 rounded-full absolute top-0 left-0 transition-all duration-300"
+									className={
+										"h-4 rounded-full absolute top-0 left-0 transition-all duration-300 " +
+										(isCarnegieCup ? houseColorPrimaryBg : "bg-amber-700")
+									}
 									style={{
-										width: `${Math.min((claimed / prize.allowedToClaim) * 100, 100)}%`,
+										width: `${isCarnegieCup ? 1 : Math.min((claimed / prize.trade_limit) * 100, 100)}%`,
 									}}
 								/>
 								<span className="absolute inset-0 flex items-center justify-center text-white text-xs font-bold">
-									{claimed}/{prize.allowedToClaim}
+									{claimed}/{!isCarnegieCup ? prize.trade_limit : "∞"}
 								</span>
-							</div> */}
+							</div>
 						</div>
 					</div>
 					<div className="flex-shrink-0 ml-6">
-						{/* <button
+						<button
 							type="button"
 							onClick={() => setIsTradeMenuOpen(true)}
-							className="w-16 h-12 bg-zinc-100 rounded-xl shadow-[0px_6px_0px_0px_rgba(215,215,215,1.00)] flex items-center justify-center p-3 hover:bg-zinc-200 transition-colors"
+							disabled={!adminMode && (isMaxClaimed || !isAffordable)}
+							className="w-16 h-12 bg-zinc-100 rounded-xl shadow-[0px_6px_0px_0px_rgba(215,215,215,1.00)] flex items-center justify-center p-3 hover:bg-zinc-200 transition-colors disabled:opacity-50"
 						>
 							<div className="flex items-center justify-center gap-1">
 								<div className="text-black text-base font-semibold font-['Open_Sans'] tracking-tight">
-									{prize.cost}
+									{adminMode ? "Verify" : prize.cost}
 								</div>
-								<ScottyCoin className="w-4 h-4" />
+								{adminMode ? (
+									<RedeemedCheck className="w-4 h-4" />
+								) : (
+									<ScottyCoin className="w-4 h-4" />
+								)}
 							</div>
-						</button> */}
+						</button>
 					</div>
 				</div>
 			</div>
-
-			{/* {isCarnegieCupPoints ? (
-				<TradeMenuCarnegieCupPoints
-					isOpen={isTradeMenuOpen}
-					onOpenChange={setIsTradeMenuOpen}
-					prize={prize}
-				/>
-			) : (
-				<TradeMenu
-					isOpen={isTradeMenuOpen}
-					onOpenChange={setIsTradeMenuOpen}
-					prize={prize}
-				/>
-			)} */}
+			<TradeMenu
+				isOpen={isTradeMenuOpen}
+				onOpenChange={setIsTradeMenuOpen}
+				prize={prize}
+				adminMode={adminMode}
+			/>
 		</>
 	);
 }

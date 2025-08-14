@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Drawer } from "vaul";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -8,7 +9,7 @@ import {
 	dorms,
 } from "@/lib/data/dorms";
 import type { components } from "@/lib/schema.gen";
-import { Redeem } from "./redeem";
+import { Redeemed } from "./redeemed";
 
 interface TradeMenuCarnegieCupPointsProps {
 	isOpen: boolean;
@@ -87,65 +88,66 @@ export function TradeMenuCarnegieCupPoints({
 	// If showing dorm selection or no dorm is selected
 	if (showDormSelection || !selectedDorm) {
 		return (
-			<Dialog open={isOpen} onOpenChange={onOpenChange}>
-				<DialogContent
-					className="sm:max-w-md bg-white border-none p-0"
-					showCloseButton={false}
-				>
-					<div className="w-96 px-4 pt-4 pb-6 rounded-[20px] inline-flex flex-col justify-start items-start gap-5">
-						{/* Header */}
-						<div className="self-stretch flex flex-col justify-start items-start gap-3.5">
-							<div className="self-stretch h-24 px-4 py-3 bg-white rounded-[10px] shadow-[0px_0px_4px_0px_rgba(0,0,0,0.25)] inline-flex justify-start items-center gap-4">
-								<div className="w-52 inline-flex flex-col justify-start items-start gap-1">
-									<div className="self-stretch justify-start">
-										<span className="text-Secondary text-xl font-extrabold font-['Open_Sans'] tracking-tight">
-											Carnegie Cup Points
-										</span>
+			<Drawer.Root open={isOpen} onOpenChange={onOpenChange}>
+				<Drawer.Portal>
+					<Drawer.Overlay className="z-50 fixed inset-0 bg-black/40" />
+					<Drawer.Content className="z-50 bg-white flex flex-col fixed bottom-0 left-0 right-0 h-[82vh] p-6 rounded-t-2xl">
+						<Drawer.Handle />
+						<div className="w-96 px-4 pt-4 pb-6 rounded-[20px] inline-flex flex-col justify-start items-start gap-5">
+							{/* Header */}
+							<div className="self-stretch flex flex-col justify-start items-start gap-3.5">
+								<div className="self-stretch h-24 px-4 py-3 bg-white rounded-[10px] shadow-[0px_0px_4px_0px_rgba(0,0,0,0.25)] inline-flex justify-start items-center gap-4">
+									<div className="w-52 inline-flex flex-col justify-start items-start gap-1">
+										<div className="self-stretch justify-start">
+											<span className="text-Secondary text-xl font-extrabold font-['Open_Sans'] tracking-tight">
+												Carnegie Cup Points
+											</span>
+										</div>
+										<div className="w-64 justify-start text-Tertiary text-xs font-normal font-['Open_Sans'] tracking-tight">
+											Choose Dorm
+										</div>
 									</div>
-									<div className="w-64 justify-start text-Tertiary text-xs font-normal font-['Open_Sans'] tracking-tight">
-										Choose Dorm
-									</div>
+									<div className="w-12 h-9 bg-red-800"></div>
+									<div className="w-1 h-[3.15px] bg-rose-400"></div>
+									<div className="w-0.5 h-[3.43px] bg-zinc-600"></div>
 								</div>
-								<div className="w-12 h-9 bg-red-800"></div>
-								<div className="w-1 h-[3.15px] bg-rose-400"></div>
-								<div className="w-0.5 h-[3.43px] bg-zinc-600"></div>
 							</div>
-						</div>
 
-						{/* Dorm Selection */}
-						<div className="self-stretch flex flex-col justify-start items-start gap-3">
-							<div className="self-stretch inline-flex justify-center items-center gap-2.5">
-								<div className="flex-1 justify-start text-Tertiary text-base font-semibold font-['Open_Sans'] tracking-tight">
-									Select Your Dorm:
+							{/* Dorm Selection */}
+							<div className="self-stretch flex flex-col justify-start items-start gap-3">
+								<div className="self-stretch inline-flex justify-center items-center gap-2.5">
+									<div className="flex-1 justify-start text-Tertiary text-base font-semibold font-['Open_Sans'] tracking-tight">
+										Select Your Dorm:
+									</div>
+								</div>
+								<div className="self-stretch grid grid-cols-2 gap-3">
+									{dorms.map((dorm) => (
+										<button
+											key={dorm.name}
+											type="button"
+											onClick={() => handleDormSelect(dorm.name)}
+											className="flex flex-col items-center gap-2 p-3 bg-white rounded-lg shadow-[0px_2px_4px_0px_rgba(0,0,0,0.1)] hover:shadow-[0px_4px_8px_0px_rgba(0,0,0,0.15)] transition-shadow"
+										>
+											<div
+												className={`w-12 h-12 rounded-full ${getDormColor(dorm.name)} flex items-center justify-center`}
+											>
+												<img
+													src={dorm.image_path}
+													alt={dorm.name}
+													className="w-8 h-8 object-contain"
+												/>
+											</div>
+											<div className="text-center text-xs font-semibold text-gray-700">
+												{dorm.name}
+											</div>
+										</button>
+									))}
 								</div>
 							</div>
-							<div className="self-stretch grid grid-cols-2 gap-3">
-								{dorms.map((dorm) => (
-									<button
-										key={dorm.name}
-										type="button"
-										onClick={() => handleDormSelect(dorm.name)}
-										className="flex flex-col items-center gap-2 p-3 bg-white rounded-lg shadow-[0px_2px_4px_0px_rgba(0,0,0,0.1)] hover:shadow-[0px_4px_8px_0px_rgba(0,0,0,0.15)] transition-shadow"
-									>
-										<div
-											className={`w-12 h-12 rounded-full ${getDormColor(dorm.name)} flex items-center justify-center`}
-										>
-											<img
-												src={dorm.image_path}
-												alt={dorm.name}
-												className="w-8 h-8 object-contain"
-											/>
-										</div>
-										<div className="text-center text-xs font-semibold text-gray-700">
-											{dorm.name}
-										</div>
-									</button>
-								))}
-							</div>
 						</div>
-					</div>
-				</DialogContent>
-			</Dialog>
+					</Drawer.Content>
+				</Drawer.Portal>
+			</Drawer.Root>
 		);
 	}
 
@@ -164,9 +166,9 @@ export function TradeMenuCarnegieCupPoints({
 								<div className="self-stretch h-24 px-4 py-3 bg-white rounded-[10px] shadow-[0px_0px_4px_0px_rgba(0,0,0,0.25)] inline-flex justify-start items-center gap-4">
 									<div className="w-52 inline-flex flex-col justify-start items-start gap-1">
 										<div className="self-stretch justify-start">
-											<span className="text-Secondary text-xl font-extrabold font-['Open_Sans'] tracking-tight">
-												Carnegie Cup Points
-											</span>
+											<Drawer.Title className="text-Secondary text-xl font-extrabold font-['Open_Sans'] tracking-tight">
+												{prize.name}
+											</Drawer.Title>
 										</div>
 										<div className="w-64 justify-start text-Tertiary text-xs font-normal font-['Open_Sans'] tracking-tight">
 											Dorm: {selectedDorm}
@@ -317,7 +319,7 @@ export function TradeMenuCarnegieCupPoints({
 				</DialogContent>
 			</Dialog>
 
-			<Redeem
+			<Redeemed
 				isOpen={isRedeemOpen}
 				onOpenChange={setIsRedeemOpen}
 				prize={{

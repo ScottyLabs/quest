@@ -117,33 +117,19 @@ function getDormShadowColor(dormName: string | null | undefined): string {
 	return "shadow-[0_7px_0_#bbb]";
 }
 
-export const useJournalData = () => {
-	const { $api } = useApi();
-	const query = $api.useQuery("get", "/api/journal", {});
-
-	if (query.isError) {
-		console.error("Error fetching journal data:", query.error);
-	}
-
-	return query;
-};
-
-export const usePrizeData = () => {
-	const { $api } = useApi();
-	const query = $api.useQuery("get", "/api/rewards", {});
-
-	if (query.isError) {
-		console.error("Error fetching prize data:", query.error);
-	}
-
-	return query;
-};
-
 function Profile() {
+	const { $api } = useApi();
 	const { user } = Route.useRouteContext();
 
-	const { data: journalData, isLoading: isLoadingJournal } = useJournalData();
-	const { data: prizeData, isLoading: isLoadingPrizes } = usePrizeData();
+	const { data: prizeData, isLoading: isLoadingPrizes } = $api.useQuery(
+		"get",
+		"/api/rewards",
+	);
+
+	const { data: journalData, isLoading: isLoadingJournal } = $api.useQuery(
+		"get",
+		"/api/journal",
+	);
 
 	const dormGroup = user.dorm
 		? dormGroupFromName[user.dorm as DormName]

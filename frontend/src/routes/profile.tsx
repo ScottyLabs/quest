@@ -267,7 +267,7 @@ function Profile() {
 										key={entry.challenge_name + entry.note}
 										src={entry.image_url || "/images/scotty-coin.svg"}
 										alt={`${entry.challenge_name} - ${entry.note}`}
-										className="w-80 h-64 object-cover rounded-2xl border flex-shrink-0"
+										className="w-80 h-64 object-cover rounded-2xl flex-shrink-0"
 									/>
 								))}
 							</div>

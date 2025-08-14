@@ -1,7 +1,6 @@
 import { Check, Lock, Trophy } from "lucide-react";
 import type { MouseEventHandler } from "react";
 import CheckContainer from "@/assets/check-container.svg?react";
-import ScottyCoin from "@/assets/scotty-coin.svg?react";
 import {
 	type CategoryLabel,
 	categoryIconFromId,
@@ -33,7 +32,7 @@ export function ChallengeCard({
 
 	const card =
 		isVerifyMode || challenge.status === "available" ? (
-			<div className="card-primary relative rounded-2xl p-4 bg-white hover:bg-gray-100 cursor-pointer flex flex-row gap-4">
+			<div className="card-primary rounded-2xl p-4 bg-white hover:bg-gray-100 cursor-pointer flex flex-row gap-4">
 				{/* Category icon */}
 				<div className="relative -m-1 size-12 my-auto shrink-0">
 					<div
@@ -47,13 +46,6 @@ export function ChallengeCard({
 					<h1 className="font-bold max-w-7/8">{challenge.name}</h1>
 					<p className="text-xs text-gray-500">{challenge.tagline}</p>
 				</div>
-
-				{!isVerifyMode && (
-					<div className="absolute right-4 my-auto flex gap-2">
-						<ScottyCoin className="size-5 my-auto" />
-						<p className="text-sm font-bold">+{challenge.scotty_coins}</p>
-					</div>
-				)}
 			</div>
 		) : challenge.status === "completed" ? (
 			<div className="card-success rounded-2xl p-4 bg-success-light hover:bg-success-hover cursor-pointer flex flex-row gap-2">

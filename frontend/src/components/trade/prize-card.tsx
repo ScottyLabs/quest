@@ -17,7 +17,8 @@ interface PrizeCardProps {
 
 export function PrizeCard({ prize }: PrizeCardProps) {
 	const { $api } = useApi();
-	const adminMode = useAppContext();
+	const { adminMode: adminModeStr } = useAppContext();
+	const isVerify = adminModeStr === "verify";
 	const { data: userProfile } = $api.useQuery("get", "/api/profile");
 	const userCoins = userProfile?.scotty_coins?.current || 0;
 	const userDorm = (userProfile?.dorm as DormName) || "";
@@ -90,14 +91,14 @@ export function PrizeCard({ prize }: PrizeCardProps) {
 						<button
 							type="button"
 							onClick={() => setIsTradeMenuOpen(true)}
-							disabled={!adminMode && (isMaxClaimed || !isAffordable)}
+							disabled={!isVerify && (isMaxClaimed || !isAffordable)}
 							className="w-16 h-12 bg-zinc-100 rounded-xl shadow-[0px_6px_0px_0px_rgba(215,215,215,1.00)] flex items-center justify-center p-3 hover:bg-zinc-200 transition-colors disabled:opacity-50"
 						>
 							<div className="flex items-center justify-center gap-1">
 								<div className="text-black text-base font-semibold font-['Open_Sans'] tracking-tight">
-									{adminMode ? "Verify" : prize.cost}
+									{isVerify ? "Verify" : prize.cost}
 								</div>
-								{adminMode ? (
+								{isVerify ? (
 									<RedeemedCheck className="w-4 h-4" />
 								) : (
 									<ScottyCoin className="w-4 h-4" />
@@ -111,7 +112,7 @@ export function PrizeCard({ prize }: PrizeCardProps) {
 				isOpen={isTradeMenuOpen}
 				onOpenChange={setIsTradeMenuOpen}
 				prize={prize}
-				adminMode={adminMode}
+				adminMode={isVerify}
 			/>
 		</>
 	);

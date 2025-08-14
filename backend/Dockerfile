@@ -23,6 +23,7 @@ RUN cargo chef cook --release --recipe-path recipe.json
 # Build application
 COPY . ./
 RUN cargo build --release
+RUN cd migration && cargo build --release
 
 FROM debian:bookworm-slim AS runtime
 
@@ -33,5 +34,6 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/target/release/backend /usr/local/bin/app
+COPY --from=builder /app/migration/target/release/migration /usr/local/bin/migration
 EXPOSE 3000
 CMD ["app"]

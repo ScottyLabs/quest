@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Drawer } from "vaul";
+import RedeemedCheck from "@/assets/redeemed-check.svg?react";
+import { QRScanner } from "@/components/challenges/steps/qr-scanner";
 import Redeem from "@/components/trade/redeem";
 import { Redeemed } from "@/components/trade/redeemed";
 import { useApi } from "@/lib/app-context";
+import { useQRScanner } from "@/lib/native/scanner";
 import type { components } from "@/lib/schema.gen";
 
 interface TradeMenuProps {
@@ -12,6 +15,13 @@ interface TradeMenuProps {
 	adminMode: boolean;
 }
 
+function handleQRScanFailed() {
+	console.error("QR scan failed. Please try again.");
+}
+function handleQRScanCancelled() {
+	console.error("QR scan cancelled.");
+}
+
 export function TradeMenu({
 	isOpen,
 	onOpenChange,
@@ -19,6 +29,26 @@ export function TradeMenu({
 	adminMode,
 }: TradeMenuProps) {
 	const { $api } = useApi();
+
+	const { mutate: confirm, data: confirmData } = $api.useMutation(
+		"post",
+		"/api/admin/verify_transaction",
+	);
+
+	const videoRef = useRef<HTMLVideoElement>(null);
+	const canvasRef = useRef<HTMLCanvasElement>(null);
+	const [startScanQR, setScanQR] = useState<boolean>(false);
+	const [error, setError] = useState<string | null>(null);
+
+	const { scanQR } = useQRScanner<string>();
+
+	function handleQRScanned(qrResult: string) {
+		confirm({
+			body: {
+				transaction_id: qrResult,
+			},
+		});
+	}
 
 	const {
 		data: { rewards: prizes } = { rewards: [] },
@@ -36,9 +66,7 @@ export function TradeMenu({
 		data: redeemData,
 		reset: resetRedeem,
 	} = $api.useMutation("post", "/api/transaction");
-	const { message, success, transaction } = redeemData || {
-		message: "",
-		success: false,
+	const { transaction } = redeemData || {
 		transaction: null,
 	};
 	// State for managing the selected size and quantity
@@ -56,6 +84,42 @@ export function TradeMenu({
 			},
 		});
 	};
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: i want to push this code... sorry
+	useEffect(() => {
+		const performQRScan = async () => {
+			try {
+				if (startScanQR) {
+					if (!videoRef.current || !canvasRef.current) {
+						setError("Camera not ready. Please try again.");
+						handleQRScanCancelled();
+						return;
+					}
+
+					const qrResult = await scanQR(
+						videoRef.current,
+						canvasRef.current,
+						async (qrData: string) => {
+							return qrData;
+						},
+						15000, // 15 second timeout
+					);
+
+					if (!qrResult || typeof qrResult !== "string") {
+						handleQRScanFailed();
+					} else {
+						handleQRScanned(qrResult);
+					}
+				}
+			} catch (error) {
+				console.error("Error scanning QR:", error);
+				handleQRScanFailed();
+			}
+		};
+
+		performQRScan();
+	}, [scanQR, startScanQR]);
+
 	return (
 		<Drawer.Root open={isOpen} onOpenChange={onOpenChange}>
 			<Drawer.Portal>
@@ -69,11 +133,40 @@ export function TradeMenu({
 						<div className="flex flex-col items-center p-4 text-lg mb-4">
 							<button
 								type="button"
-								className="self-center card-selected border-4 border-green-600 bg-green-400 text-white cursor-pointer w-80 h-20 inline-flex justify-center items-center mb-4 px-4 py-2 text-2xl font-extrabold rounded-2xl disabled:opacity-50"
-								onClick={() => onOpenChange(false)}
+								className={
+									"self-center card-selected border-4 border text-white cursor-pointer w-80 h-20 inline-flex justify-center items-center mb-4 px-4 py-2 text-2xl font-extrabold rounded-2xl disabled:opacity-50 " +
+									(startScanQR
+										? " border-red-700 bg-red-500 "
+										: "border-green-600 bg-green-400")
+								}
+								onClick={() => setScanQR(!startScanQR)}
 							>
-								Scan QR to Verify
+								{startScanQR ? "Stop Scan" : "Start Scan"}
 							</button>
+							<QRScanner
+								videoRef={videoRef}
+								canvasRef={canvasRef}
+								onCancel={handleQRScanCancelled}
+							/>
+							{confirmData && confirmData.success ? (
+								<button
+									type="button"
+									disabled
+									className="w-full py-2 text-lg font-bold rounded-2xl mb-4 bg-gray-200 text-gray-500 cursor-not-allowed flex items-center justify-center gap-2"
+									onClick={() => {
+										resetRedeem();
+										refetchPrizes();
+										onOpenChange(false);
+									}}
+								>
+									<RedeemedCheck className="w-5 h-5" />
+									Transaction verified
+								</button>
+							) : (
+								<div className="text-red-500 text-sm">
+									{confirmData?.message || "Awaiting Scan..."}
+								</div>
+							)}
 						</div>
 					) : transaction ? (
 						<Redeemed
@@ -101,6 +194,11 @@ export function TradeMenu({
 					)}
 				</Drawer.Content>
 			</Drawer.Portal>
+			{/* Hidden video and canvas refs for QR scanning */}
+			<video ref={videoRef} className="hidden" muted>
+				<track kind="captions" />
+			</video>
+			<canvas ref={canvasRef} className="hidden" />
 		</Drawer.Root>
 	);
 }

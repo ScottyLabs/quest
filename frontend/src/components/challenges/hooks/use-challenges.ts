@@ -43,10 +43,15 @@ export function useChallenges({
 
 		// Apply all filters
 		return challenges.reduce((acc, challenge) => {
-			// Assign status deterministically based on challenge name
+			// Preserve completed status, otherwise assign mock status
 			// TODO: Remove this mock status assignment in prod
 			const hash = hashString(challenge.name);
-			const status = hash % 2 ? ("locked" as const) : ("available" as const);
+			const status =
+				challenge.status === "completed"
+					? ("completed" as const)
+					: hash % 2
+						? ("locked" as const)
+						: ("available" as const);
 
 			const processedChallenge = { ...challenge, status };
 

@@ -359,6 +359,12 @@ export interface components {
             challenge_name: string;
             image_data: string;
             note?: string | null;
+            /** Format: double */
+            user_latitude: number;
+            /** Format: double */
+            user_location_accuracy: number;
+            /** Format: double */
+            user_longitude: number;
             verification_code: string;
         };
         CreateCompletionResponse: {

@@ -2,8 +2,32 @@ use crate::services::traits::{ChallengeServiceTrait, CompletionServiceTrait};
 use crate::{AppState, AuthClaims};
 use axum::{Extension, Json, extract::State, http::StatusCode};
 use chrono::{NaiveDateTime, Utc};
+use rust_decimal::prelude::ToPrimitive;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
+
+// Geodesic distance (Haversine formula)
+fn calculate_distance(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
+    const EARTH_RADIUS: f64 = 6371000.0; // meters
+
+    let lat1_rad = lat1.to_radians();
+    let lat2_rad = lat2.to_radians();
+    let delta_lat = (lat2 - lat1).to_radians();
+    let delta_lon = (lon2 - lon1).to_radians();
+
+    let a = (delta_lat / 2.0).sin().powi(2)
+        + lat1_rad.cos() * lat2_rad.cos() * (delta_lon / 2.0).sin().powi(2);
+    let c = 2.0 * a.sqrt().atan2((1.0 - a).sqrt());
+
+    EARTH_RADIUS * c
+}
+
+fn circles_overlap(lat1: f64, lon1: f64, radius1: f64, lat2: f64, lon2: f64, radius2: f64) -> bool {
+    let distance = calculate_distance(lat1, lon1, lat2, lon2);
+    let required_distance = radius1 + radius2;
+
+    distance <= required_distance
+}
 
 #[derive(Deserialize, ToSchema)]
 pub struct CreateCompletionRequest {
@@ -11,6 +35,10 @@ pub struct CreateCompletionRequest {
     pub verification_code: String,
     pub image_data: String, // base64 encoded image
     pub note: Option<String>,
+    // User location data
+    pub user_latitude: f64,
+    pub user_longitude: f64,
+    pub user_location_accuracy: f64,
 }
 
 #[derive(Serialize, ToSchema)]
@@ -48,7 +76,10 @@ pub async fn create_completion(
         .challenge_service
         .get_challenge_by_name(&payload.challenge_name)
         .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        .map_err(|e| {
+            eprintln!("Failed to get challenge: {e}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?;
 
     let challenge = match challenge {
         Some(challenge) => challenge,
@@ -61,17 +92,17 @@ pub async fn create_completion(
         }
     };
 
-    // Check if challenge is unlocked
-    if challenge.unlock_timestamp > Utc::now().naive_utc() {
-        return Ok(Json(CreateCompletionResponse {
-            success: false,
-            message: "Challenge is not yet unlocked".to_string(),
-            completion: None,
-        }));
-    }
+    // TODO: Check if challenge is unlocked in prod
+    // if challenge.unlock_timestamp > Utc::now().naive_utc() {
+    //     return Ok(Json(CreateCompletionResponse {
+    //         success: false,
+    //         message: "Challenge is not yet unlocked".to_string(),
+    //         completion: None,
+    //     }));
+    // }
 
     // Verify the secret
-    if payload.verification_code != challenge.secret {
+    if !payload.verification_code.contains(&challenge.secret) {
         return Ok(Json(CreateCompletionResponse {
             success: false,
             message: "Invalid verification code".to_string(),
@@ -84,7 +115,10 @@ pub async fn create_completion(
         .completion_service
         .completion_exists(&claims.sub, &payload.challenge_name)
         .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        .map_err(|e| {
+            eprintln!("Failed to check completion existence: {e}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?;
 
     if already_completed {
         return Ok(Json(CreateCompletionResponse {
@@ -93,6 +127,35 @@ pub async fn create_completion(
             completion: None,
         }));
     }
+
+    // Verify location if challenge has geolocation data set
+    if let (Some(challenge_lat), Some(challenge_lon), Some(challenge_accuracy)) = (
+        challenge.latitude,
+        challenge.longitude,
+        challenge.location_accuracy,
+    ) {
+        let challenge_accuracy_meters = challenge_accuracy.to_f64().unwrap_or(0.0);
+
+        // Check if user's location circle overlaps with challenge location circle
+        let overlaps = circles_overlap(
+            challenge_lat,
+            challenge_lon,
+            challenge_accuracy_meters,
+            payload.user_latitude,
+            payload.user_longitude,
+            payload.user_location_accuracy,
+        );
+
+        if !overlaps {
+            return Ok(Json(CreateCompletionResponse {
+                success: false,
+                message: "You are not close enough to the challenge location".to_string(),
+                completion: None,
+            }));
+        }
+    }
+    // If challenge has no location data (latitude, longitude, or accuracy is None),
+    // skip location verification and proceed with completion
 
     // Upload the image to MinIO
     let s3_link = state
@@ -114,7 +177,10 @@ pub async fn create_completion(
             payload.note,
         )
         .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        .map_err(|e| {
+            eprintln!("Failed to create completion: {e}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?;
 
     // Invalidate caches affected by this completion
     state.cache_manager.invalidate_user_data(&claims.sub).await;

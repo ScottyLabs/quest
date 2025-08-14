@@ -1,7 +1,13 @@
-export function CompletedDrawerContent() {
+import type { Challenge } from "@/components/challenges";
+
+interface Completed {
+	challenge: Challenge;
+}
+
+export function Completed({ challenge }: Completed) {
 	return (
 		<>
-			<p className="mt-2 mb-2 text-gray-700 text-sm">
+			<p className="mb-2 text-gray-700 text-sm">
 				Congratulations! You've already completed this challenge.
 			</p>
 			<p className="mb-4 text-gray-500 text-xs">

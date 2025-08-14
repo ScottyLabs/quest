@@ -24,8 +24,8 @@ const getApiConfig = (): string => {
 		return "https://api.cmu.quest";
 	}
 
-	// Default to quest.scottylabs.org API for all other cases
-	return "https://api.quest.scottylabs.org";
+	// Default to prod API for all other cases
+	return "https://api.cmu.quest";
 };
 
 const createApiClient = (baseUrl: string) => {

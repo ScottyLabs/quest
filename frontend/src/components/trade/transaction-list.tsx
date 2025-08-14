@@ -1,3 +1,6 @@
+import { MoveLeft } from "lucide-react";
+import { useState } from "react";
+import { QRCode } from "react-qrcode-logo";
 import QR from "@/assets/qr.svg?react";
 import type { components } from "@/lib/schema.gen";
 
@@ -8,7 +11,40 @@ export default function TransactionsList({
 	prizeName: string;
 	prizes: components["schemas"]["RewardResponse"][];
 }) {
-	return (
+	const [selectedTransaction, setSelectedTransaction] = useState<string | null>(
+		null,
+	);
+
+	return selectedTransaction ? (
+		<div className="flex flex-col items-center justify-center p-4">
+			<button
+				type="button"
+				className="w-full flex items-center justify-center"
+				onClick={() => setSelectedTransaction(null)}
+			>
+				<button
+					type="button"
+					className="text-2xl rounded-2xl bg-gray-200 font-bold mb-4 w-48 flex items-center justify-center"
+				>
+					<MoveLeft className="pr-2" />
+					Go Back
+				</button>
+			</button>
+			<QRCode
+				value={selectedTransaction}
+				logoImage="/favicon.svg"
+				logoWidth={300}
+				logoHeight={300}
+				size={1000}
+				qrStyle="dots"
+				style={{
+					width: "4in",
+					height: "4in",
+					margin: "0 auto",
+				}}
+			/>
+		</div>
+	) : (
 		<div className="w-full h-96 overflow-y-auto">
 			{prizes
 				.find((prize) => prize.name === prizeName)
@@ -39,6 +75,9 @@ export default function TransactionsList({
 										<button
 											type="button"
 											className="self-center card-selected border-4 border-green-600 bg-green-400 text-white cursor-pointer w-20 h-20 inline-flex justify-center items-center text-2xl font-extrabold rounded-2xl"
+											onClick={() => {
+												setSelectedTransaction(transaction.transaction_id);
+											}}
 										>
 											<QR className="w-20 h-20" />
 										</button>

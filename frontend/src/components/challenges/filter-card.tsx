@@ -1,6 +1,5 @@
 import { Check, Filter, Lock, X } from "lucide-react";
 import ScottyCoin from "@/assets/scotty-coin.svg?react";
-import { Button } from "@/components/ui/button";
 import type { FilterOption } from "@/lib/app-context";
 
 const filterOptions: {
@@ -56,14 +55,13 @@ export function FilterCard({
 						</h3>
 					</div>
 
-					<Button
-						variant="ghost"
-						size="sm"
+					<button
+						type="button"
 						onClick={onClose}
 						className="p-1 hover:bg-gray-100 rounded-full"
 					>
 						<X size={20} />
-					</Button>
+					</button>
 				</div>
 
 				<div className="space-y-2">

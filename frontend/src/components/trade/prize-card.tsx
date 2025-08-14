@@ -20,7 +20,6 @@ export function PrizeCard({ prize }: PrizeCardProps) {
 	const { adminMode: adminModeStr } = useAppContext();
 	const isVerify = adminModeStr === "verify";
 	const { data: userProfile } = $api.useQuery("get", "/api/profile");
-	const userCoins = userProfile?.scotty_coins?.current || 0;
 	const userDorm = (userProfile?.dorm as DormName) || "";
 	const userDormGroup =
 		(Object.entries(dormGroups).find(([, dorms]) =>
@@ -30,9 +29,6 @@ export function PrizeCard({ prize }: PrizeCardProps) {
 	const houseColorPrimaryBg = dormColors[userDormGroup]?.primary || "bg-white"; // for progress bar
 
 	const isCarnegieCup = prize.name === "Carnegie Cup Contribution";
-	const isMaxClaimed =
-		prize.transaction_info.complete_count >= prize.trade_limit;
-	const isAffordable = prize.cost <= userCoins;
 	const stock = prize.stock ?? 0; // Default to 0 if stock is not provided
 	const claimed = prize.transaction_info?.total_purchased ?? 0; // Default to 0 if not provided
 	const [isTradeMenuOpen, setIsTradeMenuOpen] = useState(false);
@@ -91,7 +87,6 @@ export function PrizeCard({ prize }: PrizeCardProps) {
 						<button
 							type="button"
 							onClick={() => setIsTradeMenuOpen(true)}
-							disabled={!isVerify && (isMaxClaimed || !isAffordable)}
 							className="w-16 h-12 bg-zinc-100 rounded-xl shadow-[0px_6px_0px_0px_rgba(215,215,215,1.00)] flex items-center justify-center p-3 hover:bg-zinc-200 transition-colors disabled:opacity-50"
 						>
 							<div className="flex items-center justify-center gap-1">

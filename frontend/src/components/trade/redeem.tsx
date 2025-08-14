@@ -1,64 +1,76 @@
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import ScottyCoin from "@/assets/scotty-coin.svg?react";
+import PlusMinus from "@/components/trade/plus-minus";
+import TransactionsList from "@/components/trade/transaction-list";
+import type { components } from "@/lib/schema.gen";
 
 interface RedeemProps {
-	isOpen: boolean;
-	onOpenChange: (open: boolean) => void;
-	prize: {
-		name: string;
-		amount?: number;
-		date?: string;
-	};
+	setDrawerOpen: (open: boolean) => void;
+	prizes: components["schemas"]["RewardResponse"][];
+	prize: components["schemas"]["RewardResponse"];
+	quantity: number;
+	setQuantity: (quantity: number) => void;
+	handleClaim: () => void;
+	hasEnoughCoins: boolean;
 }
 
-export function Redeem({ isOpen, onOpenChange, prize }: RedeemProps) {
-	const handleGoBack = () => {
-		onOpenChange(false);
-	};
-
+export default function Redeem({
+	setDrawerOpen,
+	prizes,
+	prize,
+	quantity,
+	setQuantity,
+	handleClaim,
+	hasEnoughCoins,
+}: RedeemProps) {
 	return (
-		<Dialog open={isOpen} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-md bg-white border-none shadow-[0_3px_0_#bbb] p-0">
-				<div className="w-96 px-4 py-20 bg-white rounded-[20px] inline-flex flex-col justify-start items-center gap-12">
-					<div className="w-72 flex flex-col justify-start items-center gap-3">
-						<div className="w-48 h-48 relative">
-							<div className="w-48 h-48 left-0 top-0 absolute bg-green-500 rounded-full"></div>
-							<div className="w-12 h-11 left-[70.83px] top-[71.48px] absolute outline outline-[17px] outline-offset-[-8.50px] outline-white rounded-full"></div>
-						</div>
-						<div className="self-stretch flex flex-col justify-start items-center gap-[3px]">
-							<div className="w-64 text-center justify-start text-Secondary text-4xl font-extrabold font-['Open_Sans'] tracking-wide">
-								Redeemed!
-							</div>
-							<div className="self-stretch inline-flex justify-center items-center gap-2.5">
-								<div className="flex-1 text-center justify-start text-Steel-Grey text-xs font-bold font-['Open_Sans'] tracking-tight">
-									You redeemed {prize.amount || 1} {prize.name}! You can see
-									your prizes in your profile! *Remember to pick up your{" "}
-									{prize.name} on {prize.date || "the specified date"}
-								</div>
-							</div>
-						</div>
-					</div>
-					<div
-						data-dark-mode="False"
-						data-left-icon="False"
-						data-right-icon="False"
-						data-size="Large"
-						data-state="Enabled"
-						data-type="Primary"
-						className="w-72 h-12 shadow-[0px_4px_0px_0px_rgba(54,1,1,1.00)] inline-flex justify-center items-center"
-					>
-						<button
-							type="button"
-							onClick={handleGoBack}
-							data-size="Large"
-							className="flex-1 h-12 px-8 py-3 bg-Primary rounded-3xl flex justify-center items-center gap-2"
-						>
-							<div className="text-center justify-start text-Highlight text-base font-bold font-['Open_Sans'] leading-normal">
-								Go Back
-							</div>
-						</button>
-					</div>
+		<div className="flex flex-col items-center justify-center p-2 ">
+			{(prizes.find((p) => p.name === prize.name)?.transaction_info
+				?.transactions.length || 0) > 0 && (
+				<div className="p-4 m-2 rounded-xl bg-gray-200 w-full">
+					<div className="text-2xl font-bold mb-4">Redeemed:</div>
+					<TransactionsList prizes={prizes} prizeName={prize.name} />
 				</div>
-			</DialogContent>
-		</Dialog>
+			)}
+			<div className="flex flex-col p-4 rounded-xl bg-gray-200 w-full my-2">
+				<div className="flex mt-4 font-bold text-2xl">Redeem More:</div>
+				<div className="flex flex-col items-center bg-white p-4 my-4 rounded-lg shadow-md">
+					<div className="mt-4 text-xl">
+						Spend{"\u00A0"}
+						<span className="font-bold rounded-lg px-1 bg-gray-200">
+							{prize.cost * quantity}
+							{"\u00A0"}
+							<ScottyCoin className="inline w-8 h-8 m-1" />
+						</span>
+						{"\u00A0"}
+						to redeem
+						{"\u00A0"}
+						<span className="font-bold">
+							{quantity} {prize.name}
+							{quantity > 1 ? "s" : ""}
+						</span>
+						?
+					</div>
+					{prize.trade_limit > 1 && (
+						<PlusMinus
+							value={quantity}
+							onValueChange={setQuantity}
+							max={
+								prize.trade_limit -
+								(prize.transaction_info.total_purchased || 0)
+							}
+							min={1}
+						/>
+					)}
+				</div>
+				<button
+					type="button"
+					className="self-center card-selected border-4 border-default-selected bg-default text-white cursor-pointer w-80 h-20 inline-flex justify-center items-center mb-4 px-4 py-2 text-2xl font-extrabold rounded-2xl disabled:opacity-50"
+					onClick={handleClaim}
+					disabled={!hasEnoughCoins}
+				>
+					Redeem
+				</button>
+			</div>
+		</div>
 	);
 }

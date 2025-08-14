@@ -1,4 +1,6 @@
 use crate::entities::{challenges, completion, prelude::*};
+use crate::services::traits::CompletionServiceTrait;
+use async_trait::async_trait;
 use chrono::{Duration, NaiveDate, NaiveDateTime, Utc};
 use sea_orm::{
     ActiveModelTrait, ActiveValue::Set, ColumnTrait, DatabaseConnection, EntityTrait, JoinType,
@@ -15,8 +17,58 @@ impl CompletionService {
     pub fn new(db: DatabaseConnection) -> Self {
         Self { db }
     }
+}
 
-    pub async fn get_user_completions_by_category(
+#[async_trait]
+impl CompletionServiceTrait for CompletionService {
+    async fn get_user_completion_map(
+        &self,
+        user_id: &str,
+    ) -> Result<HashMap<String, NaiveDateTime>, sea_orm::DbErr> {
+        let completions = Completion::find()
+            .filter(completion::Column::UserId.eq(user_id))
+            .all(&self.db)
+            .await?;
+
+        Ok(completions
+            .into_iter()
+            .map(|c| (c.challenge_name, c.timestamp))
+            .collect())
+    }
+
+    async fn create_completion(
+        &self,
+        user_id: &str,
+        challenge_name: &str,
+        s3_link: Option<String>,
+        note: Option<String>,
+    ) -> Result<completion::Model, sea_orm::DbErr> {
+        let new_completion = completion::ActiveModel {
+            user_id: Set(user_id.to_string()),
+            challenge_name: Set(challenge_name.to_string()),
+            timestamp: Set(Utc::now().naive_utc()),
+            s3_link: Set(s3_link),
+            note: Set(note),
+        };
+
+        new_completion.insert(&self.db).await
+    }
+
+    async fn completion_exists(
+        &self,
+        user_id: &str,
+        challenge_name: &str,
+    ) -> Result<bool, sea_orm::DbErr> {
+        let completion = Completion::find()
+            .filter(completion::Column::UserId.eq(user_id))
+            .filter(completion::Column::ChallengeName.eq(challenge_name))
+            .one(&self.db)
+            .await?;
+
+        Ok(completion.is_some())
+    }
+
+    async fn get_user_completions_by_category(
         &self,
         user_id: &str,
     ) -> Result<HashMap<String, i32>, sea_orm::DbErr> {
@@ -37,7 +89,7 @@ impl CompletionService {
             .collect())
     }
 
-    pub async fn get_user_completion_count(&self, user_id: &str) -> Result<i32, sea_orm::DbErr> {
+    async fn get_user_completion_count(&self, user_id: &str) -> Result<i32, sea_orm::DbErr> {
         let count = Completion::find()
             .filter(completion::Column::UserId.eq(user_id))
             .count(&self.db)
@@ -46,7 +98,7 @@ impl CompletionService {
         Ok(count as i32)
     }
 
-    pub async fn get_user_recent_activity_days(
+    async fn get_user_recent_activity_days(
         &self,
         user_id: &str,
         num_days_back: i64,
@@ -71,24 +123,7 @@ impl CompletionService {
             .collect())
     }
 
-    // Get completion timestamps for a user (map of challenge_name -> completed_at)
-    pub async fn get_user_completion_map(
-        &self,
-        user_id: &str,
-    ) -> Result<HashMap<String, NaiveDateTime>, sea_orm::DbErr> {
-        let completions = Completion::find()
-            .filter(completion::Column::UserId.eq(user_id))
-            .all(&self.db)
-            .await?;
-
-        Ok(completions
-            .into_iter()
-            .map(|c| (c.challenge_name, c.timestamp))
-            .collect())
-    }
-
-    // Get total coins earned by user
-    pub async fn get_user_total_coins_earned(&self, user_id: &str) -> Result<i32, sea_orm::DbErr> {
+    async fn get_user_total_coins_earned(&self, user_id: &str) -> Result<i32, sea_orm::DbErr> {
         let completions_with_coins = Completion::find()
             .filter(completion::Column::UserId.eq(user_id))
             .join(JoinType::InnerJoin, completion::Relation::Challenges.def())
@@ -101,42 +136,7 @@ impl CompletionService {
         Ok(completions_with_coins.into_iter().sum())
     }
 
-    // Create a new completion
-    pub async fn create_completion(
-        &self,
-        user_id: &str,
-        challenge_name: &str,
-        s3_link: Option<String>,
-        note: Option<String>,
-    ) -> Result<completion::Model, sea_orm::DbErr> {
-        let new_completion = completion::ActiveModel {
-            user_id: Set(user_id.to_string()),
-            challenge_name: Set(challenge_name.to_string()),
-            timestamp: Set(Utc::now().naive_utc()),
-            s3_link: Set(s3_link),
-            note: Set(note),
-        };
-
-        new_completion.insert(&self.db).await
-    }
-
-    // Check if completion already exists
-    pub async fn completion_exists(
-        &self,
-        user_id: &str,
-        challenge_name: &str,
-    ) -> Result<bool, sea_orm::DbErr> {
-        let completion = Completion::find()
-            .filter(completion::Column::UserId.eq(user_id))
-            .filter(completion::Column::ChallengeName.eq(challenge_name))
-            .one(&self.db)
-            .await?;
-
-        Ok(completion.is_some())
-    }
-
-    // Get all completions for a user with challenge details
-    pub async fn get_user_completions_with_challenges(
+    async fn get_user_completions_with_challenges(
         &self,
         user_id: &str,
     ) -> Result<Vec<(completion::Model, challenges::Model)>, sea_orm::DbErr> {
@@ -153,8 +153,7 @@ impl CompletionService {
             })
     }
 
-    // Get a specific completion for a user with challenge details
-    pub async fn get_user_completion_with_challenge(
+    async fn get_user_completion_with_challenge(
         &self,
         user_id: &str,
         challenge_name: &str,
@@ -172,8 +171,7 @@ impl CompletionService {
         }
     }
 
-    // Update a completion's note
-    pub async fn update_completion_note(
+    async fn update_completion_note(
         &self,
         user_id: &str,
         challenge_name: &str,
@@ -197,8 +195,7 @@ impl CompletionService {
         }
     }
 
-    // Update completion photo (for deleting photos)
-    pub async fn update_completion_photo(
+    async fn update_completion_photo(
         &self,
         user_id: &str,
         challenge_name: &str,

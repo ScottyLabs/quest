@@ -1,3 +1,4 @@
+use crate::services::traits::LeaderboardServiceTrait;
 use crate::{AppState, services::leaderboard::LeaderboardEntry};
 use axum::{
     Json,

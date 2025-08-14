@@ -1,3 +1,4 @@
+use crate::services::traits::RewardServiceTrait;
 use crate::{AppState, AuthClaims};
 use axum::{Extension, Json, extract::State, http::StatusCode};
 use chrono::NaiveDateTime;

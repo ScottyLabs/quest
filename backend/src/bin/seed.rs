@@ -3,7 +3,11 @@ use std::{error::Error, fs};
 use backend::{
     create_connection,
     entities::{challenges, reward},
-    services::{challenge::ChallengeService, reward::RewardService},
+    services::{
+        challenge::ChallengeService,
+        reward::RewardService,
+        traits::{ChallengeServiceTrait, RewardServiceTrait},
+    },
 };
 use chrono::NaiveDateTime;
 use sea_orm::ActiveValue::Set;
@@ -73,7 +77,7 @@ async fn insert_challenges() -> Result<(), Box<dyn Error + Send + Sync>> {
     let challenge_service = ChallengeService::new(db);
 
     let csv_content = fs::read_to_string("data/challenges.csv")
-        .map_err(|e| format!("Failed to read CSV file: {}", e))?;
+        .map_err(|e| format!("Failed to read CSV file: {e}"))?;
 
     let mut csv_reader = csv::Reader::from_reader(csv_content.as_bytes());
     let mut challenges_to_process = Vec::new();
@@ -109,7 +113,7 @@ async fn insert_challenges() -> Result<(), Box<dyn Error + Send + Sync>> {
         eprintln!("Parsing errors encountered:");
 
         for error in &parse_errors {
-            eprintln!("  {}", error);
+            eprintln!("  {error}");
         }
         if challenges_to_process.is_empty() {
             return Err("No valid challenges to insert".into());
@@ -142,7 +146,7 @@ async fn insert_challenges() -> Result<(), Box<dyn Error + Send + Sync>> {
         .upsert_challenges_batch(active_models)
         .await?;
 
-    println!("Inserted {} challenges", count);
+    println!("Inserted {count} challenges");
     Ok(())
 }
 
@@ -165,7 +169,7 @@ async fn insert_rewards() -> Result<(), Box<dyn Error + Send + Sync>> {
     let reward_service = RewardService::new(db);
 
     let csv_content = fs::read_to_string("data/rewards.csv")
-        .map_err(|e| format!("Failed to read CSV file: {}", e))?;
+        .map_err(|e| format!("Failed to read CSV file: {e}"))?;
 
     let mut csv_reader = csv::Reader::from_reader(csv_content.as_bytes());
     let mut rewards_to_process = Vec::new();
@@ -192,7 +196,7 @@ async fn insert_rewards() -> Result<(), Box<dyn Error + Send + Sync>> {
         eprintln!("Parsing errors encountered:");
 
         for error in &parse_errors {
-            eprintln!("  {}", error);
+            eprintln!("  {error}");
         }
         if rewards_to_process.is_empty() {
             return Err("No valid rewards to insert".into());
@@ -214,7 +218,7 @@ async fn insert_rewards() -> Result<(), Box<dyn Error + Send + Sync>> {
 
     let count = reward_service.upsert_rewards_batch(active_models).await?;
 
-    println!("Inserted {} rewards", count);
+    println!("Inserted {count} rewards");
     Ok(())
 }
 

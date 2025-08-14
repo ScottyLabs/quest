@@ -1,3 +1,4 @@
+use crate::services::traits::{ChallengeServiceTrait, CompletionServiceTrait};
 use crate::{AppState, AuthClaims};
 use axum::{
     Extension, Json,
@@ -168,6 +169,11 @@ pub async fn update_journal_entry(
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
+    if updated_completion.is_some() {
+        // Invalidate user completion caches after note update
+        state.cache_manager.invalidate_user_data(&claims.sub).await;
+    }
+
     let entry = if let Some(completion) = updated_completion {
         // Get challenge details for the response
         let challenge = state
@@ -276,6 +282,9 @@ pub async fn delete_journal_photo(
 
     let (success, message) = match updated {
         Some(_) => {
+            // Invalidate user completion caches after photo deletion
+            state.cache_manager.invalidate_user_data(&claims.sub).await;
+
             if s3_deleted {
                 (true, "Photo deleted successfully".to_string())
             } else {

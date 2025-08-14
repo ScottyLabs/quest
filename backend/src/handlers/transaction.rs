@@ -1,3 +1,4 @@
+use crate::services::traits::{CompletionServiceTrait, RewardServiceTrait};
 use crate::{AppState, AuthClaims};
 use axum::{
     Extension, Json,
@@ -130,6 +131,10 @@ pub async fn create_transaction(
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
+    // Invalidate caches affected by this transaction
+    state.cache_manager.invalidate_user_data(&claims.sub).await;
+    state.cache_manager.invalidate_leaderboard().await;
+
     Ok(Json(CreateTransactionResponse {
         success: true,
         message: "Transaction successful".to_string(),
@@ -205,6 +210,12 @@ pub async fn cancel_transaction(
         .delete_transaction(&transaction_id)
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    if deleted {
+        // Invalidate caches affected by transaction cancellation
+        state.cache_manager.invalidate_user_data(&claims.sub).await;
+        state.cache_manager.invalidate_leaderboard().await;
+    }
 
     let (success, message) = if deleted {
         (true, "Transaction cancelled successfully".to_string())

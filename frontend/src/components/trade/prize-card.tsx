@@ -1,6 +1,6 @@
 import { useState } from "react";
 import RedeemedCheck from "@/assets/redeemed-check.svg?react";
-import ScottyCoin from "@/assets/scotty-coin.svg?react";
+import ScottyCoin from "@/components/scotty-coin";
 import { TradeMenu } from "@/components/trade/menu";
 import { useApi, useAppContext } from "@/lib/app-context";
 import {
@@ -108,12 +108,14 @@ export function PrizeCard({ prize }: PrizeCardProps) {
 				</div>
 			</div>
 
-			<TradeMenu
-				isOpen={isTradeMenuOpen}
-				onOpenChange={setIsTradeMenuOpen}
-				prize={prize}
-				adminMode={isVerify}
-			/>
+			{isTradeMenuOpen && ( // prevents slow load due to forced reflow
+				<TradeMenu
+					isOpen={isTradeMenuOpen}
+					onOpenChange={setIsTradeMenuOpen}
+					prize={prize}
+					adminMode={isVerify}
+				/>
+			)}
 		</>
 	);
 }

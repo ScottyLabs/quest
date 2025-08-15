@@ -99,9 +99,9 @@
 .card-selected {
 	box-shadow: 0 4px 0 var(--color-default-selected);
 	transition:
-		transform 250ms cubic-bezier(0.4, 0, 0.2, 1),
-		box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1),
-		background-color 250ms cubic-bezier(0.4, 0, 0.2, 1);
+		transform 25ms cubic-bezier(0.4, 0, 0.2, 1),
+		box-shadow 25ms cubic-bezier(0.4, 0, 0.2, 1),
+		background-color 25ms cubic-bezier(0.4, 0, 0.2, 1);
 	will-change: transform, box-shadow, background-color;
 }
 
@@ -113,9 +113,9 @@
 .card-confirm {
 	box-shadow: 0 3px 0 var(--color-default-selected);
 	transition:
-		transform 250ms cubic-bezier(0.4, 0, 0.2, 1),
-		box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1),
-		background-color 250ms cubic-bezier(0.4, 0, 0.2, 1);
+		transform 25ms cubic-bezier(0.4, 0, 0.2, 1),
+		box-shadow 25ms cubic-bezier(0.4, 0, 0.2, 1),
+		background-color 25ms cubic-bezier(0.4, 0, 0.2, 1);
 	will-change: transform, box-shadow, background-color;
 }
 
@@ -127,9 +127,9 @@
 .card-success {
 	box-shadow: 0 3px 0 var(--color-success);
 	transition:
-		transform 250ms cubic-bezier(0.4, 0, 0.2, 1),
-		box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1),
-		background-color 250ms cubic-bezier(0.4, 0, 0.2, 1);
+		transform 25ms cubic-bezier(0.4, 0, 0.2, 1),
+		box-shadow 25ms cubic-bezier(0.4, 0, 0.2, 1),
+		background-color 25ms cubic-bezier(0.4, 0, 0.2, 1);
 	will-change: transform, box-shadow, background-color;
 }
 
@@ -141,9 +141,9 @@
 .card-primary {
 	box-shadow: 0 3px 0 #bbb;
 	transition:
-		transform 250ms cubic-bezier(0.4, 0, 0.2, 1),
-		box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1),
-		background-color 250ms cubic-bezier(0.4, 0, 0.2, 1);
+		transform 25ms cubic-bezier(0.4, 0, 0.2, 1),
+		box-shadow 25ms cubic-bezier(0.4, 0, 0.2, 1),
+		background-color 25ms cubic-bezier(0.4, 0, 0.2, 1);
 	will-change: transform, box-shadow, background-color;
 }
 

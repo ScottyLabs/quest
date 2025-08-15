@@ -6,6 +6,7 @@ import ScottyCoin from "@/assets/scotty-coin.svg?react";
 import { FilterCard } from "@/components/challenges";
 import { InfoDialog } from "@/components/challenges/info-dialog";
 import { ModePill } from "@/components/mode-pill";
+import { useAppContext } from "@/lib/app-context";
 import {
 	type CategoryId,
 	categories,
@@ -15,7 +16,6 @@ import {
 import type { pageObject } from "@/lib/data/page";
 import type { components } from "@/lib/schema.gen";
 import type { ValueOf } from "@/lib/utils";
-import { useAppContext } from "@/lib/app-context";
 
 interface PageHeaderProps {
 	categoryId?: CategoryId;
@@ -41,7 +41,7 @@ export function PageHeader({
 			<div
 				className={`relative flex flex-col items-center justify-center h-[145px] ${pageColors.primary}`}
 			>
-				<div className="absolute top-6 w-full flex flex-row justify-between items-center px-6">
+				<div className="absolute top-6 w-full flex flex-row justify-between items-center px-6 ">
 					<Link
 						to="/challenges/$categoryId"
 						params={{ categoryId: "all" }}
@@ -121,7 +121,7 @@ export function PageHeader({
 
 			{/* Challenge category bar */}
 			{categoryId && (
-				<div className="flex flex-row px-4 mt-4 w-screen mb-2 [scrollbar-width:none] overflow-x-scroll">
+				<div className="flex flex-row px-4 mt-4 w-full mb-2 [scrollbar-width:none] overflow-x-scroll ">
 					<div className="flex-grow" />
 
 					<div className="flex shrink-0 gap-2">

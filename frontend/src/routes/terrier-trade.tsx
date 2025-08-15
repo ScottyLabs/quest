@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageLayout } from "@/components/page-layout";
 import { PrizeCard } from "@/components/trade/prize-card";
-import { useApi, useAppContext } from "@/lib/app-context";
+import { useApi } from "@/lib/app-context";
 import { requireAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/terrier-trade")({

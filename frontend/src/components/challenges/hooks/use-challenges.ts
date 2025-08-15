@@ -49,8 +49,7 @@ export function useChallenges({
 	);
 
 	const filteredChallenges = useMemo(() => {
-		const challenges =
-			(adminData ? adminData?.challenges : data?.challenges) ?? [];
+		const challenges = (adminData?.challenges || data?.challenges) ?? [];
 
 		// Apply all filters
 		return challenges.reduce((acc, challenge) => {

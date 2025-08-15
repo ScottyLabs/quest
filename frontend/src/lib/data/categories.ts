@@ -3,7 +3,6 @@ import CampusOfBridges from "@/assets/categories/campus-of-bridges.svg?react";
 import CoolCornersOfCarnegie from "@/assets/categories/cool-corners-of-carnegie.svg?react";
 import LetsEat from "@/assets/categories/lets-eat.svg?react";
 import MinorMajorGeneral from "@/assets/categories/minor-major-general.svg?react";
-import OffCampusAdventures from "@/assets/categories/off-campus-adventures.svg?react";
 import TheEssentials from "@/assets/categories/the-essentials.svg?react";
 import { typedFromEntries } from "@/lib/utils";
 
@@ -30,11 +29,6 @@ export const categories = [
 		id: "minor-major-general",
 		label: "Minor-Major General",
 		Icon: MinorMajorGeneral,
-	},
-	{
-		id: "off-campus-adventures",
-		label: "Off-Campus Adventures",
-		Icon: OffCampusAdventures,
 	},
 ] as const;
 
@@ -103,16 +97,6 @@ export const colorClasses = {
 		arcColor: "[--arc-color:theme(colors.challenge-5-light)]",
 		hover: "bg-challenge-5 hover:bg-challenge-5-hover",
 		pill: "bg-challenge-5-selected text-challenge-5-highlight",
-	},
-	"off-campus-adventures": {
-		text: "text-challenge-6",
-		primary: "bg-challenge-6",
-		secondary: "bg-challenge-6-light",
-		selected: "bg-challenge-6-selected",
-		border: "border-challenge-6",
-		arcColor: "[--arc-color:theme(colors.challenge-6-light)]",
-		hover: "bg-challenge-6 hover:bg-challenge-6-hover",
-		pill: "bg-challenge-6-selected text-challenge-6-highlight",
 	},
 } as const;
 

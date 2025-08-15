@@ -26,6 +26,7 @@ impl UserService {
             user_id: Set(user_id.to_string()),
             dorm: Set(None),
             name: Set(name.to_string()),
+            is_admin: Set(false),
         };
 
         let user = new_user.insert(&self.db).await?;
@@ -45,5 +46,25 @@ impl UserService {
         let mut user: user::ActiveModel = user.into();
         user.dorm = Set(dorm);
         user.update(&self.db).await
+    }
+
+    pub async fn update_admin_status(
+        &self,
+        user_id: &str,
+        is_admin: bool,
+    ) -> Result<user::Model, sea_orm::DbErr> {
+        let user = User::find_by_id(user_id)
+            .one(&self.db)
+            .await?
+            .ok_or_else(|| sea_orm::DbErr::RecordNotFound("User not found".to_string()))?;
+
+        let mut user: user::ActiveModel = user.into();
+        user.is_admin = Set(is_admin);
+        user.update(&self.db).await
+    }
+
+    pub async fn is_user_admin(&self, user_id: &str) -> Result<bool, sea_orm::DbErr> {
+        let user = User::find_by_id(user_id).one(&self.db).await?;
+        Ok(user.map(|u| u.is_admin).unwrap_or(false))
     }
 }

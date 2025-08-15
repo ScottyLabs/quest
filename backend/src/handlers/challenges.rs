@@ -17,6 +17,7 @@ pub struct ChallengeResponse {
     pub unlock_timestamp: NaiveDateTime,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub completed_at: Option<NaiveDateTime>,
+    pub has_location_data: bool,
     #[serde(flatten, skip_serializing_if = "Option::is_none")]
     pub details: Option<ChallengeDetails>,
 }
@@ -93,11 +94,16 @@ pub async fn get_challenges(
                 None
             };
 
+            let has_location_data = challenge.latitude.is_some()
+                && challenge.longitude.is_some()
+                && challenge.location_accuracy.is_some();
+
             ChallengeResponse {
                 name: challenge.name,
                 status,
                 unlock_timestamp: challenge.unlock_timestamp,
                 completed_at,
+                has_location_data,
                 details,
             }
         })

@@ -9,7 +9,8 @@ import {
 } from "@/lib/data/categories";
 import type { components } from "@/lib/schema.gen";
 
-export type Challenge = components["schemas"]["ChallengeResponse"];
+// TODO: change this in prod
+export type Challenge = components["schemas"]["AdminChallengeResponse"];
 
 interface ChallengeCardProps {
 	challenge: Challenge;

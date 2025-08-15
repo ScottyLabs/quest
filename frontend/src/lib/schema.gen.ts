@@ -269,6 +269,7 @@ export interface components {
             /** Format: date-time */
             completed_at?: string | null;
             description: string;
+            has_location_data: boolean;
             /** Format: double */
             latitude?: number | null;
             location: string;
@@ -323,6 +324,7 @@ export interface components {
         ChallengeResponse: (null | components["schemas"]["ChallengeDetails"]) & {
             /** Format: date-time */
             completed_at?: string | null;
+            has_location_data: boolean;
             name: string;
             status: components["schemas"]["ChallengeStatus"];
             /** Format: date-time */
@@ -425,6 +427,7 @@ export interface components {
         };
         Model: {
             dorm?: string | null;
+            is_admin: boolean;
             name: string;
             user_id: string;
         };

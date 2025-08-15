@@ -36,12 +36,6 @@ export function useChallenges({
 		isLoading: adminLoading,
 		isError: adminError,
 	} = $api.useQuery("get", "/api/admin/challenges");
-	const { data, isLoading, isError } = $api.useQuery("get", "/api/challenges");
-
-	console.log(
-		{ data, isLoading, isError },
-		{ adminData, adminLoading, adminError },
-	);
 
 	const normalizedSearchQuery = useMemo(
 		() => searchQuery.toLowerCase().trim(),
@@ -49,7 +43,7 @@ export function useChallenges({
 	);
 
 	const filteredChallenges = useMemo(() => {
-		const challenges = (adminData?.challenges || data?.challenges) ?? [];
+		const challenges = adminData?.challenges ?? [];
 
 		// Apply all filters
 		return challenges.reduce((acc, challenge) => {
@@ -88,18 +82,11 @@ export function useChallenges({
 			acc.push(processedChallenge);
 			return acc;
 		}, [] as Challenge[]);
-	}, [
-		categoryId,
-		data?.challenges,
-		adminData,
-		filter,
-		mode,
-		normalizedSearchQuery,
-	]);
+	}, [categoryId, adminData, filter, mode, normalizedSearchQuery]);
 
 	return {
 		challenges: filteredChallenges,
-		isLoading,
-		isError: adminError || isError,
+		isLoading: adminLoading,
+		isError: adminError,
 	};
 }

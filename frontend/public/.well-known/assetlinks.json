@@ -3,10 +3,9 @@
 		"relation": ["delegate_permission/common.handle_all_urls"],
 		"target": {
 			"namespace": "android_app",
-			"package_name": "org.scottylabs.quest",
+			"package_name": "quest.cmu.twa",
 			"sha256_cert_fingerprints": [
-				"70:EE:8B:D5:81:A2:26:D8:94:A7:80:F0:97:60:B2:DE:58:C9:66:0A:58:CC:E1:29:C0:A7:82:68:5C:F2:D5:10",
-				"06:AD:E8:C0:F4:50:06:F5:D2:44:25:82:9E:32:B7:8D:5D:AC:78:3E:ED:AE:A1:56:C8:CA:26:99:98:4F:46:A5"
+				"70:EE:8B:D5:81:A2:26:D8:94:A7:80:F0:97:60:B2:DE:58:C9:66:0A:58:CC:E1:29:C0:A7:82:68:5C:F2:D5:10"
 			]
 		}
 	}

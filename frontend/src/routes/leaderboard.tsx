@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { EllipsisVertical } from "lucide-react";
+import { Suspense } from "react";
 import { LeaderboardCard } from "@/components/leaderboard/card";
 import { CardFromUser } from "@/components/leaderboard/card-from-user";
 import { PageLayout } from "@/components/page-layout";
@@ -46,15 +47,17 @@ function Leaderboard() {
 		<PageLayout currentPath="/leaderboard" user={user}>
 			<div className="px-4 pt-6 max-w-xl mx-auto [view-transition-name:main-content]">
 				<div className="space-y-3">
-					{allEntries.map((entry) => (
-						<LeaderboardCard
-							key={entry.rank}
-							entry={entry}
-							name={user.name}
-							totalChallenges={user.total_challenges.total}
-							to="/profile"
-						/>
-					))}
+					<Suspense fallback={<div>Loading...</div>}>
+						{allEntries.map((entry) => (
+							<LeaderboardCard
+								key={entry.rank}
+								entry={entry}
+								name={user.name}
+								totalChallenges={user.total_challenges.total}
+								to="/profile"
+							/>
+						))}
+					</Suspense>
 				</div>
 
 				{hasNextPage && (

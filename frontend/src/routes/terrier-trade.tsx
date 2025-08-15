@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Suspense } from "react";
 import { PageLayout } from "@/components/page-layout";
 import { PrizeCard } from "@/components/trade/prize-card";
 import { useApi } from "@/lib/app-context";
@@ -28,14 +29,16 @@ function TerrierTrade() {
 		<PageLayout currentPath="/terrier-trade" user={user}>
 			<div className="[view-transition-name:main-content]">
 				<div className="px-4 pt-6 max-w-2xl mx-auto">
-					<div className="relative flex flex-col items-stretch w-full gap-6 max-w-full">
-						{(carnegieCupPrize // order carnegie cup prize first
-							? [carnegieCupPrize, ...otherPrizes]
-							: otherPrizes
-						).map((prize) => (
-							<PrizeCard key={prize.name} prize={prize} />
-						))}
-					</div>
+					<Suspense fallback={<div>Loading...</div>}>
+						<div className="relative flex flex-col items-stretch w-full gap-6 max-w-full">
+							{(carnegieCupPrize // order carnegie cup prize first
+								? [carnegieCupPrize, ...otherPrizes]
+								: otherPrizes
+							).map((prize) => (
+								<PrizeCard key={prize.name} prize={prize} />
+							))}
+						</div>
+					</Suspense>
 				</div>
 			</div>
 		</PageLayout>

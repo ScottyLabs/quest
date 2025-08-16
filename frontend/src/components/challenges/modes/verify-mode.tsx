@@ -62,12 +62,6 @@ export function VerifyDrawerContent({ challenge }: VerifyDrawerContentProps) {
 		isSuccess,
 	} = $api.useMutation("put", "/api/admin/challenges/geolocation");
 
-	// Check if challenge already has location data set
-	const hasLocationData =
-		challenge.latitude != null &&
-		challenge.longitude != null &&
-		challenge.location_accuracy != null;
-
 	const handleSetLocation = () => {
 		queryPosition(5000, async (pos) => {
 			await updateGeolocation({
@@ -88,7 +82,7 @@ export function VerifyDrawerContent({ challenge }: VerifyDrawerContentProps) {
 				posted it, enable location permissions, and press the button below.
 			</p>
 			<p className="mb-4 text-gray-500 text-xs">
-				{hasLocationData || isSuccess ? (
+				{challenge.has_location_data || isSuccess ? (
 					<>
 						Has someone already set this location?{" "}
 						<button
@@ -107,10 +101,13 @@ export function VerifyDrawerContent({ challenge }: VerifyDrawerContentProps) {
 
 			<button
 				type="button"
-				disabled={isQuerying || isPending || hasLocationData || isSuccess}
+				disabled={
+					isQuerying || isPending || challenge.has_location_data || isSuccess
+				}
 				onClick={handleSetLocation}
 				className={`w-full py-2 text-lg font-bold rounded-2xl mb-4 flex items-center justify-center gap-2 ${
-					(hasLocationData || isSuccess) && !(isQuerying || isPending)
+					(challenge.has_location_data || isSuccess) &&
+					!(isQuerying || isPending)
 						? "bg-gray-200 text-gray-500 cursor-not-allowed"
 						: "card-confirm border-2 border-default-selected bg-default text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
 				}`}
@@ -120,7 +117,7 @@ export function VerifyDrawerContent({ challenge }: VerifyDrawerContentProps) {
 						<Loader2 className="animate-spin size-5" />
 						Getting location...
 					</>
-				) : hasLocationData || isSuccess ? (
+				) : challenge.has_location_data || isSuccess ? (
 					"Location set"
 				) : (
 					"Set location"

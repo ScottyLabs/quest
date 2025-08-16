@@ -28,6 +28,7 @@ pub struct AdminChallengeResponse {
     // Completion data
     pub status: ChallengeStatus,
     pub completed_at: Option<NaiveDateTime>,
+    pub has_location_data: bool,
 }
 
 #[derive(ToSchema, Deserialize)]
@@ -78,6 +79,10 @@ pub async fn get_all_challenges(
                 ChallengeStatus::Locked
             };
 
+            let has_location_data = challenge.latitude.is_some()
+                && challenge.longitude.is_some()
+                && challenge.location_accuracy.is_some();
+
             AdminChallengeResponse {
                 name: challenge.name,
                 category: challenge.category,
@@ -94,6 +99,7 @@ pub async fn get_all_challenges(
                 location_accuracy: challenge.location_accuracy,
                 status,
                 completed_at,
+                has_location_data,
             }
         })
         .collect();

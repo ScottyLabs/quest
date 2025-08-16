@@ -90,7 +90,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             handlers::admin::get_all_challenges,
             handlers::admin::put_challenge_geolocation,
         ))
-        .layer(axum::middleware::from_fn(admin::require_admin));
+        .layer(axum::middleware::from_fn_with_state(
+            state.clone(),
+            admin::require_admin,
+        ));
 
     let mut protected_routes = OpenApiRouter::new()
         .routes(routes!(

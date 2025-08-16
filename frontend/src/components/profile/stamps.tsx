@@ -11,7 +11,10 @@ export default function Stamps({ week }: StampsProps) {
 		<div className="rounded-2xl bg-[#B38156] p-6 max-w-full">
 			<div className="flex flex-row justify-between items-center w-full">
 				{DAYS.map((day, i) => (
-					<div key={day} className="flex flex-col items-center flex-1">
+					<div
+						key={`${day}-${i}`}
+						className="flex flex-col items-center flex-1"
+					>
 						<div
 							className={`relative size-[40px] rounded-full flex items-center justify-center ${
 								week[i]

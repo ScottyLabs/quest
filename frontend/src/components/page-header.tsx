@@ -56,7 +56,6 @@ export function PageHeader({
 					</Link>
 
 					<div className="flex gap-2">
-						<ModePill isAdmin={user.groups.includes("O-Quest Admin")} />
 						<Link
 							to="/terrier-trade"
 							className="flex card-primary items-center w-20 justify-center bg-white hover:bg-gray-100 rounded-full px-3 py-2 text-sm font-bold gap-2"
@@ -85,7 +84,7 @@ export function PageHeader({
 					{/* Title and components positioned inside the arc, below the icon */}
 					<div className={`absolute inset-0 flex items-end px-6 pb-1`}>
 						<div className="mx-auto flex flex-row gap-2">
-							{categoryId && (
+							{/* {categoryId && (
 								<>
 									<button
 										type="button"
@@ -96,13 +95,13 @@ export function PageHeader({
 									</button>
 									<span className="text-white my-auto">&middot;</span>
 								</>
-							)}
+							)} */}
 
 							<span className="font-extrabold text-2xl text-center text-white">
 								{pageObject.label}
 							</span>
 
-							{categoryId && (
+							{/* {categoryId && (
 								<>
 									<span className="text-white my-auto">&middot;</span>
 									<button
@@ -113,7 +112,7 @@ export function PageHeader({
 										<Info className="text-white size-6" />
 									</button>
 								</>
-							)}
+							)} */}
 						</div>
 					</div>
 				</div>
@@ -121,9 +120,7 @@ export function PageHeader({
 
 			{/* Challenge category bar */}
 			{categoryId && (
-				<div className="flex flex-row px-4 mt-4 w-full mb-2 [scrollbar-width:none] overflow-x-scroll ">
-					<div className="flex-grow" />
-
+				<div className="flex flex-row px-4 mt-4 w-full [scrollbar-width:none] overflow-x-scroll ">
 					<div className="flex shrink-0 gap-2">
 						{categories.map((category) => (
 							<Link
@@ -136,8 +133,6 @@ export function PageHeader({
 							</Link>
 						))}
 					</div>
-
-					<div className="flex-grow" />
 				</div>
 			)}
 

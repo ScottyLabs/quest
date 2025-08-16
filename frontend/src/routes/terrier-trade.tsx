@@ -29,16 +29,14 @@ function TerrierTrade() {
 		<PageLayout currentPath="/terrier-trade" user={user}>
 			<div className="[view-transition-name:main-content]">
 				<div className="px-4 pt-6 max-w-2xl mx-auto">
-					<Suspense fallback={<div>Loading...</div>}>
-						<div className="relative flex flex-col items-stretch w-full gap-6 max-w-full">
-							{(carnegieCupPrize // order carnegie cup prize first
-								? [carnegieCupPrize, ...otherPrizes]
-								: otherPrizes
-							).map((prize) => (
-								<PrizeCard key={prize.name} prize={prize} />
-							))}
-						</div>
-					</Suspense>
+					<div className="relative flex flex-col items-stretch w-full gap-6">
+						{(carnegieCupPrize // order carnegie cup prize first
+							? [carnegieCupPrize, ...otherPrizes]
+							: otherPrizes
+						).map((prize) => (
+							<PrizeCard key={prize.name} prize={prize} />
+						))}
+					</div>
 				</div>
 			</div>
 		</PageLayout>

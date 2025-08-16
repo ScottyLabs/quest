@@ -47,17 +47,15 @@ function Leaderboard() {
 		<PageLayout currentPath="/leaderboard" user={user}>
 			<div className="px-4 pt-6 max-w-xl mx-auto [view-transition-name:main-content]">
 				<div className="space-y-3">
-					<Suspense fallback={<div>Loading...</div>}>
-						{allEntries.map((entry) => (
-							<LeaderboardCard
-								key={entry.rank}
-								entry={entry}
-								name={user.name}
-								totalChallenges={user.total_challenges.total}
-								to="/profile"
-							/>
-						))}
-					</Suspense>
+					{allEntries.map((entry) => (
+						<LeaderboardCard
+							key={entry.rank}
+							entry={entry}
+							name={user.name}
+							totalChallenges={user.total_challenges.total}
+							to="/profile"
+						/>
+					))}
 				</div>
 
 				{hasNextPage && (

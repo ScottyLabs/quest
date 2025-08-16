@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Camera, Target, Trophy } from "lucide-react";
 import StickyNoteTop from "@/assets/sticky-note-top.svg?react";
 import { CardFromUser } from "@/components/leaderboard/card-from-user";
+import { ModePill } from "@/components/mode-pill";
 import { PageLayout } from "@/components/page-layout";
 import CategoryProgressBar from "@/components/profile/category-progress-bar";
 import Stamps from "@/components/profile/stamps";
@@ -121,6 +122,9 @@ function Profile() {
 								<p className="text-lg text-gray-600 font-medium">
 									{user.andrew_id}
 								</p>
+								<div className="flex justify-center">
+									<ModePill isAdmin={user.groups.includes("O-Quest Admin")} />
+								</div>
 							</div>
 
 							{/* Info Cards */}

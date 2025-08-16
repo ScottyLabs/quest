@@ -181,6 +181,14 @@ function RouteComponent() {
 
 				{/* Confirm Button */}
 				<div className="px-6 py-6">
+					{error && (
+						<div className="text-red-600 text-center mb-4">{error}</div>
+					)}
+					{!selectedDorm && (
+						<div className="text-gray-600 text-center mb-4">
+							Please select a dorm to continue.
+						</div>
+					)}
 					<button
 						type="button"
 						className="w-full bg-red-700 text-white font-semibold py-3 rounded-full hover:bg-red-800 transition"

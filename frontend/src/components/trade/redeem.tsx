@@ -4,7 +4,6 @@ import TransactionsList from "@/components/trade/transaction-list";
 import type { components } from "@/lib/schema.gen";
 
 interface RedeemProps {
-	setDrawerOpen: (open: boolean) => void;
 	prizes: components["schemas"]["RewardResponse"][];
 	prize: components["schemas"]["RewardResponse"];
 	quantity: number;
@@ -14,7 +13,6 @@ interface RedeemProps {
 }
 
 export default function Redeem({
-	setDrawerOpen,
 	prizes,
 	prize,
 	quantity,

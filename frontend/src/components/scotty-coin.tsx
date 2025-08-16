@@ -1,10 +1,5 @@
+import ScottyCoinPng from "@/assets/scotty-coin.png";
 // Improve performance over importing svg for some reason
 export default function ScottyCoin({ className }: { className?: string }) {
-	return (
-		<img
-			className={className}
-			src="/images/icons/scotty-coin.svg"
-			alt="Scotty Coin"
-		/>
-	);
+	return <img src={ScottyCoinPng} className={className} alt="Scotty Coin" />;
 }

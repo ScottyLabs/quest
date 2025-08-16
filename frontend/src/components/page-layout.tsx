@@ -1,4 +1,4 @@
-import type { PropsWithChildren } from "react";
+import { type PropsWithChildren, Suspense } from "react";
 import { Navbar } from "@/components/navbar";
 import { PageHeader } from "@/components/page-header";
 import { type CategoryId, colorClasses } from "@/lib/data/categories";
@@ -23,7 +23,9 @@ export function PageLayout({
 	const pageColors = colorClasses[categoryId || "all"];
 
 	return (
-		<div className={`min-h-screen ${pageColors.secondary}`}>
+		<div
+			className={`h-screen overflow-clip flex flex-col ${pageColors.secondary}`}
+		>
 			<PageHeader
 				categoryId={categoryId}
 				pageColors={pageColors}
@@ -31,7 +33,9 @@ export function PageLayout({
 				user={user}
 			/>
 
-			<div className="pb-20">{children}</div>
+			<div className="overflow-scroll h-full pb-24 z-1">
+				<Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+			</div>
 
 			<Navbar currentPath={currentPath} pageColors={pageColors} />
 		</div>

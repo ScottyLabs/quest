@@ -21,7 +21,7 @@ export function ModePill({ isAdmin }: ModePillProps) {
 			<span
 				className={`w-2 h-2 rounded-full ${adminMode === "verify" ? "bg-green-500" : "bg-blue-500"}`}
 			/>
-			<span>{adminMode === "verify" ? "Verify" : "Normal"}</span>
+			<span>{`Switch to ${adminMode === "challenges" ? "verify" : "challenges"} mode`}</span>
 		</button>
 	);
 }

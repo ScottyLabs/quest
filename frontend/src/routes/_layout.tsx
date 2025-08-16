@@ -8,8 +8,8 @@ import type { FileRoutesByFullPath } from "@/routeTree.gen";
 
 function getCategoryId(path: string): CategoryId | undefined {
 	const pathSplits = path.split("/");
-	if (pathSplits[0] === "challenges") {
-		return (pathSplits[1] as CategoryId) || "all";
+	if (pathSplits[1] === "challenges") {
+		return (pathSplits[2] as CategoryId) || "all";
 	}
 	return undefined;
 }
@@ -23,8 +23,10 @@ export function PageLayout() {
 	const categoryId = getCategoryId(currentPathname);
 
 	const currentFileRoute = (
-		categoryId ? currentPathname : "/challenges/$categoryId"
+		categoryId ? "/challenges/$categoryId" : currentPathname
 	) as keyof FileRoutesByFullPath;
+
+	console.log("Current Pathname:", currentFileRoute);
 
 	const { $api } = useApi();
 	const { data: user } = $api.useQuery("get", "/api/profile");

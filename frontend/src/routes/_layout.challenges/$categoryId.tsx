@@ -9,13 +9,12 @@ import {
 	VerifyDrawerContent,
 	VerifyMode,
 } from "@/components/challenges";
-import { PageLayout } from "@/components/page-layout";
 import { useAppContext } from "@/lib/app-context";
 import { requireAuth } from "@/lib/auth";
 import { type CategoryId, colorClasses } from "@/lib/data/categories";
 import { useDebounce } from "@/lib/utils";
 
-export const Route = createFileRoute("/challenges/$categoryId")({
+export const Route = createFileRoute("/_layout/challenges/$categoryId")({
 	beforeLoad: async ({ context }) => {
 		return await requireAuth(context);
 	},
@@ -33,7 +32,6 @@ export const Route = createFileRoute("/challenges/$categoryId")({
 });
 
 function RouteComponent() {
-	const { user } = Route.useRouteContext();
 	const { categoryId } = Route.useParams();
 	const { adminMode } = useAppContext();
 
@@ -79,11 +77,7 @@ function RouteComponent() {
 	}, [adminMode, challenge]);
 
 	return (
-		<PageLayout
-			currentPath="/challenges/$categoryId"
-			categoryId={categoryId as CategoryId}
-			user={user}
-		>
+		<>
 			<div className="px-4 pt-6 max-w-xl mx-auto [view-transition-name:main-content] flex flex-col gap-4">
 				{/* Search Bar */}
 				<div className="relative">
@@ -120,6 +114,6 @@ function RouteComponent() {
 			>
 				{DrawerContent}
 			</ChallengeDrawer>
-		</PageLayout>
+		</>
 	);
 }

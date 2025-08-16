@@ -5,7 +5,6 @@ import HeaderArc from "@/assets/header-arc.svg?react";
 import ScottyCoin from "@/assets/scotty-coin.svg?react";
 import { FilterCard } from "@/components/challenges";
 import { InfoDialog } from "@/components/challenges/info-dialog";
-import { ModePill } from "@/components/mode-pill";
 import { useAppContext } from "@/lib/app-context";
 import {
 	type CategoryId,
@@ -84,7 +83,7 @@ export function PageHeader({
 					{/* Title and components positioned inside the arc, below the icon */}
 					<div className={`absolute inset-0 flex items-end px-6 pb-1`}>
 						<div className="mx-auto flex flex-row gap-2">
-							{/* {categoryId && (
+							{categoryId && (
 								<>
 									<button
 										type="button"
@@ -95,13 +94,13 @@ export function PageHeader({
 									</button>
 									<span className="text-white my-auto">&middot;</span>
 								</>
-							)} */}
+							)}
 
 							<span className="font-extrabold text-2xl text-center text-white">
 								{pageObject.label}
 							</span>
 
-							{/* {categoryId && (
+							{categoryId && (
 								<>
 									<span className="text-white my-auto">&middot;</span>
 									<button
@@ -112,7 +111,7 @@ export function PageHeader({
 										<Info className="text-white size-6" />
 									</button>
 								</>
-							)} */}
+							)}
 						</div>
 					</div>
 				</div>

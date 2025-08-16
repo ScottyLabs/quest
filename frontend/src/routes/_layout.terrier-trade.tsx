@@ -1,11 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Suspense } from "react";
-import { PageLayout } from "@/components/page-layout";
 import { PrizeCard } from "@/components/trade/prize-card";
 import { useApi } from "@/lib/app-context";
 import { requireAuth } from "@/lib/auth";
 
-export const Route = createFileRoute("/terrier-trade")({
+export const Route = createFileRoute("/_layout/terrier-trade")({
 	beforeLoad: async ({ context }) => {
 		return await requireAuth(context);
 	},
@@ -13,7 +11,6 @@ export const Route = createFileRoute("/terrier-trade")({
 });
 
 function TerrierTrade() {
-	const { user } = Route.useRouteContext();
 	const { $api } = useApi();
 	const { data: prizeData } = $api.useQuery("get", "/api/rewards");
 
@@ -26,19 +23,17 @@ function TerrierTrade() {
 	);
 
 	return (
-		<PageLayout currentPath="/terrier-trade" user={user}>
-			<div className="[view-transition-name:main-content]">
-				<div className="px-4 pt-6 max-w-2xl mx-auto">
-					<div className="relative flex flex-col items-stretch w-full gap-6">
-						{(carnegieCupPrize // order carnegie cup prize first
-							? [carnegieCupPrize, ...otherPrizes]
-							: otherPrizes
-						).map((prize) => (
-							<PrizeCard key={prize.name} prize={prize} />
-						))}
-					</div>
+		<div className="[view-transition-name:main-content]">
+			<div className="px-4 pt-6 max-w-2xl mx-auto">
+				<div className="relative flex flex-col items-stretch w-full gap-6">
+					{(carnegieCupPrize // order carnegie cup prize first
+						? [carnegieCupPrize, ...otherPrizes]
+						: otherPrizes
+					).map((prize) => (
+						<PrizeCard key={prize.name} prize={prize} />
+					))}
 				</div>
 			</div>
-		</PageLayout>
+		</div>
 	);
 }

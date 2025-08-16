@@ -148,7 +148,9 @@ export function TradeMenu({
 								canvasRef={canvasRef}
 								onCancel={handleQRScanCancelled}
 							/>
-
+							{error && (
+								<div className="text-red-600 text-center mb-4">{error}</div>
+							)}
 							{confirmData?.success ? (
 								<button
 									type="button"
@@ -184,7 +186,6 @@ export function TradeMenu({
 						/>
 					) : (
 						<Redeem
-							setDrawerOpen={onOpenChange}
 							prizes={prizes}
 							prize={prize}
 							quantity={quantity}

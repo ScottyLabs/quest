@@ -9,37 +9,22 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TerrierTradeRouteImport } from './routes/terrier-trade'
-import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as DormSelectRouteImport } from './routes/dorm-select'
-import { Route as AboutRouteImport } from './routes/about'
+import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ChallengesCategoryIdRouteImport } from './routes/challenges/$categoryId'
+import { Route as LayoutTerrierTradeRouteImport } from './routes/_layout.terrier-trade'
+import { Route as LayoutProfileRouteImport } from './routes/_layout.profile'
+import { Route as LayoutLeaderboardRouteImport } from './routes/_layout.leaderboard'
+import { Route as LayoutAboutRouteImport } from './routes/_layout.about'
+import { Route as LayoutChallengesCategoryIdRouteImport } from './routes/_layout.challenges/$categoryId'
 
-const TerrierTradeRoute = TerrierTradeRouteImport.update({
-  id: '/terrier-trade',
-  path: '/terrier-trade',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProfileRoute = ProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LeaderboardRoute = LeaderboardRouteImport.update({
-  id: '/leaderboard',
-  path: '/leaderboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const DormSelectRoute = DormSelectRouteImport.update({
   id: '/dorm-select',
   path: '/dorm-select',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AboutRoute = AboutRouteImport.update({
-  id: '/about',
-  path: '/about',
+const LayoutRoute = LayoutRouteImport.update({
+  id: '/_layout',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -47,46 +32,68 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ChallengesCategoryIdRoute = ChallengesCategoryIdRouteImport.update({
-  id: '/challenges/$categoryId',
-  path: '/challenges/$categoryId',
-  getParentRoute: () => rootRouteImport,
+const LayoutTerrierTradeRoute = LayoutTerrierTradeRouteImport.update({
+  id: '/terrier-trade',
+  path: '/terrier-trade',
+  getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutProfileRoute = LayoutProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutLeaderboardRoute = LayoutLeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutAboutRoute = LayoutAboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutChallengesCategoryIdRoute =
+  LayoutChallengesCategoryIdRouteImport.update({
+    id: '/challenges/$categoryId',
+    path: '/challenges/$categoryId',
+    getParentRoute: () => LayoutRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/dorm-select': typeof DormSelectRoute
-  '/leaderboard': typeof LeaderboardRoute
-  '/profile': typeof ProfileRoute
-  '/terrier-trade': typeof TerrierTradeRoute
-  '/challenges/$categoryId': typeof ChallengesCategoryIdRoute
+  '/about': typeof LayoutAboutRoute
+  '/leaderboard': typeof LayoutLeaderboardRoute
+  '/profile': typeof LayoutProfileRoute
+  '/terrier-trade': typeof LayoutTerrierTradeRoute
+  '/challenges/$categoryId': typeof LayoutChallengesCategoryIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/dorm-select': typeof DormSelectRoute
-  '/leaderboard': typeof LeaderboardRoute
-  '/profile': typeof ProfileRoute
-  '/terrier-trade': typeof TerrierTradeRoute
-  '/challenges/$categoryId': typeof ChallengesCategoryIdRoute
+  '/about': typeof LayoutAboutRoute
+  '/leaderboard': typeof LayoutLeaderboardRoute
+  '/profile': typeof LayoutProfileRoute
+  '/terrier-trade': typeof LayoutTerrierTradeRoute
+  '/challenges/$categoryId': typeof LayoutChallengesCategoryIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
+  '/_layout': typeof LayoutRouteWithChildren
   '/dorm-select': typeof DormSelectRoute
-  '/leaderboard': typeof LeaderboardRoute
-  '/profile': typeof ProfileRoute
-  '/terrier-trade': typeof TerrierTradeRoute
-  '/challenges/$categoryId': typeof ChallengesCategoryIdRoute
+  '/_layout/about': typeof LayoutAboutRoute
+  '/_layout/leaderboard': typeof LayoutLeaderboardRoute
+  '/_layout/profile': typeof LayoutProfileRoute
+  '/_layout/terrier-trade': typeof LayoutTerrierTradeRoute
+  '/_layout/challenges/$categoryId': typeof LayoutChallengesCategoryIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/about'
     | '/dorm-select'
+    | '/about'
     | '/leaderboard'
     | '/profile'
     | '/terrier-trade'
@@ -94,8 +101,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/about'
     | '/dorm-select'
+    | '/about'
     | '/leaderboard'
     | '/profile'
     | '/terrier-trade'
@@ -103,47 +110,23 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/about'
+    | '/_layout'
     | '/dorm-select'
-    | '/leaderboard'
-    | '/profile'
-    | '/terrier-trade'
-    | '/challenges/$categoryId'
+    | '/_layout/about'
+    | '/_layout/leaderboard'
+    | '/_layout/profile'
+    | '/_layout/terrier-trade'
+    | '/_layout/challenges/$categoryId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
+  LayoutRoute: typeof LayoutRouteWithChildren
   DormSelectRoute: typeof DormSelectRoute
-  LeaderboardRoute: typeof LeaderboardRoute
-  ProfileRoute: typeof ProfileRoute
-  TerrierTradeRoute: typeof TerrierTradeRoute
-  ChallengesCategoryIdRoute: typeof ChallengesCategoryIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/terrier-trade': {
-      id: '/terrier-trade'
-      path: '/terrier-trade'
-      fullPath: '/terrier-trade'
-      preLoaderRoute: typeof TerrierTradeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/profile': {
-      id: '/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/leaderboard': {
-      id: '/leaderboard'
-      path: '/leaderboard'
-      fullPath: '/leaderboard'
-      preLoaderRoute: typeof LeaderboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/dorm-select': {
       id: '/dorm-select'
       path: '/dorm-select'
@@ -151,11 +134,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DormSelectRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutRouteImport
+    '/_layout': {
+      id: '/_layout'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof LayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -165,24 +148,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/challenges/$categoryId': {
-      id: '/challenges/$categoryId'
+    '/_layout/terrier-trade': {
+      id: '/_layout/terrier-trade'
+      path: '/terrier-trade'
+      fullPath: '/terrier-trade'
+      preLoaderRoute: typeof LayoutTerrierTradeRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/profile': {
+      id: '/_layout/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof LayoutProfileRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/leaderboard': {
+      id: '/_layout/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LayoutLeaderboardRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/about': {
+      id: '/_layout/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof LayoutAboutRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/challenges/$categoryId': {
+      id: '/_layout/challenges/$categoryId'
       path: '/challenges/$categoryId'
       fullPath: '/challenges/$categoryId'
-      preLoaderRoute: typeof ChallengesCategoryIdRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof LayoutChallengesCategoryIdRouteImport
+      parentRoute: typeof LayoutRoute
     }
   }
 }
 
+interface LayoutRouteChildren {
+  LayoutAboutRoute: typeof LayoutAboutRoute
+  LayoutLeaderboardRoute: typeof LayoutLeaderboardRoute
+  LayoutProfileRoute: typeof LayoutProfileRoute
+  LayoutTerrierTradeRoute: typeof LayoutTerrierTradeRoute
+  LayoutChallengesCategoryIdRoute: typeof LayoutChallengesCategoryIdRoute
+}
+
+const LayoutRouteChildren: LayoutRouteChildren = {
+  LayoutAboutRoute: LayoutAboutRoute,
+  LayoutLeaderboardRoute: LayoutLeaderboardRoute,
+  LayoutProfileRoute: LayoutProfileRoute,
+  LayoutTerrierTradeRoute: LayoutTerrierTradeRoute,
+  LayoutChallengesCategoryIdRoute: LayoutChallengesCategoryIdRoute,
+}
+
+const LayoutRouteWithChildren =
+  LayoutRoute._addFileChildren(LayoutRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
+  LayoutRoute: LayoutRouteWithChildren,
   DormSelectRoute: DormSelectRoute,
-  LeaderboardRoute: LeaderboardRoute,
-  ProfileRoute: ProfileRoute,
-  TerrierTradeRoute: TerrierTradeRoute,
-  ChallengesCategoryIdRoute: ChallengesCategoryIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

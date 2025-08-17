@@ -37,8 +37,6 @@ export function PageLayout() {
 	const categoryId = getCategoryId(currentPathname);
 	const navigate = useNavigate();
 
-	const AnimatedDiv = motion.div;
-
 	const currentFileRoute = (
 		categoryId ? "/challenges/$categoryId" : currentPathname
 	) as keyof FileRoutesByFullPath;
@@ -111,14 +109,14 @@ export function PageLayout() {
 				/>
 			)}
 
-			<AnimatedDiv
+			<div
 				className="overflow-scroll h-full pb-24 z-1"
 				onTouchStart={onTouchStart}
 				onTouchMove={onTouchMove}
 				onTouchEnd={onTouchEnd}
 			>
 				<Outlet />
-			</AnimatedDiv>
+			</div>
 
 			<Navbar currentPath={currentFileRoute} pageColors={pageColors} />
 		</div>

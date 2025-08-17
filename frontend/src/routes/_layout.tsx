@@ -4,7 +4,6 @@ import {
 	useLocation,
 	useNavigate,
 } from "@tanstack/react-router";
-import { motion } from "framer-motion";
 import { useState } from "react";
 import { Navbar } from "@/components/navbar";
 import { PageHeader } from "@/components/page-header";

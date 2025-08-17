@@ -36,7 +36,7 @@ function Leaderboard() {
 				initialPageParam: undefined,
 				pageParamName: "after_rank", // which query param to use for pagination
 			},
-		)
+		);
 
 	const allEntries = data?.pages.flatMap((page) => page.entries) ?? [];
 	const position = user.leaderboard_position ?? Infinity;
@@ -75,5 +75,5 @@ function Leaderboard() {
 				</div>
 			)}
 		</div>
-	)
+	);
 }

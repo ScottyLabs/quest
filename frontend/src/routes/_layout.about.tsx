@@ -44,7 +44,7 @@ function About() {
 		.sort((a, b) => a.lastName.localeCompare(b.lastName));
 
 	return (
-		<div className="relative flex justify-center">
+		<div className="relative flex justify-center [view-transition-name:main-content]">
 			<Scotty className="w-[90%] h-[80%]" />
 			<div className="absolute top-[5%] left-1/2 transform -translate-x-1/2 flex flex-col items-center leading-snug justify-start gap-12">
 				<AboutButton

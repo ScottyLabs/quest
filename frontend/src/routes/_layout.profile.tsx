@@ -62,7 +62,7 @@ function getWeeklyActivityStamps(recentActivityDays: string[]): boolean[] {
 		) {
 			week[dayOfWeek] = true;
 		}
-	})
+	});
 
 	return week;
 }
@@ -76,7 +76,7 @@ function Profile() {
 	const { data: journalData, isLoading: isLoadingJournal } = $api.useQuery(
 		"get",
 		"/api/journal",
-	)
+	);
 
 	const dormGroup = user.dorm
 		? dormGroupFromName[user.dorm as DormName]
@@ -87,7 +87,7 @@ function Profile() {
 	const dormColor = getDormColor(user.dorm);
 
 	return (
-		<div className="p-4">
+		<div className="p-4 [view-transition-name:main-content]">
 			{/* Sticky note container */}
 			<div className="rounded-2xl mb-6 mt-4 relative overflow-visible">
 				{/* Dorm Header Section - Flush with top of card */}
@@ -283,5 +283,5 @@ function Profile() {
 				</div>
 			)}
 		</div>
-	)
+	);
 }

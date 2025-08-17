@@ -38,7 +38,7 @@ export function PageHeader({
 	return (
 		<>
 			<div
-				className={`relative flex flex-col items-center justify-center h-[145px] ${pageColors.primary}`}
+				className={`relative flex flex-none flex-col items-center justify-center h-[145px] ${pageColors.primary}`}
 			>
 				<div className="absolute top-6 w-full flex flex-row justify-between items-center px-6 ">
 					<Link
@@ -119,7 +119,7 @@ export function PageHeader({
 
 			{/* Challenge category bar */}
 			{categoryId && (
-				<div className="flex flex-row px-4 mt-4 w-full [scrollbar-width:none] overflow-x-scroll ">
+				<div className="flex flex-none flex-row px-4 py-2 w-full [scrollbar-width:none] overflow-x-scroll ">
 					<div className="flex shrink-0 gap-2">
 						{categories.map((category) => (
 							<Link

@@ -78,7 +78,7 @@ function RouteComponent() {
 
 	return (
 		<>
-			<div className="px-4 pt-6 max-w-xl mx-auto [view-transition-name:main-content] flex flex-col gap-4">
+			<div className="px-4 pt-2 max-w-xl mx-auto [view-transition-name:main-content] flex flex-col gap-4">
 				{/* Search Bar */}
 				<div className="relative">
 					<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-5" />

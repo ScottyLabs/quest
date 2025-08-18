@@ -9,8 +9,9 @@ import {
 } from "@/lib/data/categories";
 import type { components } from "@/lib/schema.gen";
 
-// TODO: change this in prod
-export type Challenge = components["schemas"]["AdminChallengeResponse"];
+export type Challenge =
+	| components["schemas"]["AdminChallengeResponse"]
+	| components["schemas"]["ChallengeResponse"];
 
 interface ChallengeCardProps {
 	challenge: Challenge;
@@ -26,10 +27,11 @@ export function ChallengeCard({
 	onClick,
 }: ChallengeCardProps) {
 	// Ensure we're getting the category's challenge color even when the page is "all"
-	const thisId = categoryIdFromLabel[challenge.category as CategoryLabel];
-	const primaryColor = colorClasses[thisId].primary;
+	const thisId = categoryIdFromLabel?.[challenge.category as CategoryLabel];
+	console.log("thisId", thisId);
+	const primaryColor = colorClasses[thisId]?.primary;
 
-	const CategoryIcon = categoryIconFromId[thisId];
+	const CategoryIcon = categoryIconFromId?.[thisId];
 
 	const card =
 		isVerifyMode || challenge.status === "available" ? (

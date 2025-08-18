@@ -4,7 +4,7 @@ import {
 	useLocation,
 	useNavigate,
 } from "@tanstack/react-router";
-import { useState } from "react";
+import { type TouchEventHandler, useState } from "react";
 import { Navbar } from "@/components/navbar";
 import { PageHeader } from "@/components/page-header";
 import { useApi } from "@/lib/app-context";
@@ -61,32 +61,43 @@ export function PageLayout() {
 		navigate({ to: newPathName });
 	};
 
-	const [touchStart, setTouchStart] = useState(null);
-	const [touchEnd, setTouchEnd] = useState(null);
+	const [touchStartX, setTouchStartX] = useState<number | null>(null);
+	const [touchEndX, setTouchEndX] = useState<number | null>(null);
+	const [touchStartY, setTouchStartY] = useState<number | null>(null);
+	const [touchEndY, setTouchEndY] = useState<number | null>(null);
 
 	// the required distance between touchStart and touchEnd to be detected as a swipe
-	const minSwipeDistance = 50;
+	const minSwipeDistance = 100;
 
-	const onTouchStart = (e) => {
-		setTouchEnd(null); // otherwise the swipe is fired even with usual touch events
-		setTouchStart(e.targetTouches[0].clientX);
+	const onTouchStart: TouchEventHandler<HTMLDivElement> = (e) => {
+		setTouchEndX(null); // otherwise the swipe is fired even with usual touch events
+		setTouchStartX(e?.targetTouches[0]?.clientX || null);
+		setTouchEndY(null);
+		setTouchStartY(e?.targetTouches[0]?.clientY || null);
 	};
 
-	const onTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX);
+	const onTouchMove: TouchEventHandler<HTMLDivElement> = (e) => {
+		setTouchEndX(e?.targetTouches[0]?.clientX || null);
+		setTouchEndY(e?.targetTouches[0]?.clientY || null);
+	};
 
 	const onTouchEnd = () => {
-		if (!touchStart || !touchEnd) return;
-		const distance = touchStart - touchEnd;
-		const isLeftSwipe = distance > minSwipeDistance;
-		const isRightSwipe = distance < -minSwipeDistance;
+		if (!touchStartX || !touchEndX || !touchStartY || !touchEndY) return;
+		const distanceX = touchStartX - touchEndX;
+		const distanceY = touchStartY - touchEndY;
+
+		if (Math.abs(distanceX) < Math.abs(distanceY)) {
+			return;
+		}
+
+		const isLeftSwipe = distanceX > minSwipeDistance;
+		const isRightSwipe = distanceX < -minSwipeDistance;
 		if (isLeftSwipe) {
 			handleSwipeLeft();
 		} else if (isRightSwipe) {
 			handleSwipeRight();
 		}
 	};
-
-	console.log("Current Pathname:", currentFileRoute);
 
 	const { $api } = useApi();
 	const { data: user } = $api.useQuery("get", "/api/profile");

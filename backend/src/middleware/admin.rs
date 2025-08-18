@@ -19,7 +19,7 @@ pub async fn require_admin(
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    if has_admin_flag {
+    if has_admin_flag || claims.groups.contains(&"O-Quest Admin".to_string()) {
         Ok(next.run(request).await)
     } else {
         Err(StatusCode::FORBIDDEN)

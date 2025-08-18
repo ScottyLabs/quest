@@ -18,11 +18,11 @@ export function CardFromUser({ user, to }: CardFromUserProps) {
 				dorm: user?.dorm,
 				// If there is no name for some reason, defaulting to "You"
 				// will also ensure that the italic "(You)" is not added too
-				name: user?.name ?? "You",
+				name: user?.andrew_id ?? "You",
 				rank: user?.leaderboard_position ?? Infinity,
 				user_id: user?.user_id ?? "No user ID",
 			}}
-			name={user?.name}
+			name={user?.andrew_id}
 			totalChallenges={user?.total_challenges.total ?? 0}
 			to={to}
 		/>

@@ -28,12 +28,10 @@ export function ChallengeCard({
 }: ChallengeCardProps) {
 	// Ensure we're getting the category's challenge color even when the page is "all"
 	const thisId = categoryIdFromLabel?.[challenge.category as CategoryLabel];
-	const primaryColor =
-		challenge.status === "available" ? colorClasses[thisId].primary : "";
+	console.log("thisId", thisId);
+	const primaryColor = colorClasses[thisId]?.primary;
 
-	const CategoryIcon = thisId
-		? categoryIconFromId[thisId]
-		: () => <Lock className="text-black size-1/2 stroke-3" />;
+	const CategoryIcon = categoryIconFromId?.[thisId];
 
 	const card =
 		isVerifyMode || challenge.status === "available" ? (

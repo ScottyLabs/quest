@@ -48,7 +48,7 @@ function Leaderboard() {
 					<LeaderboardCard
 						key={entry.rank}
 						entry={entry}
-						name={user.name}
+						name={user.andrew_id}
 						totalChallenges={user.total_challenges.total}
 						to="/profile"
 					/>

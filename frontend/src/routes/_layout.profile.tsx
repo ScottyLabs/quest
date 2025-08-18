@@ -115,11 +115,11 @@ function Profile() {
 					<div className="w-full">
 						<div className="mb-6 text-center">
 							<h2 className="text-2xl font-bold text-gray-800 mb-1">
-								{user.name}
-							</h2>
-							<p className="text-lg text-gray-600 font-medium">
 								{user.andrew_id}
-							</p>
+							</h2>
+							{/* <p className="text-lg text-gray-600 font-medium">
+								{user.andrew_id}
+							</p> */}
 							<div className="flex justify-center">
 								<ModePill isAdmin={user.groups.includes("O-Quest Admin")} />
 							</div>

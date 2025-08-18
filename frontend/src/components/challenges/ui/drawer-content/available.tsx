@@ -46,7 +46,6 @@ export function Available({ challenge }: AvailableProps) {
 						}
 						return;
 					}
-
 					const qrResult = await scanQR(
 						videoRef.current,
 						canvasRef.current,
@@ -70,7 +69,7 @@ export function Available({ challenge }: AvailableProps) {
 					}
 				}
 			};
-
+			console.log("Starting QR scan...");
 			performQRScan();
 		}
 
@@ -79,10 +78,10 @@ export function Available({ challenge }: AvailableProps) {
 		};
 	}, [
 		currentStep,
-		scanQR,
-		handleQRScanned,
-		handleQRScanFailed,
 		handleQRScanCancelled,
+		handleQRScanFailed,
+		handleQRScanned,
+		scanQR,
 		setError,
 	]);
 

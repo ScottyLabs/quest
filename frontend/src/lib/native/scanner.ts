@@ -114,34 +114,37 @@ export function useQRScanner<T = unknown>(): UseQRScannerResult<T> {
 						detectionCanvas.height,
 					);
 
-					if (code?.data && code.location) {
-						const scaleX = overlayCanvas.width / detectionCanvas.width;
-						const scaleY = overlayCanvas.height / detectionCanvas.height;
+					if (code?.data) {
+						if (code.location) {
+							const scaleX = overlayCanvas.width / detectionCanvas.width;
+							const scaleY = overlayCanvas.height / detectionCanvas.height;
 
-						overlayCtx.strokeStyle = "#00ff00";
-						overlayCtx.lineWidth = 3;
-						overlayCtx.beginPath();
+							overlayCtx.strokeStyle = "#00ff00";
+							overlayCtx.lineWidth = 3;
+							overlayCtx.beginPath();
 
-						const corners = [
-							code.location.topLeftCorner,
-							code.location.topRightCorner,
-							code.location.bottomRightCorner,
-							code.location.bottomLeftCorner,
-						];
+							const corners = [
+								code.location.topLeftCorner,
+								code.location.topRightCorner,
+								code.location.bottomRightCorner,
+								code.location.bottomLeftCorner,
+							];
+							console.log("QR Code corners:", corners);
 
-						corners.forEach((corner, index) => {
-							const x = corner.x * scaleX;
-							const y = corner.y * scaleY;
+							corners.forEach((corner, index) => {
+								const x = corner.x * scaleX;
+								const y = corner.y * scaleY;
 
-							if (index === 0) {
-								overlayCtx.moveTo(x, y);
-							} else {
-								overlayCtx.lineTo(x, y);
-							}
-						});
+								if (index === 0) {
+									overlayCtx.moveTo(x, y);
+								} else {
+									overlayCtx.lineTo(x, y);
+								}
+							});
 
-						overlayCtx.closePath();
-						overlayCtx.stroke();
+							overlayCtx.closePath();
+							overlayCtx.stroke();
+						}
 
 						finishScanning(code.data);
 					} else {

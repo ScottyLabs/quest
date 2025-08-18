@@ -26,16 +26,6 @@ export function useChallenges({
 		isError: adminError,
 	} = $api.useQuery("get", "/api/admin/challenges");
 
-	// const {
-	// 	data: adminData,
-	// 	isLoading: adminLoading,
-	// 	isError: adminError,
-	// } = {
-	// 	data: undefined,
-	// 	isLoading: false,
-	// 	isError: false,
-	// };
-
 	const { data, isLoading, isError } = $api.useQuery("get", "/api/challenges");
 
 	const normalizedSearchQuery = useMemo(

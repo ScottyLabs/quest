@@ -13,17 +13,6 @@ interface UseChallengesOptions {
 	mode?: "challenges" | "verify";
 }
 
-// Stable hash function for consistent status assignment
-function hashString(str: string): number {
-	let hash = 0;
-	for (let i = 0; i < str.length; i++) {
-		const char = str.charCodeAt(i);
-		hash = (hash << 5) - hash + char;
-		hash = hash & hash; // convert to 32-bit integer
-	}
-	return Math.abs(hash);
-}
-
 export function useChallenges({
 	searchQuery,
 	categoryId,
@@ -37,25 +26,30 @@ export function useChallenges({
 		isError: adminError,
 	} = $api.useQuery("get", "/api/admin/challenges");
 
+	// const {
+	// 	data: adminData,
+	// 	isLoading: adminLoading,
+	// 	isError: adminError,
+	// } = {
+	// 	data: undefined,
+	// 	isLoading: false,
+	// 	isError: false,
+	// };
+
+	const { data, isLoading, isError } = $api.useQuery("get", "/api/challenges");
+
 	const normalizedSearchQuery = useMemo(
 		() => searchQuery.toLowerCase().trim(),
 		[searchQuery],
 	);
 
 	const filteredChallenges = useMemo(() => {
-		const challenges = adminData?.challenges ?? [];
+		const challenges = adminData?.challenges ?? data?.challenges ?? [];
 
 		// Apply all filters
 		return challenges.reduce((acc, challenge) => {
 			// Preserve completed status, otherwise assign mock status
-			// TODO: Remove this mock status assignment in prod
-			const hash = hashString(challenge.name);
-			const status =
-				challenge.status === "completed"
-					? ("completed" as const)
-					: hash % 2
-						? ("locked" as const)
-						: ("available" as const);
+			const status = challenge.status;
 
 			const processedChallenge = { ...challenge, status };
 
@@ -82,11 +76,18 @@ export function useChallenges({
 			acc.push(processedChallenge);
 			return acc;
 		}, [] as Challenge[]);
-	}, [categoryId, adminData, filter, mode, normalizedSearchQuery]);
+	}, [
+		categoryId,
+		adminData?.challenges,
+		data?.challenges,
+		filter,
+		mode,
+		normalizedSearchQuery,
+	]);
 
 	return {
 		challenges: filteredChallenges,
-		isLoading: adminLoading,
-		isError: adminError,
+		isLoading: adminLoading && isLoading,
+		isError: adminError && isError,
 	};
 }

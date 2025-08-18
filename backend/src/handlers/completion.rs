@@ -92,14 +92,14 @@ pub async fn create_completion(
         }
     };
 
-    // TODO: Check if challenge is unlocked in prod
-    // if challenge.unlock_timestamp > Utc::now().naive_utc() {
-    //     return Ok(Json(CreateCompletionResponse {
-    //         success: false,
-    //         message: "Challenge is not yet unlocked".to_string(),
-    //         completion: None,
-    //     }));
-    // }
+    // Check if challenge is unlocked in prod
+    if challenge.unlock_timestamp > Utc::now().naive_utc() {
+        return Ok(Json(CreateCompletionResponse {
+            success: false,
+            message: "Challenge is not yet unlocked".to_string(),
+            completion: None,
+        }));
+    }
 
     // Verify the secret
     if !payload.verification_code.contains(&challenge.secret) {

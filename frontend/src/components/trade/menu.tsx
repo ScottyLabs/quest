@@ -65,6 +65,7 @@ export function TradeMenu({
 		mutate: redeem,
 		data: redeemData,
 		reset: resetRedeem,
+		isSuccess: isRedeemSuccess,
 	} = $api.useMutation("post", "/api/transaction");
 	const { transaction } = redeemData || {
 		transaction: null,
@@ -129,71 +130,75 @@ export function TradeMenu({
 					<Drawer.Title className="text-2xl self-center font-bold mt-4">
 						{adminMode ? "Verify" : "Trade for"} {prize.name}
 					</Drawer.Title>
-					{adminMode ? (
-						<div className="flex flex-col items-center p-4 text-lg mb-4">
-							<button
-								type="button"
-								className={
-									"self-center card-selected border-4 text-white cursor-pointer w-80 h-20 inline-flex justify-center items-center mb-4 px-4 py-2 text-2xl font-extrabold rounded-2xl disabled:opacity-50 " +
-									(startScanQR
-										? " border-red-700 bg-red-500 "
-										: "border-green-600 bg-green-400")
-								}
-								onClick={() => setScanQR(!startScanQR)}
-							>
-								{startScanQR ? "Stop Scan" : "Start Scan"}
-							</button>
-							<QRScanner
-								videoRef={videoRef}
-								canvasRef={canvasRef}
-								onCancel={handleQRScanCancelled}
-							/>
-							{error && (
-								<div className="text-red-600 text-center mb-4">{error}</div>
-							)}
-							{confirmData?.success ? (
+					<div className="h-full overflow-scroll">
+						{adminMode ? (
+							<div className="flex flex-col items-center p-4 text-lg mb-4">
 								<button
 									type="button"
-									disabled
-									className="w-full py-2 text-lg font-bold rounded-2xl mb-4 bg-gray-200 text-gray-500 cursor-not-allowed flex items-center justify-center gap-2"
-									onClick={() => {
-										resetRedeem();
-										refetchPrizes();
-										onOpenChange(false);
-									}}
+									className={
+										"self-center card-selected border-4 text-white cursor-pointer w-80 h-20 inline-flex justify-center items-center mb-4 px-4 py-2 text-2xl font-extrabold rounded-2xl disabled:opacity-50 " +
+										(startScanQR
+											? " border-red-700 bg-red-500 "
+											: "border-green-600 bg-green-400")
+									}
+									onClick={() => setScanQR(!startScanQR)}
 								>
-									<RedeemedCheck className="w-5 h-5" />
-									Transaction verified
+									{startScanQR ? "Stop Scan" : "Start Scan"}
 								</button>
-							) : (
-								<div className="text-red-500 text-sm">
-									{confirmData?.message || "Awaiting Scan..."}
-								</div>
-							)}
-						</div>
-					) : transaction ? (
-						<Redeemed
-							closeDrawer={() => {
-								resetRedeem();
-								refetchPrizes();
-								onOpenChange(false);
-							}}
-							prize={{
-								name: prize.name,
-								amount: quantity,
-								transaction_id: transaction.transaction_id,
-							}}
-						/>
-					) : (
-						<Redeem
-							prizes={prizes}
-							prize={prize}
-							quantity={quantity}
-							setQuantity={setQuantity}
-							handleClaim={handleClaim}
-							hasEnoughCoins={hasEnoughCoins}
-						/>
-					)}
+								<QRScanner
+									videoRef={videoRef}
+									canvasRef={canvasRef}
+									onCancel={handleQRScanCancelled}
+								/>
+								{error && (
+									<div className="text-red-600 text-center mb-4">{error}</div>
+								)}
+								{confirmData?.success ? (
+									<button
+										type="button"
+										disabled
+										className="w-full py-2 text-lg font-bold rounded-2xl mb-4 bg-gray-200 text-gray-500 cursor-not-allowed flex items-center justify-center gap-2"
+										onClick={() => {
+											resetRedeem();
+											refetchPrizes();
+											onOpenChange(false);
+										}}
+									>
+										<RedeemedCheck className="w-5 h-5" />
+										Transaction verified
+									</button>
+								) : (
+									<div className="text-red-500 text-sm">
+										{confirmData?.message || "Awaiting Scan..."}
+									</div>
+								)}
+							</div>
+						) : transaction ? (
+							<Redeemed
+								closeDrawer={() => {
+									resetRedeem();
+									refetchPrizes();
+									onOpenChange(false);
+								}}
+								prize={{
+									name: prize.name,
+									amount: quantity,
+									transaction_id: transaction.transaction_id,
+								}}
+							/>
+						) : isRedeemSuccess ? (
+							<div>Something went wrong! Please retry.</div>
+						) : (
+							<Redeem
+								prizes={prizes}
+								prize={prize}
+								quantity={quantity}
+								setQuantity={setQuantity}
+								handleClaim={handleClaim}
+								hasEnoughCoins={hasEnoughCoins}
+							/>
+						)}
+					</div>
 				</Drawer.Content>
 			</Drawer.Portal>
 

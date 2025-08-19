@@ -9,6 +9,7 @@ import {
 	dormColors,
 	dormGroups,
 } from "@/lib/data/dorms";
+import { rewardImagePaths } from "@/lib/data/rewards";
 import type { components } from "@/lib/schema.gen";
 
 interface PrizeCardProps {
@@ -38,34 +39,38 @@ export function PrizeCard({ prize }: PrizeCardProps) {
 
 	return (
 		<>
-			<div className="w-full max-w-2xl mx-auto relative rounded-[20px] h-24">
+			<div className="w-full max-w-2xl mx-auto relative rounded-[20px] min-h-24">
 				<div
 					className={
 						"w-full pl-6 pr-6 py-6 left-0 top-0 absolute rounded-[20px] inline-flex justify-between items-center shadow-[0_3px_0_#bbb] h-full " +
 						(isCarnegieCup ? houseColorLightBg : "bg-white")
 					}
 				>
-					<div className="flex justify-start items-start gap-6 flex-1">
-						<div className="flex-shrink-0 flex items-center justify-center">
-							<div className="relative -m-1 size-12">
-								<div
-									className={`absolute size-7/8 left-1/8 top-1/2 -translate-y-1/2 -rotate-20 rounded-lg bg-amber-700`}
+					<div className="inline-flex items-center justify-center gap-6 flex-1">
+						<div className="flex-shrink-0 flex flex-col items-center justify-center h-full">
+							<div className="size-14 flex items-center justify-center">
+								<img
+									src={rewardImagePaths[prize.name]}
+									alt={prize.name}
+									className="w-full h-full rounded-lg object-contain"
 								/>
 							</div>
 						</div>
 						<div className="flex-1 inline-flex flex-col justify-start items-start gap-2">
 							<div className="self-stretch inline-flex justify-between items-start">
 								<div className="flex-1 flex justify-center items-center gap-2.5 flex-wrap content-center">
-									<div className="flex-1 justify-start text-black text-base font-bold font-['Open_Sans'] tracking-tight">
+									<div className={`flex-1 text-black font-bold font-['Open_Sans'] tracking-tight leading-tight ${isCarnegieCup ? 'text-center text-lg' : 'justify-start text-base'}`}>
 										{prize.name}
 									</div>
 								</div>
 								<div className="flex justify-center items-center gap-2.5">
-									<div className="justify-start">
-										<span className="text-gray-500 text-xs font-bold font-['Open_Sans'] leading-none tracking-tight">
-											Stock: {!isCarnegieCup ? stock : "∞"}
-										</span>
-									</div>
+									{!isCarnegieCup && (
+										<div className="justify-start">
+											<span className="text-gray-500 text-xs font-bold font-['Open_Sans'] leading-none tracking-tight">
+												Stock: {stock}
+											</span>
+										</div>
+									)}
 								</div>
 							</div>
 

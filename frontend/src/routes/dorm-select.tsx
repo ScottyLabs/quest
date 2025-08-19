@@ -116,7 +116,7 @@ function RouteComponent() {
 					<h1 className="text-xl font-semibold mb-2">
 						{selectedDorm
 							? MascotData[selectedDorm.name].mascotName
-							: "Dorm Mascots"}
+							: "Mascots"}
 					</h1>
 					{selectedDorm ? (
 						<p className="text-gray-600 text-sm max-w-xs mx-auto">
@@ -124,7 +124,7 @@ function RouteComponent() {
 						</p>
 					) : (
 						<p className="text-gray-600 text-sm max-w-xs mx-auto">
-							Every year, all first year dorms compete in the{" "}
+							Every year, all first year housing communities compete in the{" "}
 							<strong>Carnegie Cup to crown the best house!</strong>
 						</p>
 					)}
@@ -186,7 +186,7 @@ function RouteComponent() {
 					)}
 					{!selectedDorm && (
 						<div className="text-gray-600 text-center mb-4">
-							Please select a dorm to continue.
+							Please select a housing community to continue.
 						</div>
 					)}
 					<button

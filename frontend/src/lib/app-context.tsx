@@ -33,10 +33,9 @@ const createApiClient = (baseUrl: string) => {
 		baseUrl,
 		credentials: "include",
 	});
-	const $api = createClient(fetchClient);
 	return {
 		baseUrl,
-		$api,
+		$api: createClient(fetchClient),
 
 		async logout() {
 			const form = document.createElement("form");

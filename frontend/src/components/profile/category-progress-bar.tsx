@@ -18,12 +18,13 @@ const RADIUS = (CIRCLE_SIZE - STROKE_WIDTH) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 function CategoryProgressBar({ categories }: CategoryProgressBarProps) {
+	console.log(categories);
 	if (categories.length === 0) {
 		return null;
 	}
 
 	return (
-		<div className="bg-[#111] rounded-2xl py-4 px-4 flex gap-3 justify-center items-center">
+		<div className="bg-[#111] rounded-2xl py-4 px-4 flex gap-5 justify-center items-center">
 			{categories.slice(0, 7).map(({ name, percentage }, i) => {
 				const dash = (percentage / 100) * CIRCUMFERENCE;
 				return (
@@ -36,8 +37,6 @@ function CategoryProgressBar({ categories }: CategoryProgressBarProps) {
 						role="img"
 						aria-label={`${name} progress: ${percentage}%`}
 					>
-						<title>{`${name} progress: ${percentage}%`}</title>
-
 						{/* Background circle */}
 						<circle
 							cx={CIRCLE_SIZE / 2}

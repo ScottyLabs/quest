@@ -18,7 +18,6 @@ const RADIUS = (CIRCLE_SIZE - STROKE_WIDTH) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 function CategoryProgressBar({ categories }: CategoryProgressBarProps) {
-	console.log(categories);
 	if (categories.length === 0) {
 		return null;
 	}

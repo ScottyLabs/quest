@@ -92,7 +92,7 @@ impl LeaderboardServiceTrait for LeaderboardService {
             query,
         ))
         .all(&self.db)
-        .await;
+        .await
     }
 
     async fn get_user_leaderboard_position(&self, user_id: &str) -> Result<i64, sea_orm::DbErr> {

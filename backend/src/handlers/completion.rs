@@ -2,6 +2,7 @@ use crate::services::traits::{ChallengeServiceTrait, CompletionServiceTrait};
 use crate::{AppState, AuthClaims};
 use axum::{Extension, Json, extract::State, http::StatusCode};
 use chrono::{NaiveDateTime, Utc};
+use minio::s3;
 use rust_decimal::prelude::ToPrimitive;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
@@ -158,14 +159,17 @@ pub async fn create_completion(
     // skip location verification and proceed with completion
 
     // Upload the image to MinIO
-    let s3_link = state
-        .storage_service
-        .upload_completion_image(&claims.sub, &payload.challenge_name, &payload.image_data)
-        .await
-        .map_err(|e| {
-            eprintln!("Failed to upload image: {e}");
-            StatusCode::INTERNAL_SERVER_ERROR
-        })?;
+    let mut s3_link: String = "".to_string();
+    if !payload.image_data.is_empty() {
+        s3_link = state
+            .storage_service
+            .upload_completion_image(&claims.sub, &payload.challenge_name, &payload.image_data)
+            .await
+            .map_err(|e| {
+                eprintln!("Failed to upload image: {e}");
+                StatusCode::INTERNAL_SERVER_ERROR
+            })?;
+    }
 
     // Create the completion with the S3 link
     let completion = state
@@ -173,7 +177,11 @@ pub async fn create_completion(
         .create_completion(
             &claims.sub,
             &payload.challenge_name,
-            Some(s3_link),
+            if s3_link.len() > 0 {
+                Some(s3_link)
+            } else {
+                None
+            },
             payload.note,
         )
         .await

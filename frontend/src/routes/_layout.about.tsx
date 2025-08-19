@@ -132,7 +132,7 @@ function About() {
 						window.location.href = redirect;
 					}}
 				>
-					Dorm Select
+					Change Housing Community
 				</AboutButton>
 			</div>
 		</div>

@@ -87,7 +87,6 @@ impl LeaderboardServiceTrait for LeaderboardService {
             LIMIT {limit}
             "#
         );
-        print!("{:#?}", query);
         LeaderboardEntry::find_by_statement(Statement::from_string(
             sea_orm::DatabaseBackend::Postgres,
             query,

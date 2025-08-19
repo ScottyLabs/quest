@@ -113,8 +113,8 @@ export function useCompletionFlow({ challenge }: UseCompletionFlowProps) {
 							setCurrentStep("commemorate");
 						}
 					},
-					onError: () => {
-						setError("Network error. Please try again.");
+					onError: (e: { message?: string } | undefined) => {
+						setError(e?.message || "Network error. Please try again.");
 						setCurrentStep("commemorate");
 					},
 				},

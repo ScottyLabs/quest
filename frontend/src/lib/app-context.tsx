@@ -33,10 +33,10 @@ const createApiClient = (baseUrl: string) => {
 		baseUrl,
 		credentials: "include",
 	});
-
+	const $api = createClient(fetchClient);
 	return {
 		baseUrl,
-		$api: createClient(fetchClient),
+		$api,
 
 		async logout() {
 			const form = document.createElement("form");
@@ -48,6 +48,21 @@ const createApiClient = (baseUrl: string) => {
 		},
 
 		async login(path: string) {
+			const isAuthd = await new Promise<boolean>((resolve) => {
+				fetch(`${baseUrl}/api/profile`).then((res) => {
+					if (res.ok) {
+						resolve(true);
+					} else {
+						resolve(false);
+					}
+				});
+			});
+
+			if (isAuthd) {
+				window.location.href = new URL(path, window.location.origin).toString();
+				return;
+			}
+
 			const isDev = ["localhost", "tauri.localhost"].includes(
 				window.location.hostname,
 			);

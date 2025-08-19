@@ -140,10 +140,10 @@ pub async fn create_completion(
         let overlaps = circles_overlap(
             challenge_lat,
             challenge_lon,
-            challenge_accuracy_meters,
+            challenge_accuracy_meters.max(500.0),
             payload.user_latitude,
             payload.user_longitude,
-            payload.user_location_accuracy,
+            payload.user_location_accuracy.max(500.0),
         );
 
         if !overlaps {

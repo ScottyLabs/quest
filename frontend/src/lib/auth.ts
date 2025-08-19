@@ -103,8 +103,10 @@ function handleAuthSuccess(authContext: AuthContext): AuthContext {
 
 	if (user.dorm && window.location.pathname === "/dorm-select") {
 		const urlParams = new URLSearchParams(window.location.search);
-		const from = urlParams.get("from") || "/";
-		throw redirect({ to: from });
+		if (urlParams.get("from") !== "/about") {
+			const from = urlParams.get("from") || "/";
+			throw redirect({ to: from });
+		}
 	}
 
 	if (!user.dorm && window.location.pathname !== "/dorm-select") {
@@ -130,7 +132,6 @@ function handleRedirectLogic(
 	// User is authenticated and has a dorm, redirect
 	const urlParams = new URLSearchParams(window.location.search);
 	const from = urlParams.get("from") || "/";
-
 	throw redirect({ to: from });
 }
 

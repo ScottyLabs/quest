@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import type { ButtonHTMLAttributes } from "react";
 import Scotty from "@/assets/about-page-scotty.svg?react";
 import {
@@ -121,6 +121,18 @@ function About() {
 
 				<AboutButton onClick={() => navigate({ to: "/terrier-trade" })}>
 					Terrier Trade
+				</AboutButton>
+
+				<AboutButton
+					onClick={() => {
+						const redirect =
+							new URL("/dorm-select", window.location.origin).toString() +
+							"?from=/about";
+
+						window.location.href = redirect;
+					}}
+				>
+					Dorm Select
 				</AboutButton>
 			</div>
 		</div>

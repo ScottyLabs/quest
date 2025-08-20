@@ -119,8 +119,14 @@ function About() {
 					</DialogContent>
 				</Dialog>
 
-				<AboutButton onClick={() => navigate({ to: "/terrier-trade" })}>
-					Terrier Trade
+				<AboutButton
+					onClick={() => {
+						window.location.href =
+							import.meta.env.VITE_FEEDBACK_URL ||
+							"https://forms.gle/5AGBSfp6u1Boqrn7A";
+					}}
+				>
+					Give Feedback
 				</AboutButton>
 
 				<AboutButton

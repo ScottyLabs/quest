@@ -227,7 +227,8 @@ function Profile() {
 								name: c.label,
 								percentage:
 									((user.challenges_completed.by_category[c.label] || 0) /
-										(user.total_challenges.by_category[c.label] || 1)) *
+										(user.total_challenges.by_category[c.label] ||
+											user.total_challenges.total)) *
 										100 || 0,
 							}))}
 						/>

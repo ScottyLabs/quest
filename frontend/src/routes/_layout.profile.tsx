@@ -4,9 +4,9 @@ import StickyNoteTop from "@/assets/sticky-note-top.svg?react";
 import { CardFromUser } from "@/components/leaderboard/card-from-user";
 import { ModePill } from "@/components/mode-pill";
 import CategoryProgressBar from "@/components/profile/category-progress-bar";
-import Stamps from "@/components/profile/stamps";
 import { useApi } from "@/lib/app-context";
 import { requireAuth } from "@/lib/auth";
+import { categories } from "@/lib/data/categories";
 import {
 	type DormName,
 	dormColors,
@@ -223,18 +223,14 @@ function Profile() {
 					{/* Category Progress Bars */}
 					<div className="mt-4">
 						<CategoryProgressBar
-							categories={Object.entries(
-								user.challenges_completed.by_category,
-							).map(([name, percentage]) => ({
-								name,
-								percentage,
+							categories={categories.map((c) => ({
+								name: c.label,
+								percentage:
+									((user.challenges_completed.by_category[c.label] || 0) /
+										(user.total_challenges.by_category[c.label] || 1)) *
+										100 || 0,
 							}))}
 						/>
-					</div>
-
-					{/* Stamps */}
-					<div className="mt-4">
-						<Stamps week={getWeeklyActivityStamps(user.recent_activity_days)} />
 					</div>
 				</div>
 			</div>

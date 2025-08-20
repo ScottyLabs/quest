@@ -46,6 +46,7 @@ impl LeaderboardServiceTrait for LeaderboardService {
                     u.user_id,
                     u.name,
                     u.dorm,
+                    u.is_admin,
                     COALESCE(earned.total_earned, 0) as coins_earned,
                     COALESCE(spent.total_spent, 0) as coins_spent,
                     COALESCE(completed.challenge_count, 0) as challenges_completed
@@ -81,12 +82,11 @@ impl LeaderboardServiceTrait for LeaderboardService {
                 FROM user_stats
             )
             SELECT * FROM ranked_users
-            WHERE 1=1 {after_clause}
+            WHERE is_admin='false' {after_clause}
             ORDER BY rank
             LIMIT {limit}
             "#
         );
-
         LeaderboardEntry::find_by_statement(Statement::from_string(
             sea_orm::DatabaseBackend::Postgres,
             query,

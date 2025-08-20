@@ -72,9 +72,8 @@ pub async fn create_transaction(
             }));
         }
     };
-
     // Check if there's enough stock
-    if payload.count > reward.stock {
+    if reward.stock >= 0 && payload.count > reward.stock {
         return Ok(Json(CreateTransactionResponse {
             success: false,
             message: "Insufficient stock".to_string(),
@@ -94,7 +93,7 @@ pub async fn create_transaction(
         .copied()
         .unwrap_or(0);
 
-    if current_count + payload.count > reward.trade_limit {
+    if reward.trade_limit >= 0 && current_count + payload.count > reward.trade_limit {
         return Ok(Json(CreateTransactionResponse {
             success: false,
             message: "Would exceed trade limit".to_string(),

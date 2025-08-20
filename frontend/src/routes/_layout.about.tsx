@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import type { ButtonHTMLAttributes } from "react";
 import Scotty from "@/assets/about-page-scotty.svg?react";
 import {
@@ -119,8 +119,26 @@ function About() {
 					</DialogContent>
 				</Dialog>
 
-				<AboutButton onClick={() => navigate({ to: "/terrier-trade" })}>
-					Terrier Trade
+				<AboutButton
+					onClick={() => {
+						window.location.href =
+							import.meta.env.VITE_FEEDBACK_URL ||
+							"https://forms.gle/5AGBSfp6u1Boqrn7A";
+					}}
+				>
+					Give Feedback
+				</AboutButton>
+
+				<AboutButton
+					onClick={() => {
+						const redirect =
+							new URL("/dorm-select", window.location.origin).toString() +
+							"?from=/about";
+
+						window.location.href = redirect;
+					}}
+				>
+					Change Housing Community
 				</AboutButton>
 			</div>
 		</div>

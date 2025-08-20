@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import type { Challenge } from "@/components/challenges";
 import { useApi } from "@/lib/app-context";
 import { useGeolocation } from "@/lib/native/geolocation";
@@ -57,19 +57,19 @@ export function useCompletionFlow({ challenge }: UseCompletionFlowProps) {
 		}
 	};
 
-	const handleQRScanned = (qrData: string) => {
+	const handleQRScanned = useCallback((qrData: string) => {
 		setQrCode(qrData);
 		setCurrentStep("commemorate");
-	};
+	}, []);
 
-	const handleQRScanFailed = () => {
+	const handleQRScanFailed = useCallback(() => {
 		setError("No QR code detected. Please try scanning again.");
 		setCurrentStep("idle");
-	};
+	}, []);
 
-	const handleQRScanCancelled = () => {
+	const handleQRScanCancelled = useCallback(() => {
 		setCurrentStep("idle");
-	};
+	}, []);
 
 	const handleSubmitCompletion = async () => {
 		try {
@@ -113,8 +113,8 @@ export function useCompletionFlow({ challenge }: UseCompletionFlowProps) {
 							setCurrentStep("commemorate");
 						}
 					},
-					onError: () => {
-						setError("Network error. Please try again.");
+					onError: (e: { message?: string } | undefined) => {
+						setError(e?.message || "Network error. Please try again.");
 						setCurrentStep("commemorate");
 					},
 				},

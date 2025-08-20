@@ -37,12 +37,17 @@ export const dorms = [
 	{
 		name: "Hammerschlag",
 		image_path: "/images/dorm-mascots/hedgehog.png",
-		group: "The Hill",
+		group: "HamBaM",
 	},
 	{
 		name: "McGill and Boss",
 		image_path: "/images/dorm-mascots/redpanda.png",
-		group: "The Hill",
+		group: "HamBaM",
+	},
+	{
+		name: "The Hill",
+		image_path: "/images/dorm-mascots/redpanda.png",
+		group: "HamBaM",
 	},
 	{
 		name: "Margaret Morrison",
@@ -70,7 +75,7 @@ export const dormColors: Record<DormGroup, ColorSet> = {
 		selected: "bg-housing-1-selected",
 		muted: "bg-housing-1-muted",
 	},
-	"The Hill": {
+	HamBaM: {
 		primary: "bg-housing-2",
 		light: "bg-housing-2-light",
 		text: "text-housing-2-selected",

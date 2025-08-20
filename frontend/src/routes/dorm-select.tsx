@@ -57,11 +57,15 @@ const MascotData: Record<DormName, { mascotName: string; chant: string }> = {
 	},
 	"McGill and Boss": {
 		mascotName: "Randal the Red Panda",
-		chant: '"Can I get a Hill Yeah?! Hill Yeah!!"\n~Hammerschlag',
+		chant: '"Can I get a Hill Yeah?! Hill Yeah!!"\n~McGill and Boss',
+	},
+	"The Hill": {
+		mascotName: "Randal the Red Panda",
+		chant: '"Can I get a Hill Yeah?! Hill Yeah!!"\n~The Hill',
 	},
 	"Margaret Morrison": {
 		mascotName: "Aimee the Magpie",
-		chant: '"What do we need?! Morisson!!"',
+		chant: '"What do we need?! Morrison!!"',
 	},
 };
 
@@ -116,7 +120,7 @@ function RouteComponent() {
 					<h1 className="text-xl font-semibold mb-2">
 						{selectedDorm
 							? MascotData[selectedDorm.name].mascotName
-							: "Dorm Mascots"}
+							: "Mascots"}
 					</h1>
 					{selectedDorm ? (
 						<p className="text-gray-600 text-sm max-w-xs mx-auto">
@@ -124,7 +128,7 @@ function RouteComponent() {
 						</p>
 					) : (
 						<p className="text-gray-600 text-sm max-w-xs mx-auto">
-							Every year, all first year dorms compete in the{" "}
+							Every year, all first year housing communities compete in the{" "}
 							<strong>Carnegie Cup to crown the best house!</strong>
 						</p>
 					)}
@@ -186,7 +190,7 @@ function RouteComponent() {
 					)}
 					{!selectedDorm && (
 						<div className="text-gray-600 text-center mb-4">
-							Please select a dorm to continue.
+							Please select a housing community to continue.
 						</div>
 					)}
 					<button

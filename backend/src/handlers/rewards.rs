@@ -5,6 +5,21 @@ use chrono::NaiveDateTime;
 use serde::Serialize;
 use utoipa::ToSchema;
 
+const CCUP_LIMIT_BY_DORM: fn(&str) -> i32 = |dorm| match dorm {
+    "Res on Fifth" => 4350,
+    "McGill and Boss" => 4350,
+    "The Hill" => 4350,
+    "Hammerschlag" => 4350,
+    "Mudge" => 8670,
+    "Stever" => 8670,
+    "Morewood E-Tower" => 6090,
+    "Morewood Gardens" => 4170,
+    "Donner" => 6960,
+    "Margaret Morrison" => 8010,
+    "Whesco" => 8010,
+    _ => -1,
+};
+
 #[derive(Serialize, ToSchema)]
 pub struct RewardsListResponse {
     pub rewards: Vec<RewardResponse>,
@@ -69,6 +84,8 @@ pub async fn get_rewards(
         let mut incomplete_count = 0;
         let mut complete_count = 0;
         let mut transaction_details = Vec::new();
+        let mut stock = reward.stock;
+        let mut trade_limit = reward.trade_limit;
 
         for transaction in transactions {
             total_purchased += transaction.count;
@@ -89,12 +106,32 @@ pub async fn get_rewards(
 
         // Sort transactions by timestamp, most recent first
         transaction_details.sort_by(|a, b| b.timestamp.cmp(&a.timestamp));
+        if reward.name.eq("Carnegie Cup Contribution") {
+            let user_dorm = state
+                .user_service
+                .get_or_create_user(&claims.sub, &claims.name)
+                .await
+                .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+                .dorm;
+
+            let user_dorm = user_dorm.as_deref().unwrap_or("Unknown");
+
+            stock = CCUP_LIMIT_BY_DORM(user_dorm);
+            trade_limit = stock;
+            total_purchased = state
+                .transaction_service
+                .get_ccup_total_purchased(user_dorm)
+                .await
+                .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+                .try_into()
+                .unwrap();
+        }
 
         reward_responses.push(RewardResponse {
             name: reward.name.clone(),
             cost: reward.cost,
-            stock: reward.stock,
-            trade_limit: reward.trade_limit,
+            stock: stock,
+            trade_limit: trade_limit,
             transaction_info: RewardTransactionInfo {
                 total_purchased,
                 incomplete_count,

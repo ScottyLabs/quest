@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::entities::{prelude::*, reward, transaction};
+use crate::entities::{prelude::*, reward, transaction, user};
 use chrono::Utc;
 use sea_orm::{
     ActiveModelTrait, ActiveValue::Set, ColumnTrait, DatabaseConnection, EntityTrait, JoinType,
@@ -16,6 +16,26 @@ pub struct TransactionService {
 impl TransactionService {
     pub fn new(db: DatabaseConnection) -> Self {
         Self { db }
+    }
+
+    pub async fn get_ccup_total_purchased(&self, user_dorm: &str) -> Result<i64, sea_orm::DbErr> {
+        let total: Option<i64> = Transaction::find()
+            .inner_join(User)
+            .filter(transaction::Column::RewardName.eq("Carnegie Cup Contribution"))
+            .filter(user::Column::Dorm.eq(user_dorm))
+            .select_only()
+            .column_as(transaction::Column::Count.sum(), "total")
+            .into_tuple::<i64>()
+            .one(&self.db)
+            .await
+            .inspect_err(|f| {
+                eprintln!(
+                    "Failed to get total purchased for Carnegie Cup Contribution: {}",
+                    f
+                );
+            })?;
+
+        Ok(total.unwrap_or(0))
     }
 
     pub async fn create_transaction(

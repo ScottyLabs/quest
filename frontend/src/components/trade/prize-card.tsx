@@ -86,7 +86,7 @@ export function PrizeCard({ prize }: PrizeCardProps) {
 									}}
 								/>
 								<span className="absolute inset-0 flex items-center justify-center text-white text-xs font-bold">
-									{claimed}/{!isCarnegieCup ? prize.trade_limit : "∞"}
+									{claimed}/{stock >= 0 ? prize.trade_limit : "∞"}
 								</span>
 							</div>
 						</div>

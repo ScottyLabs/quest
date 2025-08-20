@@ -38,8 +38,8 @@ export default function TransactionsList({
 				size={1000}
 				qrStyle="dots"
 				style={{
-					width: "4in",
-					height: "4in",
+					width: "100%",
+					height: "100%",
 					margin: "0 auto",
 				}}
 			/>

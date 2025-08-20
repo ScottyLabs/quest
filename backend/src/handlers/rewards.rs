@@ -122,7 +122,9 @@ pub async fn get_rewards(
                 .transaction_service
                 .get_ccup_total_purchased(user_dorm)
                 .await
-                .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+                .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+                .try_into()
+                .unwrap();
         }
 
         reward_responses.push(RewardResponse {

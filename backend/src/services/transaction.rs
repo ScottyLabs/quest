@@ -18,27 +18,24 @@ impl TransactionService {
         Self { db }
     }
 
-    pub async fn get_ccup_total_purchased(&self, user_dorm: &str) -> Result<i32, sea_orm::DbErr> {
-        let all_ccup_transactions = Transaction::find()
+    pub async fn get_ccup_total_purchased(&self, user_dorm: &str) -> Result<i64, sea_orm::DbErr> {
+        let total: Option<i64> = Transaction::find()
+            .inner_join(User)
             .filter(transaction::Column::RewardName.eq("Carnegie Cup Contribution"))
-            .all(&self.db)
-            .await?;
-
-        let all_dorm_userids = User::find()
             .filter(user::Column::Dorm.eq(user_dorm))
-            .all(&self.db)
-            .await?
-            .iter()
-            .map(|user| user.user_id.clone())
-            .collect::<Vec<_>>();
+            .select_only()
+            .column_as(transaction::Column::Count.sum(), "total")
+            .into_tuple::<i64>()
+            .one(&self.db)
+            .await
+            .inspect_err(|f| {
+                eprintln!(
+                    "Failed to get total purchased for Carnegie Cup Contribution: {}",
+                    f
+                );
+            })?;
 
-        let total = all_ccup_transactions
-            .iter()
-            .filter(|tx| all_dorm_userids.contains(&tx.user_id))
-            .map(|tx| tx.count)
-            .sum();
-
-        Ok(total)
+        Ok(total.unwrap_or(0))
     }
 
     pub async fn create_transaction(

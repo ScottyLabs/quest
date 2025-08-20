@@ -51,9 +51,9 @@ export default function TransactionsList({
 				?.transaction_info.transactions.map((transaction) => (
 					<div
 						key={transaction.transaction_id}
-						className="w-full max-w-2xl mx-auto relative rounded-[20px] h-24 mb-4"
+						className="w-full max-w-2xl mx-auto relative rounded-[12px] h-28 mb-4"
 					>
-						<div className="w-full pl-6 pr-6 py-6 left-0 top-0 absolute bg-white rounded-[20px] inline-flex justify-between items-center shadow-[0_3px_0_#bbb] h-full">
+						<div className="w-full pl-4 pr-4 py-6 left-0 top-0 absolute bg-white rounded-[20px] inline-flex justify-between items-center shadow-[0_3px_0_#bbb] h-full">
 							<div className="flex justify-start items-start gap-6 flex-1">
 								<div className="flex-1 inline-flex flex-col justify-start items-start gap-2">
 									<div className="self-stretch inline-flex justify-between items-start">
@@ -74,12 +74,13 @@ export default function TransactionsList({
 										</div>
 										<button
 											type="button"
-											className="self-center card-selected border-4 border-green-600 bg-green-400 text-white cursor-pointer w-20 h-20 inline-flex justify-center items-center text-2xl font-extrabold rounded-2xl"
+											className="self-center card-selected border-4 border-green-600 bg-housing-4-light text-white cursor-pointer w-20 h-20 inline-flex justify-center items-center text-2xl font-extrabold rounded-2xl"
+											style={{ boxShadow: '0 4px 0  border-green-600 !important' }}
 											onClick={() => {
 												setSelectedTransaction(transaction.transaction_id);
 											}}
-										>
-											<QR className="w-20 h-20" />
+										> 
+											<QR className="w-16 h-16" />
 										</button>
 									</div>
 								</div>

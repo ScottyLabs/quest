@@ -1,6 +1,6 @@
 import { useState } from "react";
 import RedeemedCheck from "@/assets/redeemed-check.svg?react";
-import ScottyCoin from "@/components/scotty-coin";
+import ScottyCoin from "@/assets/scotty-coin.svg?react";
 import { TradeMenu } from "@/components/trade/menu";
 import { useApi, useAppContext } from "@/lib/app-context";
 import {
@@ -31,6 +31,7 @@ export function PrizeCard({ prize }: PrizeCardProps) {
 
 	const houseColorLightBg = dormColors[userDormGroup]?.light || "bg-white"; // for background
 	const houseColorPrimaryBg = dormColors[userDormGroup]?.primary || "bg-white"; // for progress bar
+	
 
 	const isCarnegieCup = prize.name === "Carnegie Cup Contribution";
 	const stock = prize.stock ?? 0; // Default to 0 if stock is not provided

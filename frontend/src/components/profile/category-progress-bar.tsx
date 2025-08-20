@@ -72,7 +72,7 @@ function CategoryProgressBar({ categories }: CategoryProgressBarProps) {
 							dominantBaseline="central"
 							className="fill-white text-[1.1rem] font-bold"
 						>
-							{percentage}%
+							{percentage.toFixed(0)}%
 						</text>
 					</svg>
 				);

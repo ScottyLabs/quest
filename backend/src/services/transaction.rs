@@ -1,4 +1,7 @@
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    io::{self, Write},
+};
 
 use crate::entities::{prelude::*, reward, transaction, user};
 use chrono::Utc;
@@ -33,6 +36,7 @@ impl TransactionService {
                     "Failed to get total purchased for Carnegie Cup Contribution: {}",
                     f
                 );
+                io::stderr().flush().unwrap_or_default();
             })?;
 
         Ok(total.unwrap_or(0))

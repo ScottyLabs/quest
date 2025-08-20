@@ -45,6 +45,11 @@ export const dorms = [
 		group: "HamBaM",
 	},
 	{
+		name: "The Hill",
+		image_path: "/images/dorm-mascots/redpanda.png",
+		group: "HamBaM",
+	},
+	{
 		name: "Margaret Morrison",
 		image_path: "/images/dorm-mascots/aimagpie.png",
 		group: "WhescoMM",

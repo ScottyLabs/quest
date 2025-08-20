@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::entities::{prelude::*, reward, transaction};
+use crate::entities::{prelude::*, reward, transaction, user};
 use chrono::Utc;
 use sea_orm::{
     ActiveModelTrait, ActiveValue::Set, ColumnTrait, DatabaseConnection, EntityTrait, JoinType,
@@ -16,6 +16,29 @@ pub struct TransactionService {
 impl TransactionService {
     pub fn new(db: DatabaseConnection) -> Self {
         Self { db }
+    }
+
+    pub async fn get_ccup_total_purchased(&self, user_dorm: &str) -> Result<i32, sea_orm::DbErr> {
+        let all_ccup_transactions = Transaction::find()
+            .filter(transaction::Column::RewardName.eq("Carnegie Cup Contribution"))
+            .all(&self.db)
+            .await?;
+
+        let all_dorm_userids = User::find()
+            .filter(user::Column::Dorm.eq(user_dorm))
+            .all(&self.db)
+            .await?
+            .iter()
+            .map(|user| user.user_id.clone())
+            .collect::<Vec<_>>();
+
+        let total = all_ccup_transactions
+            .iter()
+            .filter(|tx| all_dorm_userids.contains(&tx.user_id))
+            .map(|tx| tx.count)
+            .sum();
+
+        Ok(total)
     }
 
     pub async fn create_transaction(

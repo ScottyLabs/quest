@@ -1,3 +1,5 @@
+use std::io::{self, Write};
+
 use crate::services::traits::{ChallengeServiceTrait, CompletionServiceTrait};
 use crate::{AppState, AuthClaims};
 use axum::{Extension, Json, extract::State, http::StatusCode};
@@ -78,6 +80,7 @@ pub async fn create_completion(
         .await
         .map_err(|e| {
             eprintln!("Failed to get challenge: {e}");
+            io::stderr().flush().unwrap_or_default();
             StatusCode::INTERNAL_SERVER_ERROR
         })?;
 
@@ -117,6 +120,7 @@ pub async fn create_completion(
         .await
         .map_err(|e| {
             eprintln!("Failed to check completion existence: {e}");
+            io::stderr().flush().unwrap_or_default();
             StatusCode::INTERNAL_SERVER_ERROR
         })?;
 
@@ -166,6 +170,7 @@ pub async fn create_completion(
             .await
             .map_err(|e| {
                 eprintln!("Failed to upload image: {e}");
+                io::stderr().flush().unwrap_or_default();
                 StatusCode::INTERNAL_SERVER_ERROR
             })?;
     }
@@ -186,6 +191,7 @@ pub async fn create_completion(
         .await
         .map_err(|e| {
             eprintln!("Failed to create completion: {e}");
+            io::stderr().flush().unwrap_or_default();
             StatusCode::INTERNAL_SERVER_ERROR
         })?;
 

@@ -1,4 +1,8 @@
-use std::{error::Error, fs};
+use std::{
+    error::Error,
+    fs,
+    io::{self, Write},
+};
 
 use backend::{
     create_connection,
@@ -115,6 +119,7 @@ async fn insert_challenges() -> Result<(), Box<dyn Error + Send + Sync>> {
         for error in &parse_errors {
             eprintln!("  {error}");
         }
+        io::stderr().flush().unwrap_or_default();
         if challenges_to_process.is_empty() {
             return Err("No valid challenges to insert".into());
         }
@@ -198,6 +203,7 @@ async fn insert_rewards() -> Result<(), Box<dyn Error + Send + Sync>> {
         for error in &parse_errors {
             eprintln!("  {error}");
         }
+        io::stderr().flush().unwrap_or_default();
         if rewards_to_process.is_empty() {
             return Err("No valid rewards to insert".into());
         }

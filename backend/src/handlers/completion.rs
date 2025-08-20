@@ -2,7 +2,6 @@ use crate::services::traits::{ChallengeServiceTrait, CompletionServiceTrait};
 use crate::{AppState, AuthClaims};
 use axum::{Extension, Json, extract::State, http::StatusCode};
 use chrono::{NaiveDateTime, Utc};
-use minio::s3;
 use rust_decimal::prelude::ToPrimitive;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;

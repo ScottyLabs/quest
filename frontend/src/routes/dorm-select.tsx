@@ -59,9 +59,13 @@ const MascotData: Record<DormName, { mascotName: string; chant: string }> = {
 		mascotName: "Randal the Red Panda",
 		chant: '"Can I get a Hill Yeah?! Hill Yeah!!"\n~McGill and Boss',
 	},
+	"The Hill": {
+		mascotName: "Randal the Red Panda",
+		chant: '"Can I get a Hill Yeah?! Hill Yeah!!"\n~The Hill',
+	},
 	"Margaret Morrison": {
 		mascotName: "Aimee the Magpie",
-		chant: '"What do we need?! Morisson!!"',
+		chant: '"What do we need?! Morrison!!"',
 	},
 };
 

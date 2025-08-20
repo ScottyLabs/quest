@@ -13,13 +13,13 @@ export default function PlusMinus({
 	thumbClassName?: string;
 }) {
 	return (
-		<div className="flex self-center items-center p-1 rounded-md bg-gray-200">
+		<div className="flex self-center items-center p-1 rounded-3xl bg-gray-200">
 			<button
 				type="button"
-				className="p-2 bg-white rounded-l-md"
+				className="flex-1 min-w-14 p-2 bg-white rounded-l-2xl"
 				onClick={() => onValueChange(Math.max(value - 1, min))}
 			>
-				<Minus className="w-4 h-4" />
+				<Minus className="w-4 h-4 mx-auto" />
 			</button>
 			<input
 				type="number"
@@ -27,14 +27,14 @@ export default function PlusMinus({
 				onChange={(e) =>
 					onValueChange(Math.min(max, Math.max(min, Number(e.target.value))))
 				}
-				className="w-8 text-center borderrounded-md"
+				className="max-w-14 w-auto text-center px-2"
 			/>
 			<button
 				type="button"
-				className="p-2 bg-white rounded-r-md"
+				className="flex-1 min-w-14 p-2 bg-white rounded-r-2xl"
 				onClick={() => onValueChange(Math.min(value + 1, max))}
 			>
-				<Plus className="w-4 h-4" />
+				<Plus className="w-4 h-4 mx-auto" />
 			</button>
 		</div>
 	);

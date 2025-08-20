@@ -74,8 +74,7 @@ export default function TransactionsList({
 										</div>
 										<button
 											type="button"
-											className="self-center card-selected border-4 border-green-600 bg-housing-4-light text-white cursor-pointer w-20 h-20 inline-flex justify-center items-center text-2xl font-extrabold rounded-2xl"
-											style={{ boxShadow: '0 4px 0  border-green-600 !important' }}
+											className="self-center card-selected-green border-4 border-green-600 bg-housing-4-light text-white cursor-pointer w-20 h-20 inline-flex justify-center items-center text-2xl font-extrabold rounded-2xl"
 											onClick={() => {
 												setSelectedTransaction(transaction.transaction_id);
 											}}

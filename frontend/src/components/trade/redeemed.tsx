@@ -45,14 +45,14 @@ export function Redeemed({ closeDrawer, prize }: RedeemProps) {
 				<>
 					<Check className="w-48 h-48 my-8" />
 					<h2 className="text-4xl font-bold mb-4">Redeemed!</h2>
-					<p className="text-2xl mb-4 p-10">
+					<p className="text-lg mb-4 p-10">
 						You redeemed {prize.amount || 1} {prize.name}! You can see your
-						prizes in your profile! Pick up your prize by visiting this prize
+						prizes by opening the same prize card again. Pick up your prize by visiting this prize
 						again and showing an admin your transaction QR code!
 					</p>
 					<button
 						type="button"
-						className="self-center card-selected border-4 border-green-600 bg-green-400 text-white cursor-pointer w-80 h-20 inline-flex justify-center items-center mb-4 px-4 py-2 text-2xl font-extrabold rounded-2xl"
+						className="self-center card-selected-green border-4 border-green-600 bg-green-400 text-white cursor-pointer w-80 h-20 inline-flex justify-center items-center mb-4 px-4 py-2 text-2xl font-extrabold rounded-2xl"
 						onClick={() => setShowQRCode(true)}
 					>
 						Show QR Code

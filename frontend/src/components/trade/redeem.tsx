@@ -47,8 +47,9 @@ export default function Redeem({
 							{quantity > 1 ? "s" : ""}
 						</span>
 						?
-					</div>
+					</div >
 					{prize.trade_limit > 1 && (
+						<div className="flex flex-col items-center mt-3 mb-1 w-full">
 						<PlusMinus
 							value={quantity}
 							onValueChange={setQuantity}
@@ -58,6 +59,7 @@ export default function Redeem({
 							}
 							min={1}
 						/>
+						</div>
 					)}
 				</div>
 				<button

@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Trophy } from "lucide-react";
-import ScottyCoin from "@/components/scotty-coin";
+import ScottyCoin from "@/assets/scotty-coin.svg?react";
 import { type DormName, dormColors, dormGroupFromName } from "@/lib/data/dorms";
 import type { ValidPath } from "@/lib/data/page";
 import type { components } from "@/lib/schema.gen";

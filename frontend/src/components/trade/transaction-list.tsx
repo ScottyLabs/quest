@@ -62,7 +62,7 @@ export default function TransactionsList({
 												{new Date(transaction.timestamp).toLocaleString(
 													"en-US",
 													{
-														timeZone: "+16:00",
+														timeZone: "America/New_York",
 													},
 												)}
 												<div className="justify-start">

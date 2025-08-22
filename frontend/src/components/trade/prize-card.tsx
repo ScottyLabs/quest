@@ -77,7 +77,7 @@ export function PrizeCard({ prize }: PrizeCardProps) {
 										(isCarnegieCup ? houseColorPrimaryBg : "bg-amber-700")
 									}
 									style={{
-										width: `${isCarnegieCup ? 1 : Math.min((claimed / prize.trade_limit) * 100, 100)}%`,
+										width: `${Math.min((claimed / prize.trade_limit) * 100, 100)}%`,
 									}}
 								/>
 								<span className="absolute inset-0 flex items-center justify-center text-white text-xs font-bold">

@@ -89,6 +89,16 @@ pub trait RewardServiceTrait: Clone + Send + Sync {
         &self,
         rewards: Vec<reward::ActiveModel>,
     ) -> Result<usize, sea_orm::DbErr>;
+    async fn decrement_stock(
+        &self,
+        reward_name: &str,
+        amount: i32,
+    ) -> Result<Option<reward::Model>, sea_orm::DbErr>;
+    async fn increment_stock(
+        &self,
+        reward_name: &str,
+        amount: i32,
+    ) -> Result<Option<reward::Model>, sea_orm::DbErr>;
 }
 
 #[async_trait]

@@ -1,6 +1,8 @@
 use crate::entities::{prelude::*, reward};
 use crate::services::traits::RewardServiceTrait;
 use async_trait::async_trait;
+use sea_orm::ActiveModelTrait;
+use sea_orm::ActiveValue::Set;
 use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, sea_query::OnConflict};
 
 #[derive(Clone)]
@@ -51,5 +53,63 @@ impl RewardServiceTrait for RewardService {
             .await?;
 
         Ok(count)
+    }
+
+    async fn decrement_stock(
+        &self,
+        reward_name: &str,
+        amount: i32,
+    ) -> Result<Option<reward::Model>, sea_orm::DbErr> {
+        let reward = self.get_reward_by_name(reward_name).await?;
+
+        match reward {
+            Some(reward) => {
+                // Only decrement if stock tracking is enabled
+                if reward.stock != -1 {
+                    let new_stock = reward.stock - amount;
+
+                    if new_stock < 0 {
+                        return Err(sea_orm::DbErr::Custom(
+                            "Insufficient stock for transaction".to_string(),
+                        ));
+                    }
+
+                    let mut active_reward: reward::ActiveModel = reward.into();
+                    active_reward.stock = Set(new_stock);
+
+                    let updated = active_reward.update(&self.db).await?;
+                    Ok(Some(updated))
+                } else {
+                    Ok(Some(reward))
+                }
+            }
+            None => Ok(None),
+        }
+    }
+
+    async fn increment_stock(
+        &self,
+        reward_name: &str,
+        amount: i32,
+    ) -> Result<Option<reward::Model>, sea_orm::DbErr> {
+        let reward = self.get_reward_by_name(reward_name).await?;
+
+        match reward {
+            Some(reward) => {
+                // Only increment if stock tracking is enabled
+                if reward.stock != -1 {
+                    let new_stock = reward.stock + amount;
+
+                    let mut active_reward: reward::ActiveModel = reward.into();
+                    active_reward.stock = Set(new_stock);
+
+                    let updated = active_reward.update(&self.db).await?;
+                    Ok(Some(updated))
+                } else {
+                    Ok(Some(reward))
+                }
+            }
+            None => Ok(None),
+        }
     }
 }

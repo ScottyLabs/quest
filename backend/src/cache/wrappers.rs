@@ -314,6 +314,36 @@ impl<T: RewardServiceTrait> RewardServiceTrait for CachedRewardService<T> {
     ) -> Result<usize, sea_orm::DbErr> {
         self.inner.upsert_rewards_batch(rewards).await
     }
+
+    async fn decrement_stock(
+        &self,
+        reward_name: &str,
+        amount: i32,
+    ) -> Result<Option<reward::Model>, sea_orm::DbErr> {
+        let result = self.inner.decrement_stock(reward_name, amount).await?;
+
+        // Invalidate reward caches when stock changes
+        if result.is_some() {
+            self.cache.invalidate_rewards().await;
+        }
+
+        Ok(result)
+    }
+
+    async fn increment_stock(
+        &self,
+        reward_name: &str,
+        amount: i32,
+    ) -> Result<Option<reward::Model>, sea_orm::DbErr> {
+        let result = self.inner.increment_stock(reward_name, amount).await?;
+
+        // Invalidate reward caches when stock changes
+        if result.is_some() {
+            self.cache.invalidate_rewards().await;
+        }
+
+        Ok(result)
+    }
 }
 
 // Leaderboard service implementation

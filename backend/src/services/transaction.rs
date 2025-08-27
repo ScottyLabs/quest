@@ -22,7 +22,7 @@ impl TransactionService {
     }
 
     pub async fn get_ccup_total_purchased(&self, user_dorm: &str) -> Result<i64, sea_orm::DbErr> {
-        let total: Option<i64> = Transaction::find()
+        let total = Transaction::find()
             .inner_join(User)
             .filter(transaction::Column::RewardName.eq("Carnegie Cup Contribution"))
             .filter(user::Column::Dorm.eq(user_dorm))
@@ -37,9 +37,9 @@ impl TransactionService {
                     f
                 );
                 io::stderr().flush().unwrap_or_default();
-            })?;
+            });
 
-        Ok(total.unwrap_or(0))
+        Ok(total.ok().unwrap_or(Some(0)).unwrap_or(0))
     }
 
     pub async fn create_transaction(

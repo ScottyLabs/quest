@@ -19,6 +19,7 @@ in
 
   packages = [
     quest
+    (pkgs.proxmark3.override { withGeneric = true; })
   ];
 
   outputs = { inherit quest; };

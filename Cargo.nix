@@ -1415,6 +1415,11 @@ rec {
             path = "src/main.rs";
             requiredFeatures = [ ];
           }
+          {
+            name = "quest-keys";
+            path = "src/bin/quest-keys.rs";
+            requiredFeatures = [ ];
+          }
         ];
         src = lib.cleanSourceWith { filter = sourceFilter;  src = ./.; };
         dependencies = [

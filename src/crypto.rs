@@ -21,7 +21,8 @@ pub struct Verified {
 }
 
 fn hmac_sha256(key: &[u8], data: &[u8]) -> [u8; 32] {
-    let mut mac = <HmacSha256 as HmacKeyInit>::new_from_slice(key).expect("HMAC accepts any key length");
+    let mut mac =
+        <HmacSha256 as HmacKeyInit>::new_from_slice(key).expect("HMAC accepts any key length");
     mac.update(data);
     let out = mac.finalize().into_bytes();
     let mut buf = [0u8; 32];

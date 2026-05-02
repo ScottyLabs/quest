@@ -3,14 +3,14 @@ mod crypto;
 use std::sync::Arc;
 
 use axum::Json;
+use axum::Router;
 use axum::extract::{Query, State};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::routing::get;
-use axum::Router;
 use serde::{Deserialize, Serialize};
 
-use crypto::{verify_tap, VerifyError};
+use crypto::{VerifyError, verify_tap};
 
 #[derive(Clone)]
 struct AppState {
@@ -45,7 +45,9 @@ impl IntoResponse for TapError {
             TapError::BadRequest => StatusCode::BAD_REQUEST.into_response(),
             TapError::Unauthorized => (
                 StatusCode::UNAUTHORIZED,
-                Json(ErrBody { error: "invalid signature" }),
+                Json(ErrBody {
+                    error: "invalid signature",
+                }),
             )
                 .into_response(),
         }
@@ -99,7 +101,9 @@ async fn main() {
         .expect("PORT must be a valid port number");
 
     let master = load_master_key();
-    let state = AppState { master: Arc::new(master) };
+    let state = AppState {
+        master: Arc::new(master),
+    };
 
     let app = Router::new().route("/tap", get(tap)).with_state(state);
 

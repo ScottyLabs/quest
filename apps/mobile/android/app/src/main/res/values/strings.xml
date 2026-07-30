@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">CMU Quest</string>
+    <string name="title_activity_main">CMU Quest</string>
+    <string name="package_name">org.scottylabs.quest</string>
+    <string name="custom_url_scheme">org.scottylabs.quest</string>
+</resources>

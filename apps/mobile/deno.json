@@ -1,0 +1,24 @@
+{
+  "tasks": {
+    "dev": "deno run -A --node-modules-dir npm:vite dev",
+    "build": "deno run -A --node-modules-dir npm:vite build",
+    "preview": "deno run -A --node-modules-dir npm:vite preview",
+    "sync": "deno run -A --node-modules-dir npm:@sveltejs/kit/svelte-kit sync",
+    "check": "deno run -A --node-modules-dir npm:svelte-check --tsconfig ./tsconfig.json",
+    "cap": "deno run -A --node-modules-dir node_modules/@capacitor/cli/bin/capacitor",
+    "cap:sync": "deno task build && deno task cap sync"
+  },
+  "imports": {
+    "@sveltejs/adapter-static": "npm:@sveltejs/adapter-static@^3.0.10",
+    "@sveltejs/kit": "npm:@sveltejs/kit@^2.70.1",
+    "@sveltejs/vite-plugin-svelte": "npm:@sveltejs/vite-plugin-svelte@^7.2.0",
+    "svelte": "npm:svelte@^5.56.8",
+    "svelte-check": "npm:svelte-check@^4.4.4",
+    "typescript": "npm:typescript@^5.9.3",
+    "vite": "npm:vite@^8.1.5"
+  },
+  "compilerOptions": {
+    "lib": ["deno.ns", "dom", "dom.iterable"],
+    "types": ["svelte", "vite/client"]
+  }
+}

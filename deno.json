@@ -1,0 +1,19 @@
+{
+  "workspace": ["./apps/mobile"],
+  "nodeModulesDir": "auto",
+  "tasks": {
+    "check": "deno task --cwd apps/mobile check",
+    "build": "deno task --cwd apps/mobile build",
+    "dev": "deno task --cwd apps/mobile dev",
+    "mobile": "deno task --cwd apps/mobile"
+  },
+  "exclude": [
+    ".devenv",
+    "target",
+    "**/node_modules",
+    "**/.svelte-kit",
+    "**/build",
+    "apps/mobile/android",
+    "apps/mobile/ios"
+  ]
+}

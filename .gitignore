@@ -16,6 +16,16 @@ result-*
 target/
 .cargo/
 
+# Web (apps/mobile)
+node_modules/
+.svelte-kit/
+build/
+
+# Android (devenv writes these from the nix SDK path)
+.android/
+local.properties
+.gradle/
+
 # Environment
 .env
 

@@ -95,12 +95,15 @@ class SessionStore {
     return await this.#adopting.user;
   }
 
+  #blocked(error: unknown): void {
+    if (error instanceof AuthError && error.code === "device_owned") this.#deviceOwned = true;
+  }
+
   async #adoptOnce(hash: string): Promise<QuestUser | null> {
     const parsed = parseFragment(hash);
     if (parsed === null) return null;
 
     if ("error" in parsed) {
-      if (parsed.error.code === "device_owned") this.#deviceOwned = true;
       this.#phase = this.#session ? "signedIn" : "signedOut";
       throw parsed.error;
     }
@@ -120,8 +123,6 @@ class SessionStore {
   async login(options: LoginOptions = {}): Promise<QuestUser> {
     this.#deviceOwned = false;
 
-    // The device signs a server nonce first: the ticket is what lets the
-    // server refuse this account before it ever holds a session.
     const ticket = await loginTicket();
     const native = Capacitor.isNativePlatform();
     const target = native ? NATIVE_TARGET : `${location.origin}/auth/callback`;
@@ -151,6 +152,7 @@ class SessionStore {
       if (user === null) throw new AuthError("unknown", "empty callback fragment");
       return user;
     } catch (error) {
+      this.#blocked(error);
       this.#phase = this.#session ? "signedIn" : "signedOut";
       throw error;
     } finally {
@@ -182,13 +184,17 @@ class SessionStore {
   clear(): void {
     this.#session = null;
     this.#phase = "signedOut";
+    this.#deviceOwned = false;
     void this.#storage.clear();
   }
 
   async #consume(hash: string): Promise<boolean> {
     if (parseFragment(hash) === null) return false;
 
-    const adopted = await this.adoptFragment(hash).catch(() => null);
+    const adopted = await this.adoptFragment(hash).catch((error: unknown) => {
+      this.#blocked(error);
+      return null;
+    });
     history.replaceState(null, "", `${location.pathname}${location.search}`);
     if (adopted === null) this.#phase = this.#session ? "signedIn" : "signedOut";
     return adopted !== null;

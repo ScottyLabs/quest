@@ -1,4 +1,6 @@
 <script lang="ts">
+  import Button from "$lib/components/Button.svelte";
+
   let { onSignOut }: { onSignOut?: () => void } = $props();
 </script>
 
@@ -29,7 +31,7 @@
 
   {#if onSignOut}
     <div class="actions">
-      <button onclick={onSignOut}>Back to sign in</button>
+      <Button onclick={onSignOut}>Back to sign in</Button>
     </div>
   {/if}
 </div>
@@ -39,7 +41,7 @@
     display: flex;
     flex-direction: column;
     height: 100dvh;
-    padding: calc(27px + env(safe-area-inset-top)) 24px calc(14px + env(safe-area-inset-bottom));
+    padding: calc(27px + env(safe-area-inset-top)) 16px calc(14px + env(safe-area-inset-bottom));
     background: var(--highlight);
     text-align: center;
   }
@@ -86,18 +88,10 @@
   }
 
   .actions {
+    display: flex;
     flex: none;
-  }
-
-  button {
-    width: 100%;
-    padding: 14px 16px;
-    border: none;
-    border-radius: 999px;
-    background: var(--primary);
-    color: var(--highlight);
-    font: inherit;
-    font-weight: 600;
-    cursor: pointer;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
   }
 </style>

@@ -5,19 +5,7 @@ use std::env;
 use std::fs;
 use std::process;
 
-use hmac::{Hmac, KeyInit, Mac};
-use sha2::Sha256;
-
-type HmacSha256 = Hmac<Sha256>;
-
-fn hmac16(master: &[u8], data: &[u8]) -> [u8; 16] {
-    let mut mac = <HmacSha256 as KeyInit>::new_from_slice(master).expect("hmac key length");
-    mac.update(data);
-    let out = mac.finalize().into_bytes();
-    let mut buf = [0u8; 16];
-    buf.copy_from_slice(&out[..16]);
-    buf
-}
+use quest::crypto::derive_key;
 
 fn die(msg: &str) -> ! {
     eprintln!("{msg}");
@@ -54,21 +42,19 @@ fn main() {
     }
 
     let uid = hex::decode(uid_hex.trim()).unwrap_or_else(|e| die(&format!("uid not hex: {e}")));
-    if uid.len() != 7 {
-        die("uid must be 7 bytes (14 hex chars)");
-    }
+    let uid: [u8; 7] = uid
+        .try_into()
+        .unwrap_or_else(|_| die("uid must be 7 bytes (14 hex chars)"));
+    let master: [u8; 32] = master
+        .try_into()
+        .unwrap_or_else(|_| die("master must decode to 32 bytes"));
 
-    let mut k0_input = b"K0".to_vec();
-    k0_input.extend_from_slice(&uid);
-    let mut k1_old_input = b"K1".to_vec();
-    k1_old_input.extend_from_slice(&uid);
-    let mut k2_input = b"K2".to_vec();
-    k2_input.extend_from_slice(&uid);
-
-    let k0_old = hmac16(&master, &k0_input);
-    let k1_old = hmac16(&master, &k1_old_input);
-    let k1_new = hmac16(&master, b"K1");
-    let k2 = hmac16(&master, &k2_input);
+    // `k0_old` and `k1_old` are the UID-diversified values a blank tag ships
+    // with; `k1_new` is the non-diversified production K1 the reader uses.
+    let k0_old = derive_key(&master, b"K0", Some(&uid));
+    let k1_old = derive_key(&master, b"K1", Some(&uid));
+    let k1_new = derive_key(&master, b"K1", None);
+    let k2 = derive_key(&master, b"K2", Some(&uid));
 
     println!("k0_old={}", hex::encode_upper(k0_old));
     println!("k1_old={}", hex::encode_upper(k1_old));

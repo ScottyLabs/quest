@@ -1,3 +1,5 @@
+mod auth;
+mod cors;
 mod crypto;
 
 use std::sync::Arc;
@@ -87,6 +89,24 @@ fn load_master_key() -> [u8; 32] {
     out
 }
 
+async fn log_request(
+    request: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> axum::response::Response {
+    let method = request.method().clone();
+    let path = request.uri().path().to_owned();
+    let started = std::time::Instant::now();
+
+    let response = next.run(request).await;
+
+    println!(
+        "{method} {path} -> {} in {}ms",
+        response.status(),
+        started.elapsed().as_millis()
+    );
+    response
+}
+
 #[tokio::main]
 async fn main() {
     dotenvy::dotenv().ok();
@@ -107,8 +127,45 @@ async fn main() {
 
     let app = Router::new().route("/tap", get(tap)).with_state(state);
 
+    let mut undiscovered = None;
+
+    let app = match auth::Auth::from_env().await {
+        Ok(auth) => {
+            undiscovered = auth.undiscovered();
+
+            let sessions = auth.sessions.layer();
+            app.merge(auth::routes::router(auth))
+                .layer(sessions)
+                .layer(axum::middleware::from_fn(auth::extract::bearer_id))
+        }
+        Err(err) if auth::oidc::configured() => {
+            panic!("auth is configured but failed to start: {err}")
+        }
+        Err(err) => {
+            eprintln!("auth disabled: {err}; /auth/* will answer 503");
+            app.merge(auth::routes::unconfigured_router())
+        }
+    };
+
+    let app = app
+        .layer(cors::layer())
+        .layer(axum::middleware::from_fn(log_request));
+
     let addr = std::net::SocketAddr::new(host, port);
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     println!("listening on {}", listener.local_addr().unwrap());
-    axum::serve(listener, app).await.unwrap();
+
+    let server = axum::serve(listener, app);
+
+    let Some(config) = undiscovered else {
+        return server.await.unwrap();
+    };
+
+    server
+        .with_graceful_shutdown(auth::oidc::rediscovered(config))
+        .await
+        .unwrap();
+
+    eprintln!("Keycloak answered; restarting to mount /auth/login");
+    std::process::exit(1);
 }

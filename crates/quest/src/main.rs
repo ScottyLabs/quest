@@ -2,6 +2,7 @@ mod auth;
 mod cors;
 mod db;
 mod devices;
+mod users;
 
 use std::sync::Arc;
 
@@ -97,7 +98,10 @@ async fn log_request(
     next: axum::middleware::Next,
 ) -> axum::response::Response {
     let method = request.method().clone();
-    let path = request.uri().path().to_owned();
+    let path = request
+        .uri()
+        .path_and_query()
+        .map_or_else(|| request.uri().path().to_owned(), ToString::to_string);
     let started = std::time::Instant::now();
 
     let response = next.run(request).await;
@@ -143,18 +147,18 @@ async fn main() {
             undiscovered = auth.undiscovered();
 
             let sessions = auth.sessions.layer();
+            let users = users::Users::new(db.clone());
             let devices = devices::Devices::new(db, auth.sessions.pool());
 
-            // `enforce` sits over every route rather than under a chosen few, so
-            // a new endpoint is protected the moment it exists. It goes inside
-            // the session layer, which is what it reads the account from.
             app.merge(auth::routes::router(auth))
                 .merge(devices::routes::router(devices.clone()))
+                .merge(users::routes::router(users.clone()))
                 .layer(axum::middleware::from_fn_with_state(
                     devices.clone(),
                     devices::enforce,
                 ))
                 .layer(axum::Extension(devices))
+                .layer(axum::Extension(users))
                 .layer(sessions)
                 .layer(axum::middleware::from_fn(auth::extract::bearer_id))
         }

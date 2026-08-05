@@ -128,6 +128,7 @@ pub async fn discover(config: &OidcConfig) -> Result<Oidc, ConfigError> {
         .with_client_id(ClientId::new(config.client_id.clone()))
         .with_client_secret(ClientSecret::new(config.client_secret.clone()))
         .with_scopes(vec![
+            Scope::new("openid".to_owned()),
             Scope::new("email".to_owned()),
             Scope::new("profile".to_owned()),
         ])

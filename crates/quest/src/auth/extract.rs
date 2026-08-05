@@ -7,10 +7,13 @@ use axum::response::Response;
 use tower_sessions::Session;
 
 use super::AuthError;
-use super::session::{COOKIE_NAME, SessionUser, USER_KEY};
+use super::session::{COOKIE_NAME, DEVICE_KEY, SessionUser, USER_KEY};
 
 #[derive(Clone, Debug)]
 pub struct CurrentUser(pub SessionUser);
+
+#[derive(Clone, Debug)]
+pub struct CurrentDevice(pub String);
 
 pub fn bearer(headers: &HeaderMap) -> Option<&str> {
     headers
@@ -36,20 +39,32 @@ pub async fn bearer_id(mut request: Request, next: Next) -> Response {
     next.run(request).await
 }
 
-
-pub async fn session_user(parts: &mut Parts) -> Result<Option<SessionUser>, AuthError> {
-    let session = Session::from_request_parts(parts, &())
+async fn session_of(parts: &mut Parts) -> Result<Session, AuthError> {
+    Session::from_request_parts(parts, &())
         .await
-        .map_err(|_| AuthError::Unauthorized("unauthorized"))?;
-
-    session
-        .get::<SessionUser>(USER_KEY)
-        .await
-        .map_err(|_| AuthError::Upstream("session_store_unavailable"))
+        .map_err(|_| AuthError::Unauthorized("unauthorized"))
 }
 
-async fn current(parts: &mut Parts) -> Result<SessionUser, AuthError> {
-    session_user(parts)
+pub async fn session_binding(
+    parts: &mut Parts,
+) -> Result<Option<(SessionUser, String)>, AuthError> {
+    let session = session_of(parts).await?;
+    let unavailable = || AuthError::Upstream("session_store_unavailable");
+
+    let user = session
+        .get::<SessionUser>(USER_KEY)
+        .await
+        .map_err(|_| unavailable())?;
+    let device = session
+        .get::<String>(DEVICE_KEY)
+        .await
+        .map_err(|_| unavailable())?;
+
+    Ok(user.zip(device))
+}
+
+async fn current(parts: &mut Parts) -> Result<(SessionUser, String), AuthError> {
+    session_binding(parts)
         .await?
         .ok_or(AuthError::Unauthorized("unauthorized"))
 }
@@ -61,7 +76,7 @@ where
     type Rejection = AuthError;
 
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
-        current(parts).await.map(Self)
+        current(parts).await.map(|(user, _)| Self(user))
     }
 }
 
@@ -75,6 +90,17 @@ where
         parts: &mut Parts,
         _state: &S,
     ) -> Result<Option<Self>, Self::Rejection> {
-        Ok(current(parts).await.map(Self).ok())
+        Ok(current(parts).await.map(|(user, _)| Self(user)).ok())
+    }
+}
+
+impl<S> FromRequestParts<S> for CurrentDevice
+where
+    S: Send + Sync,
+{
+    type Rejection = AuthError;
+
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        current(parts).await.map(|(_, device)| Self(device))
     }
 }

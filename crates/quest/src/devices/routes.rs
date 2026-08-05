@@ -6,19 +6,17 @@ use serde::{Deserialize, Serialize};
 use tower_sessions::Session;
 
 use super::key::{DeviceKey, decode};
-use super::label;
-use super::{DeviceView, Devices, Registered};
+use super::{DeviceView, Devices, NONCE_TTL_SECS, TICKET_TTL_SECS, label};
 use crate::auth::AuthError;
-use crate::auth::extract::CurrentUser;
+use crate::auth::extract::{CurrentDevice, CurrentUser};
 
-const NONCE_TTL_SECS: i64 = 120;
-
-const REGISTER_CONTEXT: &str = "quest-device-register:";
+const LOGIN_CONTEXT: &str = "quest-device-login:";
 
 pub fn router(devices: Devices) -> Router {
     Router::new()
-        .route("/devices/challenge", get(challenge))
-        .route("/devices", post(register).get(list))
+        .route("/auth/challenge", get(challenge))
+        .route("/auth/device", post(verify))
+        .route("/devices", get(list))
         .route("/devices/{public_key}", delete(revoke))
         .with_state(devices)
 }
@@ -29,20 +27,15 @@ struct Challenge {
     expires_in: i64,
 }
 
-async fn challenge(
-    State(devices): State<Devices>,
-    CurrentUser(user): CurrentUser,
-) -> Result<Json<Challenge>, AuthError> {
-    let nonce = devices.issue_nonce(&user.sub, NONCE_TTL_SECS).await?;
-
+async fn challenge(State(devices): State<Devices>) -> Result<Json<Challenge>, AuthError> {
     Ok(Json(Challenge {
-        nonce,
+        nonce: devices.issue_nonce().await?,
         expires_in: NONCE_TTL_SECS,
     }))
 }
 
 #[derive(Deserialize)]
-struct Registration {
+struct Verify {
     public_key: String,
     nonce: String,
     signature: String,
@@ -51,41 +44,32 @@ struct Registration {
     label: Option<String>,
 }
 
-async fn register(
+#[derive(Serialize)]
+struct Ticket {
+    ticket: String,
+    expires_in: i64,
+}
+
+async fn verify(
     State(devices): State<Devices>,
-    session: Session,
-    CurrentUser(user): CurrentUser,
     headers: HeaderMap,
-    Json(body): Json<Registration>,
-) -> Result<Json<DeviceView>, AuthError> {
+    Json(body): Json<Verify>,
+) -> Result<Json<Ticket>, AuthError> {
     let key =
         DeviceKey::parse(&body.public_key).ok_or(AuthError::BadRequest("public_key_invalid"))?;
 
-    if body.nonce.len() != 32 || !body.nonce.bytes().all(|b| b.is_ascii_hexdigit()) {
-        return Err(AuthError::Unauthorized("nonce_invalid"));
-    }
-
     let signature = decode(&body.signature).ok_or(AuthError::Unauthorized("proof_invalid"))?;
-    let message = format!("{REGISTER_CONTEXT}{}", body.nonce);
+    let message = format!("{LOGIN_CONTEXT}{}", body.nonce);
     if !key.verifies(message.as_bytes(), &signature) {
         return Err(AuthError::Unauthorized("proof_invalid"));
     }
 
-    devices.spend_nonce(&body.nonce, &user.sub).await?;
-
     let label = label::resolve(body.label.as_deref(), &headers);
 
-    match devices.register(&user, &key, label).await? {
-        Registered::Ours(device) => Ok(Json(device)),
-        Registered::Taken => {
-            session
-                .flush()
-                .await
-                .map_err(|_| AuthError::Upstream("session_store_unavailable"))?;
-
-            Err(AuthError::Conflict("device_owned"))
-        }
-    }
+    Ok(Json(Ticket {
+        ticket: devices.issue_ticket(&body.nonce, &key, label).await?,
+        expires_in: TICKET_TTL_SECS,
+    }))
 }
 
 async fn list(
@@ -97,18 +81,27 @@ async fn list(
     Ok(Json(registered.into_iter().map(DeviceView::from).collect()))
 }
 
+#[derive(Serialize)]
+struct Revoked {
+    revoked: bool,
+}
+
 async fn revoke(
     State(devices): State<Devices>,
     CurrentUser(user): CurrentUser,
+    CurrentDevice(bound): CurrentDevice,
+    session: Session,
     Path(public_key): Path<String>,
 ) -> Result<Json<Revoked>, AuthError> {
     let key = DeviceKey::parse(&public_key).ok_or(AuthError::NotFound("device_unknown"))?;
     devices.revoke(&user.sub, key.hex()).await?;
 
-    Ok(Json(Revoked { revoked: true }))
-}
+    if key.hex() == bound {
+        session
+            .flush()
+            .await
+            .map_err(|_| AuthError::Upstream("session_store_unavailable"))?;
+    }
 
-#[derive(Serialize)]
-struct Revoked {
-    revoked: bool,
+    Ok(Json(Revoked { revoked: true }))
 }

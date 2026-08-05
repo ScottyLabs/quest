@@ -11,17 +11,20 @@ use axum::response::{IntoResponse, Response};
 use entity::{devices, users};
 use fred::prelude::{KeysInterface, Pool};
 use fred::types::{Expiration, SetOptions};
+use sea_orm::prelude::Uuid;
 use sea_orm::sea_query::OnConflict;
 use sea_orm::{
-    ActiveModelTrait, ActiveValue, ColumnTrait, DatabaseConnection, EntityTrait, ModelTrait,
-    QueryFilter, QueryOrder,
+    ActiveValue, ColumnTrait, DatabaseConnection, EntityTrait, ModelTrait, QueryFilter, QueryOrder,
 };
 
 use crate::auth::AuthError;
-use crate::auth::extract::session_user;
-use crate::auth::session::SessionUser;
+use crate::auth::extract::session_binding;
 use key::DeviceKey;
 use proof::{PROOF_HEADER, request_url};
+
+pub const NONCE_TTL_SECS: i64 = 120;
+
+pub const TICKET_TTL_SECS: i64 = 600;
 
 #[derive(Clone)]
 pub struct Devices {
@@ -33,8 +36,22 @@ fn nonce_key(nonce: &str) -> String {
     format!("quest:device:nonce:{nonce}")
 }
 
+fn ticket_key(ticket: &str) -> String {
+    format!("quest:device:ticket:{ticket}")
+}
+
 fn jti_key(jti: &str) -> String {
     format!("quest:proof:jti:{jti}")
+}
+
+fn token() -> String {
+    let mut bytes = [0u8; 16];
+    rand::fill(&mut bytes);
+    hex::encode(bytes)
+}
+
+fn is_token(value: &str) -> bool {
+    value.len() == 32 && value.bytes().all(|b| b.is_ascii_hexdigit())
 }
 
 impl Devices {
@@ -42,35 +59,114 @@ impl Devices {
         Self { db, valkey }
     }
 
-    async fn issue_nonce(&self, sub: &str, ttl: i64) -> Result<String, AuthError> {
-        let mut bytes = [0u8; 16];
-        rand::fill(&mut bytes);
-        let nonce = hex::encode(bytes);
-
+    async fn put(&self, key: String, value: &str, ttl: i64) -> Result<(), AuthError> {
         self.valkey
-            .set::<(), _, _>(
-                nonce_key(&nonce),
-                sub,
-                Some(Expiration::EX(ttl)),
-                None,
-                false,
-            )
+            .set::<(), _, _>(key, value, Some(Expiration::EX(ttl)), None, false)
             .await
-            .map_err(|_| AuthError::Upstream("session_store_unavailable"))?;
+            .map_err(store_down)
+    }
 
+    async fn take(&self, key: String) -> Result<Option<String>, AuthError> {
+        self.valkey.getdel(key).await.map_err(store_down)
+    }
+
+    pub async fn issue_nonce(&self) -> Result<String, AuthError> {
+        let nonce = token();
+        self.put(nonce_key(&nonce), "", NONCE_TTL_SECS).await?;
         Ok(nonce)
     }
 
-    async fn spend_nonce(&self, nonce: &str, sub: &str) -> Result<(), AuthError> {
-        let owner: Option<String> = self
-            .valkey
-            .getdel(nonce_key(nonce))
-            .await
-            .map_err(|_| AuthError::Upstream("session_store_unavailable"))?;
+    pub async fn issue_ticket(
+        &self,
+        nonce: &str,
+        key: &DeviceKey,
+        label: Option<String>,
+    ) -> Result<String, AuthError> {
+        if !is_token(nonce) {
+            return Err(AuthError::Unauthorized("nonce_invalid"));
+        }
 
-        (owner.as_deref() == Some(sub))
-            .then_some(())
-            .ok_or(AuthError::Unauthorized("nonce_invalid"))
+        self.take(nonce_key(nonce))
+            .await?
+            .ok_or(AuthError::Unauthorized("nonce_invalid"))?;
+
+        let ticket = token();
+        let held = Held {
+            public_key: key.hex().to_owned(),
+            label,
+        };
+        let encoded = serde_json::to_string(&held).map_err(|_| AuthError::Upstream("encode"))?;
+
+        self.put(ticket_key(&ticket), &encoded, TICKET_TTL_SECS)
+            .await?;
+        Ok(ticket)
+    }
+
+    pub async fn claim(&self, ticket: Option<&str>, owner: Uuid) -> Result<String, AuthError> {
+        let unverified = AuthError::Unauthorized("device_unverified");
+        let ticket = ticket.filter(|t| is_token(t)).ok_or(unverified)?;
+
+        let held: Held = self
+            .take(ticket_key(ticket))
+            .await?
+            .and_then(|raw| serde_json::from_str(&raw).ok())
+            .ok_or(unverified)?;
+
+        let fresh = devices::ActiveModel {
+            public_key: ActiveValue::Set(held.public_key.clone()),
+            user_id: ActiveValue::Set(owner),
+            label: ActiveValue::Set(held.label),
+            ..Default::default()
+        };
+
+        devices::Entity::insert(fresh)
+            .on_conflict(
+                OnConflict::column(devices::Column::PublicKey)
+                    .do_nothing_on([devices::Column::PublicKey])
+                    .to_owned(),
+            )
+            .exec_without_returning(&self.db)
+            .await
+            .map_err(db_down)?;
+
+        let bound = devices::Entity::find_by_id(&held.public_key)
+            .one(&self.db)
+            .await
+            .map_err(db_down)?
+            .ok_or(AuthError::Upstream("device_row_missing"))?;
+
+        if bound.user_id != owner {
+            return Err(AuthError::Conflict("device_owned"));
+        }
+
+        Ok(held.public_key)
+    }
+
+    pub async fn registered(&self, sub: &str) -> Result<Vec<devices::Model>, AuthError> {
+        devices::Entity::find()
+            .inner_join(users::Entity)
+            .filter(users::Column::Sub.eq(sub))
+            .order_by_asc(devices::Column::CreatedAt)
+            .all(&self.db)
+            .await
+            .map_err(db_down)
+    }
+
+    pub async fn revoke(&self, sub: &str, public_key: &str) -> Result<(), AuthError> {
+        let unknown = AuthError::NotFound("device_unknown");
+        let (device, owner) = devices::Entity::find_by_id(public_key)
+            .find_also_related(users::Entity)
+            .one(&self.db)
+            .await
+            .map_err(db_down)?
+            .ok_or(unknown)?;
+
+        if owner.map(|owner| owner.sub).as_deref() != Some(sub) {
+            return Err(unknown);
+        }
+
+        device.delete(&self.db).await.map_err(db_down)?;
+        Ok(())
     }
 
     async fn claim_jti(&self, jti: &str, now: i64) -> Result<bool, AuthError> {
@@ -84,96 +180,25 @@ impl Devices {
                 false,
             )
             .await
-            .map_err(|_| AuthError::Upstream("session_store_unavailable"))?;
+            .map_err(store_down)?;
 
         Ok(claimed.is_some())
     }
 
-    async fn owner_of(
-        &self,
-        public_key: &str,
-    ) -> Result<Option<(devices::Model, String)>, AuthError> {
-        let found = devices::Entity::find_by_id(public_key)
-            .find_also_related(users::Entity)
-            .one(&self.db)
-            .await
-            .map_err(db_down)?;
+    async fn check(&self, parts: &mut Parts) -> Result<(), AuthError> {
+        let (_, bound) = session_binding(parts)
+            .await?
+            .ok_or(AuthError::Unauthorized("unauthorized"))?;
 
-        Ok(found.map(|(device, user)| {
-            let sub = user.map(|user| user.sub).unwrap_or_default();
-            (device, sub)
-        }))
-    }
-
-    async fn user_row(&self, user: &SessionUser) -> Result<users::Model, AuthError> {
-        if let Some(found) = users::Entity::find()
-            .filter(users::Column::Sub.eq(&user.sub))
-            .one(&self.db)
-            .await
-            .map_err(db_down)?
-        {
-            return Ok(found);
-        }
-
-        let fresh = users::ActiveModel {
-            sub: ActiveValue::Set(user.sub.clone()),
-            andrew_id: ActiveValue::Set(user.andrew_id.clone()),
-            ..Default::default()
-        };
-
-        users::Entity::insert(fresh)
-            .on_conflict(
-                OnConflict::column(users::Column::Sub)
-                    .do_nothing_on([users::Column::Sub])
-                    .to_owned(),
-            )
-            .exec_without_returning(&self.db)
-            .await
-            .map_err(db_down)?;
-
-        users::Entity::find()
-            .filter(users::Column::Sub.eq(&user.sub))
-            .one(&self.db)
-            .await
-            .map_err(db_down)?
-            .ok_or(AuthError::Upstream("user_row_missing"))
-    }
-
-    pub async fn any_registered(&self, sub: &str) -> Result<bool, AuthError> {
-        devices::Entity::find()
-            .inner_join(users::Entity)
-            .filter(users::Column::Sub.eq(sub))
-            .one(&self.db)
-            .await
-            .map(|found| found.is_some())
-            .map_err(db_down)
-    }
-
-    async fn registered(&self, sub: &str) -> Result<Vec<devices::Model>, AuthError> {
-        devices::Entity::find()
-            .inner_join(users::Entity)
-            .filter(users::Column::Sub.eq(sub))
-            .order_by_asc(devices::Column::CreatedAt)
-            .all(&self.db)
-            .await
-            .map_err(db_down)
-    }
-
-    async fn check(&self, parts: &Parts, user: &SessionUser) -> Result<(), AuthError> {
+        let invalid = AuthError::Unauthorized("proof_invalid");
         let header = parts
             .headers
             .get(PROOF_HEADER)
             .and_then(|value| value.to_str().ok())
             .ok_or(AuthError::Unauthorized("proof_required"))?;
-
-        let invalid = AuthError::Unauthorized("proof_invalid");
         let proof = proof::parse(header).ok_or(invalid)?;
 
-        let (_, owner) = self
-            .owner_of(proof.key.hex())
-            .await?
-            .ok_or(AuthError::Unauthorized("device_unknown"))?;
-        if owner != user.sub {
+        if proof.key.hex() != bound {
             return Err(AuthError::Unauthorized("device_mismatch"));
         }
 
@@ -191,20 +216,30 @@ impl Devices {
     }
 }
 
+#[derive(serde::Serialize, serde::Deserialize)]
+struct Held {
+    public_key: String,
+    label: Option<String>,
+}
+
 fn db_down(err: sea_orm::DbErr) -> AuthError {
     eprintln!("devices: {err}");
     AuthError::Upstream("database_unavailable")
 }
 
-fn bootstrap(method: &Method, path: &str) -> bool {
-    if method == Method::OPTIONS {
-        return true;
-    }
+fn store_down(err: fred::error::Error) -> AuthError {
+    eprintln!("devices: {err}");
+    AuthError::Upstream("session_store_unavailable")
+}
 
+fn bootstrap(method: &Method, path: &str) -> bool {
     match path {
-        "/devices/challenge" => method == Method::GET,
-        "/devices" => method == Method::POST,
-        _ => path.starts_with("/auth/"),
+        _ if method == Method::OPTIONS => true,
+        "/auth/challenge" => method == Method::GET,
+        "/auth/device" => method == Method::POST,
+        "/auth/login" => method == Method::GET,
+        "/auth/callback" => true,
+        _ => false,
     }
 }
 
@@ -213,16 +248,9 @@ pub async fn enforce(State(devices): State<Devices>, request: Request, next: Nex
         return next.run(request).await;
     }
 
-    let (parts, body) = request.into_parts();
-    let mut parts = parts;
+    let (mut parts, body) = request.into_parts();
 
-    let outcome = match session_user(&mut parts).await {
-        Ok(Some(user)) => devices.check(&parts, &user).await,
-        Ok(None) => Ok(()),
-        Err(err) => Err(err),
-    };
-
-    match outcome {
+    match devices.check(&mut parts).await {
         Ok(()) => next.run(Request::from_parts(parts, body)).await,
         Err(err) => err.into_response(),
     }
@@ -242,95 +270,5 @@ impl From<devices::Model> for DeviceView {
             created_at: device.created_at.to_rfc3339(),
             label: device.label,
         }
-    }
-}
-
-enum Registered {
-    Ours(DeviceView),
-    Taken,
-}
-
-impl Devices {
-    async fn register(
-        &self,
-        user: &SessionUser,
-        key: &DeviceKey,
-        label: Option<String>,
-    ) -> Result<Registered, AuthError> {
-        if let Some((device, owner)) = self.owner_of(key.hex()).await? {
-            if owner != user.sub {
-                return Ok(Registered::Taken);
-            }
-
-            return self.relabel(device, label).await.map(Registered::Ours);
-        }
-
-        let row = self.user_row(user).await?;
-        let device = devices::ActiveModel {
-            public_key: ActiveValue::Set(key.hex().to_owned()),
-            user_id: ActiveValue::Set(row.id),
-            label: ActiveValue::Set(label),
-            ..Default::default()
-        };
-
-        devices::Entity::insert(device)
-            .on_conflict(
-                OnConflict::column(devices::Column::PublicKey)
-                    .do_nothing_on([devices::Column::PublicKey])
-                    .to_owned(),
-            )
-            .exec_without_returning(&self.db)
-            .await
-            .map_err(db_down)?;
-
-        let (device, owner) = self
-            .owner_of(key.hex())
-            .await?
-            .ok_or(AuthError::Upstream("device_row_missing"))?;
-
-        Ok(if owner == user.sub {
-            Registered::Ours(device.into())
-        } else {
-            Registered::Taken
-        })
-    }
-
-    async fn relabel(
-        &self,
-        device: devices::Model,
-        label: Option<String>,
-    ) -> Result<DeviceView, AuthError> {
-        if label.is_none() || label == device.label {
-            return Ok(device.into());
-        }
-
-        let update = devices::ActiveModel {
-            public_key: ActiveValue::Unchanged(device.public_key),
-            label: ActiveValue::Set(label),
-            ..Default::default()
-        };
-
-        update
-            .update(&self.db)
-            .await
-            .map_err(db_down)
-            .map(Into::into)
-    }
-
-    async fn revoke(&self, sub: &str, public_key: &str) -> Result<(), AuthError> {
-        let found = devices::Entity::find_by_id(public_key)
-            .find_also_related(users::Entity)
-            .one(&self.db)
-            .await
-            .map_err(db_down)?;
-
-        let unknown = AuthError::NotFound("device_unknown");
-        let (device, owner) = found.ok_or(unknown)?;
-        if owner.map(|owner| owner.sub).as_deref() != Some(sub) {
-            return Err(unknown);
-        }
-
-        device.delete(&self.db).await.map_err(db_down)?;
-        Ok(())
     }
 }

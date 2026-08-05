@@ -30,21 +30,35 @@ fn hmac_sha256(key: &[u8], data: &[u8]) -> [u8; 32] {
     buf
 }
 
-fn derive_k_meta(master: &[u8; 32]) -> [u8; 16] {
-    let full = hmac_sha256(master, b"K1");
+/// Every tag key is `HMAC-SHA256(master, label ‖ uid?)` truncated to 16 bytes.
+/// `uid` is `None` for the non-diversified production K1, which the reader
+/// needs before it has decrypted the UID out of the PICC data.
+///
+/// Provisioning derives the same four keys from here, so the labels live in
+/// one place: changing one silently stops every provisioned card verifying.
+pub fn derive_key(master: &[u8; 32], label: &[u8; 2], uid: Option<&[u8; 7]>) -> [u8; 16] {
+    let mut input = [0u8; 9];
+    input[..2].copy_from_slice(label);
+    let data: &[u8] = match uid {
+        Some(uid) => {
+            input[2..].copy_from_slice(uid);
+            &input
+        }
+        None => &input[..2],
+    };
+
+    let full = hmac_sha256(master, data);
     let mut k = [0u8; 16];
     k.copy_from_slice(&full[..16]);
     k
 }
 
+fn derive_k_meta(master: &[u8; 32]) -> [u8; 16] {
+    derive_key(master, b"K1", None)
+}
+
 fn derive_k_file(master: &[u8; 32], uid: &[u8; 7]) -> [u8; 16] {
-    let mut input = [0u8; 9];
-    input[..2].copy_from_slice(b"K2");
-    input[2..].copy_from_slice(uid);
-    let full = hmac_sha256(master, &input);
-    let mut k = [0u8; 16];
-    k.copy_from_slice(&full[..16]);
-    k
+    derive_key(master, b"K2", Some(uid))
 }
 
 fn aes_cbc_decrypt_block(key: &[u8; 16], ciphertext: &[u8; 16]) -> [u8; 16] {

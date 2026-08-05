@@ -1,6 +1,5 @@
 mod auth;
 mod cors;
-mod crypto;
 mod db;
 
 use std::sync::Arc;
@@ -13,12 +12,12 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::get;
 use serde::{Deserialize, Serialize};
 
-use crypto::{VerifyError, verify_tap};
+use quest::crypto::{VerifyError, verify_tap};
 
 #[derive(Clone)]
 struct AppState {
     master: Arc<[u8; 32]>,
-    #[allow(dead_code)] // until the first handler reads it
+    #[allow(dead_code)] // temp
     db: sea_orm::DatabaseConnection,
 }
 

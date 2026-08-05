@@ -1,6 +1,7 @@
 mod auth;
 mod cors;
 mod db;
+mod devices;
 
 use std::sync::Arc;
 
@@ -130,7 +131,7 @@ async fn main() {
     let master = load_master_key();
     let state = AppState {
         master: Arc::new(master),
-        db,
+        db: db.clone(),
     };
 
     let app = Router::new().route("/tap", get(tap)).with_state(state);
@@ -142,7 +143,18 @@ async fn main() {
             undiscovered = auth.undiscovered();
 
             let sessions = auth.sessions.layer();
+            let devices = devices::Devices::new(db, auth.sessions.pool());
+
+            // `enforce` sits over every route rather than under a chosen few, so
+            // a new endpoint is protected the moment it exists. It goes inside
+            // the session layer, which is what it reads the account from.
             app.merge(auth::routes::router(auth))
+                .merge(devices::routes::router(devices.clone()))
+                .layer(axum::middleware::from_fn_with_state(
+                    devices.clone(),
+                    devices::enforce,
+                ))
+                .layer(axum::Extension(devices))
                 .layer(sessions)
                 .layer(axum::middleware::from_fn(auth::extract::bearer_id))
         }

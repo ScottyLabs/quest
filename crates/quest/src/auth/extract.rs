@@ -36,18 +36,22 @@ pub async fn bearer_id(mut request: Request, next: Next) -> Response {
     next.run(request).await
 }
 
-async fn current(parts: &mut Parts) -> Result<SessionUser, AuthError> {
-    let anonymous = AuthError::Unauthorized("unauthorized");
 
+pub async fn session_user(parts: &mut Parts) -> Result<Option<SessionUser>, AuthError> {
     let session = Session::from_request_parts(parts, &())
         .await
-        .map_err(|_| anonymous)?;
+        .map_err(|_| AuthError::Unauthorized("unauthorized"))?;
 
     session
         .get::<SessionUser>(USER_KEY)
         .await
-        .map_err(|_| AuthError::Upstream("session_store_unavailable"))?
-        .ok_or(anonymous)
+        .map_err(|_| AuthError::Upstream("session_store_unavailable"))
+}
+
+async fn current(parts: &mut Parts) -> Result<SessionUser, AuthError> {
+    session_user(parts)
+        .await?
+        .ok_or(AuthError::Unauthorized("unauthorized"))
 }
 
 impl<S> FromRequestParts<S> for CurrentUser

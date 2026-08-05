@@ -6,7 +6,7 @@ use axum::http::{HeaderValue, StatusCode, header};
 use axum::middleware::{Next, from_fn, from_fn_with_state};
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{any, get, post};
-use axum::{Json, Router};
+use axum::{Extension, Json, Router};
 use axum_oidc::error::MiddlewareError;
 use axum_oidc::{OidcAuthLayer, OidcClaims, OidcLoginLayer, handle_oidc_redirect};
 use serde::{Deserialize, Serialize};
@@ -17,6 +17,7 @@ use super::extract::CurrentUser;
 use super::oidc::{GroupClaims, IdClaims, SessionWrapper, validate_return};
 use super::session::{SESSION_TTL, SessionUser, USER_KEY};
 use super::{Auth, AuthError};
+use crate::devices::Devices;
 
 const RETURN_KEY: &str = "quest.return";
 
@@ -282,13 +283,31 @@ fn error_page(detail: &str) -> Response {
 struct StatusResponse {
     logged_in: bool,
     user: Option<UserView>,
+    device: Option<DeviceState>,
 }
 
-async fn status(user: Option<CurrentUser>) -> Json<StatusResponse> {
-    Json(StatusResponse {
+#[derive(Serialize)]
+struct DeviceState {
+    registered: bool,
+}
+
+async fn status(
+    Extension(devices): Extension<Devices>,
+    user: Option<CurrentUser>,
+) -> Result<Json<StatusResponse>, AuthError> {
+    let device = match user.as_ref() {
+        Some(CurrentUser(user)) => devices
+            .any_registered(&user.sub)
+            .await?
+            .then_some(DeviceState { registered: true }),
+        None => None,
+    };
+
+    Ok(Json(StatusResponse {
         logged_in: user.is_some(),
         user: user.map(|u| u.0.into()),
-    })
+        device,
+    }))
 }
 
 #[derive(Serialize)]
@@ -314,9 +333,10 @@ async fn logout(
     }))
 }
 
-pub const ALLOWED_HEADERS: [header::HeaderName; 4] = [
+pub const ALLOWED_HEADERS: [header::HeaderName; 5] = [
     header::AUTHORIZATION,
     header::CONTENT_TYPE,
     header::ACCEPT,
     header::COOKIE,
+    crate::devices::proof::PROOF_HEADER,
 ];

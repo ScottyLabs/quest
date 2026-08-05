@@ -6,7 +6,7 @@ pub fn layer() -> CorsLayer {
         .allow_origin(AllowOrigin::predicate(|origin: &HeaderValue, _parts| {
             origin_allowed(origin)
         }))
-        .allow_methods([Method::GET, Method::POST, Method::OPTIONS])
+        .allow_methods([Method::GET, Method::POST, Method::DELETE, Method::OPTIONS])
         .allow_headers(crate::auth::routes::ALLOWED_HEADERS)
         .allow_credentials(true)
 }

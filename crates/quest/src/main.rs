@@ -1,6 +1,6 @@
 mod auth;
 mod cors;
-mod crypto;
+mod db;
 
 use std::sync::Arc;
 
@@ -12,11 +12,13 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::get;
 use serde::{Deserialize, Serialize};
 
-use crypto::{VerifyError, verify_tap};
+use quest::crypto::{VerifyError, verify_tap};
 
 #[derive(Clone)]
 struct AppState {
     master: Arc<[u8; 32]>,
+    #[allow(dead_code)] // temp
+    db: sea_orm::DatabaseConnection,
 }
 
 #[derive(Deserialize)]
@@ -120,9 +122,15 @@ async fn main() {
         .parse()
         .expect("PORT must be a valid port number");
 
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let db = db::connect(&database_url)
+        .await
+        .expect("failed to connect to Postgres");
+
     let master = load_master_key();
     let state = AppState {
         master: Arc::new(master),
+        db,
     };
 
     let app = Router::new().route("/tap", get(tap)).with_state(state);

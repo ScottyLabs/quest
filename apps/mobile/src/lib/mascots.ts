@@ -1,5 +1,18 @@
+export type Dorm =
+  | "morewood"
+  | "etower"
+  | "whesco"
+  | "mcgillboss"
+  | "hammershlag"
+  | "donner"
+  | "stever"
+  | "mudge"
+  | "res";
+
 export interface Mascot {
   slug: string;
+  /** The dorm this tile picks; one row of the `dorm` enum. */
+  dorm: Dorm;
   name: string;
   quote: string;
   credit?: string;
@@ -25,6 +38,7 @@ export const HOUSES: House[] = [
     mascots: [
       {
         slug: "sunflower",
+        dorm: "morewood",
         name: "Gardens the Sunflower",
         quote: '"What do we need?! Morewood!!"',
         fill: "#ffb22f",
@@ -33,6 +47,7 @@ export const HOUSES: House[] = [
       },
       {
         slug: "pineapple",
+        dorm: "etower",
         name: "Yuxiang the Pineapple",
         quote: '"Who\'s Got The Power?! E-Tower!!"',
         fill: "#ffb22f",
@@ -43,21 +58,14 @@ export const HOUSES: House[] = [
   },
   {
     id: "donner",
-    label: "Donner + West Wing",
+    label: "Donner",
     band: "#89c1f5",
     strip: "#dae6f1",
     mascots: [
       {
         slug: "whale",
+        dorm: "donner",
         name: "Donner the Whale",
-        quote: '"Yeah, Donner!!"',
-        fill: "#083372",
-        edge: "#022557",
-        shade: "#022557",
-      },
-      {
-        slug: "space",
-        name: "Saturn the Space",
         quote: '"Yeah, Donner!!"',
         fill: "#083372",
         edge: "#022557",
@@ -73,6 +81,7 @@ export const HOUSES: House[] = [
     mascots: [
       {
         slug: "cactus",
+        dorm: "stever",
         name: "Stever the Cactus",
         quote: '"Brrr...It\'s Cold in here... There must be some Stever in the Atmosphere"',
         fill: "#189846",
@@ -89,6 +98,7 @@ export const HOUSES: House[] = [
     mascots: [
       {
         slug: "koi",
+        dorm: "mudge",
         name: "Mudge the Koi",
         quote: '"Who\'s house? Mudge House!!"',
         fill: "#caa3e8",
@@ -105,6 +115,7 @@ export const HOUSES: House[] = [
     mascots: [
       {
         slug: "flamingo",
+        dorm: "res",
         name: "Ranch the Flamingo",
         quote: '"Party on what ave?! Fifth Ave!!"',
         credit: "~Fifth and Clyde",
@@ -122,6 +133,7 @@ export const HOUSES: House[] = [
     mascots: [
       {
         slug: "penguin",
+        dorm: "whesco",
         name: "Whesco the Penguin",
         quote: '"Let\'s Go, Whesco!!"',
         credit: "~Henderson, Welch, and Scobell",
@@ -131,6 +143,7 @@ export const HOUSES: House[] = [
       },
       {
         slug: "redpanda",
+        dorm: "mcgillboss",
         name: "Randal the Red Panda",
         quote: '"Can I get a Hill Yeah?! Hill Yeah!!"',
         credit: "~McGill and Boss",
@@ -140,6 +153,7 @@ export const HOUSES: House[] = [
       },
       {
         slug: "hedgehog",
+        dorm: "hammershlag",
         name: "Penny the HedgeHog",
         quote: '"Can I get a Hill Yeah?! Hill Yeah!!"',
         credit: "~Hammerschlag",

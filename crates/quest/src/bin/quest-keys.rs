@@ -1,6 +1,5 @@
-//! Derive the four NTAG 424 DNA keys for an eval/production tag from the
-//! master secret and the tag's UID. Output is `key=hex` lines on stdout, one
-//! per line, suitable for parsing by the provisioning Lua script.
+//! Derives a tag's four NTAG 424 DNA keys from the master secret and UID.
+//! Prints `key=hex` lines for the provisioning Lua script to parse.
 
 use std::env;
 use std::fs;

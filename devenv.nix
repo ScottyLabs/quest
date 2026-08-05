@@ -13,6 +13,7 @@ in
     project.name = "quest";
     rust.enable = true;
     secrets.enable = true;
+    postgres.enable = true;
     valkey.enable = true;
 
     deno = {

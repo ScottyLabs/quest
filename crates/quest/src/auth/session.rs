@@ -56,4 +56,8 @@ impl Sessions {
             .with_expiry(Expiry::OnInactivity(SESSION_TTL))
             .with_always_save(true)
     }
+
+    pub fn pool(&self) -> Pool {
+        self.pool.clone()
+    }
 }

@@ -12,6 +12,7 @@ mod m20260804_000900_add_challenge_open_from;
 mod m20260804_001000_add_items_image_url;
 mod m20260804_001100_add_items_quantity_available;
 mod m20260804_001200_devices_public_key_and_index;
+mod m20260804_001300_add_devices_label;
 
 pub struct Migrator;
 
@@ -31,6 +32,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260804_001000_add_items_image_url::Migration),
             Box::new(m20260804_001100_add_items_quantity_available::Migration),
             Box::new(m20260804_001200_devices_public_key_and_index::Migration),
+            Box::new(m20260804_001300_add_devices_label::Migration),
         ]
     }
 }

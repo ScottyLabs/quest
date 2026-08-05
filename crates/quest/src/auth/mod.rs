@@ -85,6 +85,8 @@ pub enum AuthError {
     NotConfigured,
     BadRequest(&'static str),
     Unauthorized(&'static str),
+    NotFound(&'static str),
+    Conflict(&'static str),
     Upstream(&'static str),
 }
 
@@ -94,6 +96,8 @@ impl AuthError {
             AuthError::NotConfigured => (StatusCode::SERVICE_UNAVAILABLE, "auth_not_configured"),
             AuthError::BadRequest(e) => (StatusCode::BAD_REQUEST, *e),
             AuthError::Unauthorized(e) => (StatusCode::UNAUTHORIZED, *e),
+            AuthError::NotFound(e) => (StatusCode::NOT_FOUND, *e),
+            AuthError::Conflict(e) => (StatusCode::CONFLICT, *e),
             AuthError::Upstream(e) => (StatusCode::BAD_GATEWAY, *e),
         }
     }

@@ -32,6 +32,8 @@ in
     ricochet.appUrl = "http://localhost:8080";
   };
 
+  services.postgres.extensions = extensions: [ extensions.postgis ];
+
   # normally logs are scoped to crates
   env.RUST_LOG = pkgs.lib.mkForce "info,quest=debug,ricochet=debug";
 

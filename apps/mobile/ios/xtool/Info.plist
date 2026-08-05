@@ -2,12 +2,30 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<!-- merged over xtool's generated keys -->
 	<key>CFBundleDisplayName</key>
 	<string>CMU Quest</string>
-	<!-- Capacitor ships a release xcframework; only way to get Web Inspector -->
 	<key>CAPACITOR_DEBUG</key>
 	<string>true</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+		<key>NSAllowsArbitraryLoadsInWebContent</key>
+		<true/>
+	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Connects to your computer's dev server for live reload.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>org.scottylabs.quest</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>org.scottylabs.quest</string>
+			</array>
+		</dict>
+	</array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

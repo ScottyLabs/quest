@@ -1,13 +1,11 @@
 version: 1
 
-# must match capacitor.config.ts appId
-bundleID: org.scottylabs.quest
+# This won't reflect in production build
+bundleID: org.scottylabs.quest.dev
 product: App
 
-# merged over xtool's generated plist
 infoPath: Info.plist
 
-# copied to the .app root by basename, straight out of what cap sync writes
 resources:
   - ../App/App/public
   - ../App/App/capacitor.config.json

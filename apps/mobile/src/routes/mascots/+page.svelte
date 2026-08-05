@@ -1,0 +1,49 @@
+<script lang="ts">
+  import { goto } from "$app/navigation";
+  import Button from "$lib/components/Button.svelte";
+  import TopBar from "$lib/components/TopBar.svelte";
+  import Carousel from "$lib/components/mascots/Carousel.svelte";
+  import Hero from "$lib/components/mascots/Hero.svelte";
+  import { MASCOTS } from "$lib/mascots";
+
+  const HOME = "/";
+
+  let selected = $state<string | null>(null);
+  let engaged = $state(false);
+
+  const chosen = $derived(selected === null ? null : (MASCOTS[selected] ?? null));
+
+  function confirm() {
+    if (selected !== null) localStorage.setItem("quest.mascot", selected);
+    goto(HOME);
+  }
+</script>
+
+<svelte:head><title>{chosen?.mascot.name ?? "Dorm Mascots"}</title></svelte:head>
+
+<div class="screen">
+  <TopBar onback={() => goto(HOME)} onskip={() => goto(HOME)} />
+
+  <Hero mascot={engaged ? (chosen?.mascot ?? null) : null} />
+
+  <Carousel bind:selected bind:engaged />
+
+  <div class="actions">
+    <Button onclick={confirm}>Confirm</Button>
+  </div>
+</div>
+
+<style>
+  .screen {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    padding: calc(27px + env(safe-area-inset-top)) 0 calc(14px + env(safe-area-inset-bottom));
+    overflow: hidden;
+    background: var(--highlight);
+  }
+  .actions {
+    flex: none;
+    padding: 24px 16px 0;
+  }
+</style>

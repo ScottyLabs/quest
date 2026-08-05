@@ -87,9 +87,8 @@ pub fn verify_tap(
 
     let k_file = derive_k_file(master, &uid);
 
-    // SV2 per AN12196 section 3.4.4.2 is a 16-byte session-vector that mixes a fixed
-    // protocol prefix with this tap's UID and counter. CMAC-ing it with the
-    // file key yields a per-tap session key that's then used to MAC the file.
+    // SV2 per AN12196 3.4.4.2: fixed prefix || UID || counter, CMAC'd under
+    // K_file to give this tap's session key.
     let mut sv2 = [0u8; 16];
     sv2[..6].copy_from_slice(&[0x3C, 0xC3, 0x00, 0x01, 0x00, 0x80]);
     sv2[6..13].copy_from_slice(&uid);

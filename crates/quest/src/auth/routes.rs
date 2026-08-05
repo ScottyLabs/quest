@@ -15,9 +15,10 @@ use tower_sessions::Session;
 
 use super::extract::CurrentUser;
 use super::oidc::{GroupClaims, IdClaims, SessionWrapper, validate_return};
-use super::session::{SESSION_TTL, SessionUser, USER_KEY};
+use super::session::{DEVICE_KEY, SESSION_TTL, SessionUser, USER_KEY};
 use super::{Auth, AuthError};
 use crate::devices::Devices;
+use crate::users::Users;
 
 const RETURN_KEY: &str = "quest.return";
 
@@ -117,6 +118,7 @@ impl From<SessionUser> for UserView {
 struct LoginQuery {
     #[serde(rename = "return")]
     return_to: Option<String>,
+    ticket: Option<String>,
 }
 
 async fn guard(
@@ -143,6 +145,8 @@ async fn guard(
 
 async fn login(
     State(auth): State<Arc<Auth>>,
+    Extension(users): Extension<Users>,
+    Extension(devices): Extension<Devices>,
     claims: OidcClaims<GroupClaims>,
     session: Session,
     Query(query): Query<LoginQuery>,
@@ -159,17 +163,36 @@ async fn login(
         groups: claims.groups,
     };
 
+    let row = users.upsert(&user).await?;
+
+    let device = match devices.claim(query.ticket.as_deref(), row.id).await {
+        Ok(device) => device,
+        Err(AuthError::Conflict(code) | AuthError::Unauthorized(code)) => {
+            session.flush().await.ok();
+            return Ok(failed(Some(&target), code));
+        }
+        Err(err) => return Err(err),
+    };
+
     session.flush().await.ok();
+    let sub = user.sub.clone();
+    let store_down = || AuthError::Upstream("session_store_unavailable");
     session
         .insert(USER_KEY, user)
         .await
-        .map_err(|_| AuthError::Upstream("session_store_unavailable"))?;
+        .map_err(|_| store_down())?;
     session
-        .save()
+        .insert(DEVICE_KEY, device)
         .await
-        .map_err(|_| AuthError::Upstream("session_store_unavailable"))?;
+        .map_err(|_| store_down())?;
+    session.save().await.map_err(|_| store_down())?;
 
-    let id = session.id().ok_or(AuthError::Upstream("session_no_id"))?;
+    let id = session
+        .id()
+        .ok_or(AuthError::Upstream("session_no_id"))?
+        .to_string();
+
+    auth.sessions.bind(&sub, &id).await?;
 
     Ok(handoff(
         &format!(
@@ -279,35 +302,8 @@ fn error_page(detail: &str) -> Response {
     (StatusCode::BAD_REQUEST, body).into_response()
 }
 
-#[derive(Serialize)]
-struct StatusResponse {
-    logged_in: bool,
-    user: Option<UserView>,
-    device: Option<DeviceState>,
-}
-
-#[derive(Serialize)]
-struct DeviceState {
-    registered: bool,
-}
-
-async fn status(
-    Extension(devices): Extension<Devices>,
-    user: Option<CurrentUser>,
-) -> Result<Json<StatusResponse>, AuthError> {
-    let device = match user.as_ref() {
-        Some(CurrentUser(user)) => devices
-            .any_registered(&user.sub)
-            .await?
-            .then_some(DeviceState { registered: true }),
-        None => None,
-    };
-
-    Ok(Json(StatusResponse {
-        logged_in: user.is_some(),
-        user: user.map(|u| u.0.into()),
-        device,
-    }))
+async fn status(CurrentUser(user): CurrentUser) -> Json<UserView> {
+    Json(user.into())
 }
 
 #[derive(Serialize)]
@@ -318,12 +314,13 @@ struct LogoutResponse {
 async fn logout(
     State(auth): State<Arc<Auth>>,
     session: Session,
-    _user: CurrentUser,
+    CurrentUser(user): CurrentUser,
 ) -> Result<Json<LogoutResponse>, AuthError> {
     session
         .flush()
         .await
         .map_err(|_| AuthError::Upstream("session_store_unavailable"))?;
+    auth.sessions.release(&user.sub).await?;
 
     Ok(Json(LogoutResponse {
         end_session_url: auth

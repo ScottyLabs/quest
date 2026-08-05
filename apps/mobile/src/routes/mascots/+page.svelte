@@ -5,16 +5,25 @@
   import Carousel from "$lib/components/mascots/Carousel.svelte";
   import Hero from "$lib/components/mascots/Hero.svelte";
   import { MASCOTS } from "$lib/mascots";
+  import { setDorm } from "$lib/user";
+  import { warn } from "$lib/notice.svelte";
 
-  const HOME = "/";
+  const HOME = "/app";
 
   let selected = $state<string | null>(null);
   let engaged = $state(false);
 
   const chosen = $derived(selected === null ? null : (MASCOTS[selected] ?? null));
 
-  function confirm() {
-    if (selected !== null) localStorage.setItem("quest.mascot", selected);
+  async function confirm() {
+    if (selected !== null) {
+      localStorage.setItem("quest.mascot", selected);
+
+      // `setDorm` enrols first — the dorm PUT is proofed.
+      const dorm = MASCOTS[selected]?.mascot.dorm;
+      if (dorm && !(await setDorm(dorm))) warn("Couldn't save your dorm. We'll try again later.");
+    }
+
     goto(HOME);
   }
 </script>

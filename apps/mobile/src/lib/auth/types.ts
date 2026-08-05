@@ -27,6 +27,15 @@ export type AuthErrorCode =
   | "invalid_return"
   | "expired_token"
   | "unauthorized"
+  | "proof_required"
+  | "proof_invalid"
+  | "proof_replayed"
+  | "device_unknown"
+  | "device_mismatch"
+  | "device_owned"
+  | "device_unverified"
+  | "nonce_invalid"
+  | "public_key_invalid"
   | "network"
   | "cancelled"
   | "unknown";
@@ -52,6 +61,16 @@ const MESSAGES: Record<AuthErrorCode, string> = {
   invalid_return: "Something went wrong signing in. Please try again.",
   expired_token: "That sign-in took too long. Please try again.",
   unauthorized: "Your session expired. Please sign in again.",
+  proof_required: "This phone isn't verified. Please sign in again.",
+  proof_invalid: "Couldn't verify this phone. Please sign in again.",
+  proof_replayed: "That request was already sent. Please try again.",
+  device_unknown: "That phone isn't registered to your account.",
+  device_mismatch: "This phone doesn't match the one you signed in on. Please sign in again.",
+  device_owned:
+    "This phone is already claimed by another account. Sign in with that account, or use a different phone.",
+  device_unverified: "Couldn't verify this phone's security key. Please try again.",
+  nonce_invalid: "Verifying this phone took too long. Please sign in again.",
+  public_key_invalid: "This phone's security key was rejected. Please try again.",
   network: "Couldn't reach the quest server. Check your connection.",
   cancelled: "Sign-in was cancelled.",
   unknown: "Something went wrong signing in. Please try again.",

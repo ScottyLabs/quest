@@ -1,15 +1,18 @@
-use fred::prelude::{ClientLike, Config as ValkeyConfig, Pool};
+use fred::prelude::{ClientLike, Config as ValkeyConfig, KeysInterface, Pool};
+use fred::types::Expiration;
 use serde::{Deserialize, Serialize};
 use tower_sessions::cookie::SameSite;
 use tower_sessions::cookie::time::Duration;
 use tower_sessions::{Expiry, SessionManagerLayer};
 use tower_sessions_redis_store::RedisStore;
 
-use super::{ConfigError, env_required};
+use super::{AuthError, ConfigError, env_required};
 
 pub const COOKIE_NAME: &str = "id";
 
 pub const USER_KEY: &str = "quest.user";
+
+pub const DEVICE_KEY: &str = "quest.device";
 
 pub const SESSION_TTL: Duration = Duration::days(90);
 
@@ -27,6 +30,10 @@ pub struct SessionUser {
 pub struct Sessions {
     pool: Pool,
     secure_cookies: bool,
+}
+
+fn active_key(sub: &str) -> String {
+    format!("quest:user:session:{sub}")
 }
 
 impl Sessions {
@@ -59,5 +66,35 @@ impl Sessions {
 
     pub fn pool(&self) -> Pool {
         self.pool.clone()
+    }
+
+    pub async fn bind(&self, sub: &str, id: &str) -> Result<(), AuthError> {
+        let evicted: Option<String> = self
+            .pool
+            .set(
+                active_key(sub),
+                id,
+                Some(Expiration::EX(SESSION_TTL.whole_seconds())),
+                None,
+                true,
+            )
+            .await
+            .map_err(|_| AuthError::Upstream("session_store_unavailable"))?;
+
+        match evicted {
+            Some(stale) if stale != id => self.del(&stale).await,
+            _ => Ok(()),
+        }
+    }
+
+    pub async fn release(&self, sub: &str) -> Result<(), AuthError> {
+        self.del(&active_key(sub)).await
+    }
+
+    async fn del(&self, key: &str) -> Result<(), AuthError> {
+        self.pool
+            .del::<(), _>(key)
+            .await
+            .map_err(|_| AuthError::Upstream("session_store_unavailable"))
     }
 }

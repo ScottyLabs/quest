@@ -2,7 +2,15 @@ import { browser } from "$app/environment";
 import { App } from "@capacitor/app";
 import { Browser } from "@capacitor/browser";
 import { Capacitor } from "@capacitor/core";
-import { apiBase, endSession, errorCode, fetchUser, responseError, send } from "./api";
+import {
+  apiBase,
+  endSession,
+  errorCode,
+  fetchStatus,
+  loginTicket,
+  responseError,
+  send,
+} from "./api";
 import { localSessionStorage } from "./storage";
 import type { SessionStorage } from "./storage";
 import { AuthError } from "./types";
@@ -45,6 +53,7 @@ function parseFragment(hash: string): Fragment | null {
 class SessionStore {
   #session = $state<Session | null>(null);
   #phase = $state<AuthPhase>("restoring");
+  #deviceOwned = $state(false);
   readonly #storage: SessionStorage = localSessionStorage;
   #adopting: { hash: string; user: Promise<QuestUser | null> } | null = null;
 
@@ -58,6 +67,14 @@ class SessionStore {
 
   get signedIn(): boolean {
     return this.#phase === "signedIn";
+  }
+
+  /**
+   * This phone belongs to another account. Terminal: the server refused to
+   * mint a session, so there is nothing to retry on this device.
+   */
+  get deviceOwned(): boolean {
+    return this.#deviceOwned;
   }
 
   async restore(): Promise<void> {
@@ -83,21 +100,32 @@ class SessionStore {
     if (parsed === null) return null;
 
     if ("error" in parsed) {
+      if (parsed.error.code === "device_owned") this.#deviceOwned = true;
       this.#phase = this.#session ? "signedIn" : "signedOut";
       throw parsed.error;
     }
 
-    const user = await fetchUser(parsed.id);
-    if (user === null) throw new AuthError("unauthorized");
+    try {
+      const user = await fetchStatus(parsed.id);
+      if (user === null) throw new AuthError("unauthorized");
 
-    this.#adopt({ id: parsed.id, expiresAt: parsed.expiresAt, user });
-    return user;
+      this.#adopt({ id: parsed.id, expiresAt: parsed.expiresAt, user });
+      return user;
+    } catch (error) {
+      this.#phase = this.#session ? "signedIn" : "signedOut";
+      throw error;
+    }
   }
 
   async login(options: LoginOptions = {}): Promise<QuestUser> {
+    this.#deviceOwned = false;
+
+    // The device signs a server nonce first: the ticket is what lets the
+    // server refuse this account before it ever holds a session.
+    const ticket = await loginTicket();
     const native = Capacitor.isNativePlatform();
     const target = native ? NATIVE_TARGET : `${location.origin}/auth/callback`;
-    const url = `${apiBase}/auth/login?return=${encodeURIComponent(target)}`;
+    const url = `${apiBase}/auth/login?return=${encodeURIComponent(target)}&ticket=${ticket}`;
 
     if (!native) {
       location.assign(url);

@@ -1,5 +1,6 @@
 /// <reference types="vite/client" />
 
+import { deviceProof, devicePublicKey, signChallenge } from "./device";
 import { AuthError } from "./types";
 import type { AuthErrorCode, QuestUser } from "./types";
 
@@ -22,17 +23,20 @@ interface UserBody {
   admin: boolean;
 }
 
-interface StatusBody {
-  logged_in: boolean;
-  user: UserBody | null;
-}
-
 interface LogoutBody {
   end_session_url: string | null;
 }
 
 interface ErrorBody {
   error: string;
+}
+
+interface ChallengeBody {
+  nonce: string;
+}
+
+interface TicketBody {
+  ticket: string;
 }
 
 const KNOWN_CODES: readonly AuthErrorCode[] = [
@@ -46,7 +50,18 @@ const KNOWN_CODES: readonly AuthErrorCode[] = [
   "invalid_return",
   "expired_token",
   "unauthorized",
+  "proof_required",
+  "proof_invalid",
+  "proof_replayed",
+  "device_mismatch",
+  "device_owned",
+  "device_unverified",
+  "nonce_invalid",
+  "public_key_invalid",
 ];
+
+/** The pre-session routes; mirrors `bootstrap` on the server. */
+const UNPROOFED: readonly string[] = ["/auth/challenge", "/auth/device", "/auth/login"];
 
 async function readJson<T>(response: Response): Promise<T | undefined> {
   try {
@@ -64,10 +79,19 @@ export async function responseError(response: Response): Promise<AuthErrorCode> 
   return errorCode((await readJson<ErrorBody>(response))?.error);
 }
 
-export async function send(path: string, id: string, init: RequestInit = {}): Promise<Response> {
+export async function send(
+  path: string,
+  id: string | null,
+  init: RequestInit = {},
+): Promise<Response> {
   const url = apiUrl(path);
+  const method = init.method ?? "GET";
   const headers = new Headers(init.headers);
-  headers.set("authorization", `Bearer ${id}`);
+
+  if (id !== null) headers.set("authorization", `Bearer ${id}`);
+  if (!UNPROOFED.includes(path.replace(/[?#].*$/u, ""))) {
+    headers.set("x-device-proof", await deviceProof(method, url));
+  }
 
   try {
     return await fetch(url, { ...init, credentials: "include", headers });
@@ -76,7 +100,7 @@ export async function send(path: string, id: string, init: RequestInit = {}): Pr
   }
 }
 
-function parseUser(raw: UserBody | undefined | null): QuestUser {
+function parseUser(raw: UserBody | undefined): QuestUser {
   if (
     typeof raw?.sub !== "string" ||
     typeof raw.name !== "string" ||
@@ -95,12 +119,46 @@ function parseUser(raw: UserBody | undefined | null): QuestUser {
   };
 }
 
-export async function fetchUser(id: string): Promise<QuestUser | null> {
-  const response = await send("/auth/status", id);
+/**
+ * Carries the device identity into `/auth/login`, which is a browser redirect
+ * and cannot send a proof header. The server locks the account to whatever key
+ * signed the nonce, so this runs before every sign-in.
+ */
+export async function loginTicket(): Promise<string> {
+  const challenge = await send("/auth/challenge", null);
+  if (!challenge.ok) throw new AuthError(await responseError(challenge));
+
+  const nonce = (await readJson<ChallengeBody>(challenge))?.nonce;
+  if (typeof nonce !== "string" || nonce.length === 0) {
+    throw new AuthError("nonce_invalid", "challenge carried no nonce");
+  }
+
+  const response = await send("/auth/device", null, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      public_key: await devicePublicKey(),
+      nonce,
+      signature: await signChallenge(nonce),
+    }),
+  });
   if (!response.ok) throw new AuthError(await responseError(response));
 
-  const raw = await readJson<StatusBody>(response);
-  return raw?.logged_in === true ? parseUser(raw.user) : null;
+  const ticket = (await readJson<TicketBody>(response))?.ticket;
+  if (typeof ticket !== "string" || ticket.length === 0) {
+    throw new AuthError("device_unverified", "server issued no ticket");
+  }
+
+  return ticket;
+}
+
+/** Null when the session is gone; the server answers 401, not a body. */
+export async function fetchStatus(id: string): Promise<QuestUser | null> {
+  const response = await send("/auth/status", id);
+  if (response.status === 401) return null;
+  if (!response.ok) throw new AuthError(await responseError(response));
+
+  return parseUser(await readJson<UserBody>(response));
 }
 
 export async function endSession(id: string): Promise<string | null> {

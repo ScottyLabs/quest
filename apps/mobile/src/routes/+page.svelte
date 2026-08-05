@@ -6,21 +6,21 @@
   import ScottyCoin from "$lib/components/ScottyCoin.svelte";
   import { MEDIA_BOX, STEPS } from "$lib/onboarding";
   import { authMessage, session } from "$lib/auth";
+  import { profile } from "$lib/user";
+  import { warn } from "$lib/notice.svelte";
 
   let index = $state(0);
   const step = $derived(STEPS[index]);
   const last = $derived(index === STEPS.length - 1);
 
-  let failure = $state<string | null>(null);
-
   async function login() {
-    failure = null;
     try {
       await session.login();
-      await goto("/mascots");
+      await goto((await profile())?.dorm ? "/app" : "/mascots");
     } catch (error) {
       console.error("sign-in failed", error);
-      failure = authMessage(error);
+      // `device_owned` has its own screen; a toast on top of it is noise.
+      if (!session.deviceOwned) warn(authMessage(error));
     }
   }
 
@@ -116,9 +116,6 @@
 
     <div class="actions">
       <Button onclick={next}>{last ? "Log In" : "Next"}</Button>
-      {#if failure}
-        <p class="failure" role="alert">Sign-in failed: {failure}</p>
-      {/if}
     </div>
   {/if}
 </div>
@@ -235,9 +232,5 @@
     gap: 18px;
   }
 
-  .failure {
-    margin: 0;
-    color: var(--primary-light);
-    font-size: 13px;
-  }
+  /* Reserved slot, so a message never shoves the button under a moving thumb. */
 </style>

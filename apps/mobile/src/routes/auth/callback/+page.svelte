@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { authMessage, session } from "$lib/auth";
+  import { profile } from "$lib/user";
   import { onMount } from "svelte";
 
   let failure = $state<string | null>(null);
@@ -14,7 +15,7 @@
       return;
     }
 
-    await goto("/mascots", { replaceState: true });
+    await goto((await profile())?.dorm ? "/app" : "/mascots", { replaceState: true });
   });
 </script>
 

@@ -56,6 +56,7 @@ class SessionStore {
   #deviceOwned = $state(false);
   readonly #storage: SessionStorage = localSessionStorage;
   #adopting: { hash: string; user: Promise<QuestUser | null> } | null = null;
+  #restored: Promise<void> | null = null;
 
   get user(): QuestUser | null {
     return this.#session?.user ?? null;
@@ -77,17 +78,27 @@ class SessionStore {
     return this.#deviceOwned;
   }
 
-  async restore(): Promise<void> {
-    if (browser && (await this.#consume(location.hash))) return;
+  restore(): Promise<void> {
+    this.#restored ??= this.#restoreOnce();
+    return this.#restored;
+  }
 
-    const stored = browser ? await this.#storage.load() : null;
-    if (!stored || stored.expiresAt <= Date.now()) {
-      this.clear();
-      return;
+  async #restoreOnce(): Promise<void> {
+    try {
+      if (browser && (await this.#consume(location.hash))) return;
+
+      const stored = browser ? await this.#storage.load() : null;
+      if (!stored || stored.expiresAt <= Date.now()) {
+        this.clear();
+        return;
+      }
+
+      this.#session = stored;
+      this.#phase = "signedIn";
+    } catch (error) {
+      console.error("session restore failed", error);
+      this.#phase = "signedOut";
     }
-
-    this.#session = stored;
-    this.#phase = "signedIn";
   }
 
   async adoptFragment(hash: string): Promise<QuestUser | null> {

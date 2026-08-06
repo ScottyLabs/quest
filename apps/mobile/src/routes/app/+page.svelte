@@ -1,176 +1,114 @@
 <script lang="ts">
-  import { goto } from "$app/navigation";
-  import { session } from "$lib/auth";
-  import { MASCOTS } from "$lib/mascots";
-  import { profile, type Profile } from "$lib/user";
-  import { diagnose, type Diagnosis } from "$lib/diagnose";
+  import QuestHeader from "$lib/components/quest/QuestHeader.svelte";
+  import QuestList from "$lib/components/quest/QuestList.svelte";
+  import { BALANCE, CATEGORIES, done, inCategory, nextUnlock, quests } from "$lib/quests.svelte";
+  import { theme } from "$lib/theme";
+  import { active } from "$lib/theme.svelte";
 
-  // Placeholder landing for a signed-in user. Replace with the real home.
-  let me = $state<Profile | null>(null);
-  let loading = $state(true);
-  let checks = $state<Diagnosis | null>(null);
+  const all = $derived(quests.data ?? []);
+  const shown = $derived(inCategory(all, active.id));
+  const completed = $derived(done(shown));
+  const cold = $derived(quests.data === null);
+
+  let scroller = $state<HTMLElement | null>(null);
+  let top = $state(0);
+
+  const fade = $derived(Math.min(top / 64, 1));
 
   $effect(() => {
-    if (!session.signedIn) {
-      void goto("/");
-      return;
+    const category = active.id;
+    if (scroller && category) {
+      scroller.scrollTop = 0;
+      top = 0;
     }
-
-    void profile().then((found) => {
-      me = found;
-      loading = false;
-    });
-
-    void diagnose().then((found) => {
-      checks = found;
-    });
   });
 
-  // The server is the source of truth, but it may not have `/users/me` yet —
-  // fall back to the pick the carousel cached rather than claiming none exists.
-  const cached = $derived(loading ? null : (localStorage.getItem("quest.mascot") ?? null));
-  const slug = $derived(
-    Object.keys(MASCOTS).find((key) => MASCOTS[key]?.mascot.dorm === me?.dorm) ?? cached,
-  );
-  const mascot = $derived(slug === null ? null : (MASCOTS[slug]?.mascot ?? null));
+  $effect(() => {
+    void quests.reload();
 
-  async function signOut() {
-    await session.logout();
-    await goto("/");
-  }
+    const wake = () => {
+      if (document.visibilityState === "visible") void quests.ensure();
+    };
+
+    document.addEventListener("visibilitychange", wake);
+    const beat = setInterval(() => void quests.ensure(), 60_000);
+
+    return () => {
+      document.removeEventListener("visibilitychange", wake);
+      clearInterval(beat);
+    };
+  });
+
+  $effect(() => {
+    const at = nextUnlock(all, Date.now());
+    if (at === null) return;
+
+    const delay = Math.min(Math.max(at - Date.now(), 0), 2_147_483_647);
+    const timer = setTimeout(() => void quests.reload(), delay);
+    return () => clearTimeout(timer);
+  });
 </script>
 
-<div class="screen">
-  <main>
-    {#if loading}
-      <p class="quiet">Loading&hellip;</p>
+<svelte:head><title>{theme(active.id).label} - Quest</title></svelte:head>
+
+<QuestHeader
+  theme={theme(active.id)}
+  categories={CATEGORIES}
+  current={active.id}
+  onpick={(id) => (active.id = id)}
+  done={completed}
+  total={shown.length}
+  balance={BALANCE}
+/>
+
+<div class="board">
+  <div class="quests" bind:this={scroller} onscroll={() => (top = scroller?.scrollTop ?? 0)}>
+    {#if cold && quests.loading}
+      <p class="note">Loading challenges&hellip;</p>
+    {:else if cold && quests.error !== null}
+      <p class="note">Couldn't reach the quest server. Pull again in a moment.</p>
+    {:else if shown.length === 0}
+      <p class="note">No challenges here yet.</p>
     {:else}
-      <p class="quiet">Signed in as</p>
-      <h1>{session.user?.name ?? session.user?.andrewId ?? "Quest player"}</h1>
-
-      {#if mascot}
-        <img src="/img/mascots/{slug}.svg" alt="" width="96" height="96" />
-        <p class="dorm">{mascot.name}</p>
-      {:else}
-        <p class="quiet">No dorm chosen yet.</p>
-        <button class="link" onclick={() => goto("/mascots")}>Choose your dorm</button>
-      {/if}
-
-      <dl>
-        <dt>Andrew ID</dt>
-        <dd>{me?.andrew_id ?? session.user?.andrewId ?? "—"}</dd>
-        <dt>Dorm</dt>
-        <dd>{me?.dorm ?? mascot?.dorm ?? "—"}</dd>
-      </dl>
-
-      {#if checks}
-        <pre class="checks">{Object.entries(checks)
-            .map(([key, value]) => `${key}: ${String(value)}`)
-            .join("\n")}</pre>
-      {/if}
+      <QuestList quests={shown} onclaim={() => void quests.reload()} />
     {/if}
-  </main>
-
-  <div class="actions">
-    <button onclick={signOut}>Sign out</button>
   </div>
+
+  <span class="fade" style:opacity={fade} aria-hidden="true"></span>
 </div>
 
 <style>
-  .screen {
+  .board {
+    position: relative;
     display: flex;
-    flex-direction: column;
-    height: 100dvh;
-    padding: calc(27px + env(safe-area-inset-top)) 24px calc(14px + env(safe-area-inset-bottom));
-    background: var(--highlight);
-    text-align: center;
-  }
-
-  main {
     flex: 1;
-    display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
+    min-height: 0;
   }
 
-  h1 {
-    margin: 0 0 8px;
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--primary-dark);
+  .quests {
+    flex: 1;
+    min-height: 0;
+    padding: 28px 23px 110px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
-  .quiet {
-    margin: 0;
+  .fade {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 44px;
+    background: linear-gradient(180deg, var(--canvas) 15%, transparent);
+    pointer-events: none;
+  }
+
+  .note {
+    margin: 24px 0 0;
+    color: var(--shade);
     font-size: 15px;
-    color: var(--tertiary);
-  }
-
-  .dorm {
-    margin: 4px 0 0;
-    font-size: 17px;
     font-weight: 600;
-    color: var(--primary);
-  }
-
-  dl {
-    display: grid;
-    grid-template-columns: auto auto;
-    gap: 4px 16px;
-    margin: 20px 0 0;
-    font-size: 14px;
-  }
-
-  dt {
-    color: var(--tertiary);
-    text-align: right;
-  }
-
-  dd {
-    margin: 0;
-    text-align: left;
-    color: var(--primary-dark);
-  }
-
-  .checks {
-    margin: 16px 0 0;
-    padding: 10px 12px;
-    max-width: 100%;
-    border-radius: 8px;
-    background: var(--tertiary-normal);
-    font-family: ui-monospace, monospace;
-    font-size: 11px;
-    line-height: 1.5;
-    text-align: left;
-    white-space: pre-wrap;
-    word-break: break-word;
-    color: var(--primary-dark);
-  }
-
-  .link {
-    border: none;
-    background: none;
-    color: var(--primary);
-    font: inherit;
-    text-decoration: underline;
-    cursor: pointer;
-  }
-
-  .actions {
-    flex: none;
-  }
-
-  .actions button {
-    width: 100%;
-    padding: 14px 16px;
-    border: none;
-    border-radius: 999px;
-    background: var(--primary);
-    color: var(--highlight);
-    font: inherit;
-    font-weight: 600;
-    cursor: pointer;
+    text-align: center;
   }
 </style>

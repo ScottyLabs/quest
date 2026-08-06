@@ -15,7 +15,6 @@ export const apiUrl = (path: string): string =>
   `${apiBase}${path.startsWith("/") ? path : `/${path}`}`;
 
 interface UserBody {
-  sub: string;
   email: string | null;
   name: string;
   andrew_id: string;
@@ -58,6 +57,7 @@ const KNOWN_CODES: readonly AuthErrorCode[] = [
   "device_unverified",
   "nonce_invalid",
   "public_key_invalid",
+  "no_andrew_id",
 ];
 
 /** The pre-session routes; mirrors `bootstrap` on the server. */
@@ -101,16 +101,11 @@ export async function send(
 }
 
 function parseUser(raw: UserBody | undefined): QuestUser {
-  if (
-    typeof raw?.sub !== "string" ||
-    typeof raw.name !== "string" ||
-    typeof raw.andrew_id !== "string"
-  ) {
+  if (typeof raw?.name !== "string" || typeof raw.andrew_id !== "string") {
     throw new AuthError("unknown", "malformed user");
   }
 
   return {
-    sub: raw.sub,
     name: raw.name,
     andrewId: raw.andrew_id,
     email: typeof raw.email === "string" ? raw.email : null,

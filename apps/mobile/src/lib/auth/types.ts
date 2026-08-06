@@ -1,5 +1,4 @@
 export interface QuestUser {
-  sub: string;
   email: string | null;
   name: string;
   andrewId: string;
@@ -36,6 +35,7 @@ export type AuthErrorCode =
   | "device_unverified"
   | "nonce_invalid"
   | "public_key_invalid"
+  | "no_andrew_id"
   | "network"
   | "cancelled"
   | "unknown";
@@ -71,6 +71,7 @@ const MESSAGES: Record<AuthErrorCode, string> = {
   device_unverified: "Couldn't verify this phone's security key. Please try again.",
   nonce_invalid: "Verifying this phone took too long. Please sign in again.",
   public_key_invalid: "This phone's security key was rejected. Please try again.",
+  no_andrew_id: "Your CMU account didn't return an Andrew ID. Contact ScottyLabs.",
   network: "Couldn't reach the quest server. Check your connection.",
   cancelled: "Sign-in was cancelled.",
   unknown: "Something went wrong signing in. Please try again.",

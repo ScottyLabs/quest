@@ -24,6 +24,10 @@
   --tertiary-dark: #dddddd;
   --highlight: #ffffff;
   --muted: #bcbdc0;
+
+  --quest-done: #dbecdb;
+  --quest-done-ink: #54b751;
+  --quest-coin: #fdb813;
 }
 
 *,
@@ -45,4 +49,8 @@ body {
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior: none;
+}
+
+a:link {
+  color: var(--primary);
 }

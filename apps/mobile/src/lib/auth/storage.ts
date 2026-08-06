@@ -14,7 +14,7 @@ function parse(raw: string): Session | null {
     const usable =
       typeof parsed?.id === "string" &&
       typeof parsed.expiresAt === "number" &&
-      typeof parsed.user?.sub === "string";
+      typeof parsed.user?.andrewId === "string";
     return usable ? parsed : null;
   } catch {
     return null;

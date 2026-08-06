@@ -1,0 +1,104 @@
+set -euo pipefail
+
+: "${QUEST_MAC:?set QUEST_MAC=user@host}"
+remote_dir="${QUEST_MAC_DIR:-quest-build}"
+
+sub="${1:-run}"
+[ $# -gt 0 ] && shift
+case "$sub" in
+  build | run) ;;
+  *) echo "usage: ${0##*/} [build|run] [--release] [--live] [--host HOST]" >&2; exit 2 ;;
+esac
+
+live=""
+release=""
+host=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --live) live=1 ;;
+    --release) release=1 ;;
+    --host) host="${2:?--host needs a value}"; shift ;;
+    *) echo "unknown option: $1" >&2; exit 2 ;;
+  esac
+  shift
+done
+
+cd "$(cd "$(dirname "$0")/.." && pwd)"
+
+lan_ip() { ip -4 -o addr show scope global | awk '{print $4}' | cut -d/ -f1 | head -1; }
+[ -n "$host" ] || host="$(lan_ip)"
+[ -n "$host" ] || { echo "no routable address found; pass --host" >&2; exit 1; }
+
+if [ -n "$release" ]; then
+  api_base="https://cmu.quest"
+else
+  api_base="http://$host:${PORT:-8080}"
+fi
+echo "==> backend: $api_base"
+
+server_url=""
+if [ -n "$live" ]; then
+  server_url="http://$host:5173"
+  echo "==> live reload from $server_url"
+
+  vite_pid=$(ss -ltnp 2>/dev/null | grep ':5173' | grep -oP 'pid=\K[0-9]+' | head -1)
+  if [ -z "$vite_pid" ]; then
+    echo "no dev server on :5173. Start it with:" >&2
+    echo "  VITE_QUEST_API_BASE=$api_base deno task dev" >&2
+    exit 1
+  fi
+  vite_base=$(tr '\0' '\n' < "/proc/$vite_pid/environ" 2>/dev/null | sed -n 's/^VITE_QUEST_API_BASE=//p')
+  if [ "$vite_base" != "$api_base" ]; then
+    echo "dev server on :5173 (pid $vite_pid) serves VITE_QUEST_API_BASE='${vite_base:-<unset>}'," >&2
+    echo "but this build targets '$api_base'. In live mode the dev server wins, so" >&2
+    echo "restart it:" >&2
+    echo "  VITE_QUEST_API_BASE=$api_base deno task dev" >&2
+    exit 1
+  fi
+  echo "    dev server confirmed serving $vite_base"
+fi
+
+excludes=(
+  --exclude=./.git
+  --exclude=node_modules
+  --exclude=.devenv
+  --exclude=.direnv
+  --exclude=.android
+  --exclude=.gradle
+  --exclude=./target
+  --exclude=.svelte-kit
+  --exclude=build
+  --exclude=DerivedData
+  --exclude=.build
+  --exclude=./apps/mobile/android
+  --exclude=./apps/mobile/ios/xtool
+)
+
+if [ -n "${QUEST_FRESH:-}" ]; then
+  echo "==> wiping $QUEST_MAC:$remote_dir (QUEST_FRESH)"
+  ssh "$QUEST_MAC" "rm -rf -- '$remote_dir'"
+fi
+
+echo "==> syncing source to $QUEST_MAC:$remote_dir"
+ssh "$QUEST_MAC" "mkdir -p -- '$remote_dir'"
+tar czf - "${excludes[@]}" . | ssh "$QUEST_MAC" "tar xzf - -C '$remote_dir'"
+
+echo "==> building on $QUEST_MAC"
+ssh "$QUEST_MAC" "cd '$remote_dir' && VITE_QUEST_API_BASE='$api_base' CAP_SERVER_URL='$server_url' scripts/ios-mac"
+
+ipa=apps/mobile/ios/App/dist/App.ipa
+echo "==> fetching $(basename "$ipa")"
+mkdir -p "$(dirname "$ipa")"
+ssh "$QUEST_MAC" "cat -- '$remote_dir/$ipa'" > "$ipa"
+[ -s "$ipa" ] || { echo "fetched ipa is empty" >&2; exit 1; }
+echo "==> $(du -h "$ipa" | cut -f1) at $ipa"
+
+[ "$sub" = run ] || exit 0
+
+command -v ideviceinstaller >/dev/null || {
+  echo "ideviceinstaller not found - add pkgs.ideviceinstaller to devenv.nix" >&2
+  exit 1
+}
+
+echo "==> installing over USB"
+exec ideviceinstaller install "$ipa"

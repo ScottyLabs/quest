@@ -21,11 +21,11 @@
 
     <h1>This device has already been registered</h1>
     <p>
-      This phone is signed in to a different CMU Quest account. Each phone can only be used with one
+      This phone is signed in to a different Orientation Quest account. Each phone can only be used with one
       account.
     </p>
-    <p class="quiet">
-      Sign in with the account that registered this phone, or use a different phone.
+    <p>
+      If you believe this is a mistake, please contact <a href="mailto:quest@scottylabs.org">quest@scottylabs.org</a> and we will work to resolve the situation.
     </p>
   </main>
 
@@ -81,10 +81,6 @@
     font-size: 15px;
     line-height: 1.5;
     color: var(--tertiary);
-  }
-
-  .quiet {
-    color: var(--primary-light);
   }
 
   .actions {

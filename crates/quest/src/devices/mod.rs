@@ -235,6 +235,7 @@ fn store_down(err: fred::error::Error) -> AuthError {
 fn bootstrap(method: &Method, path: &str) -> bool {
     match path {
         _ if method == Method::OPTIONS => true,
+        "/tap" => method == Method::GET,
         "/auth/challenge" => method == Method::GET,
         "/auth/device" => method == Method::POST,
         "/auth/login" => method == Method::GET,

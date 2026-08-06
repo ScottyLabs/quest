@@ -3,80 +3,33 @@ mod challenges;
 mod cors;
 mod db;
 mod devices;
+mod taps;
 mod users;
 
 use std::sync::Arc;
 
-use axum::Json;
 use axum::Router;
-use axum::extract::{Query, State};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::routing::get;
-use serde::{Deserialize, Serialize};
 
-use quest::crypto::{VerifyError, verify_tap};
+const NATIVE_TAP: &str = "org.scottylabs.quest://tap";
 
-#[derive(Clone)]
-struct AppState {
-    master: Arc<[u8; 32]>,
-    #[allow(dead_code)] // temp
-    db: sea_orm::DatabaseConnection,
-}
+async fn tap(uri: axum::http::Uri) -> Response {
+    let query = uri.query().unwrap_or_default();
+    let target = if query.is_empty() {
+        NATIVE_TAP.to_owned()
+    } else {
+        format!("{NATIVE_TAP}?{query}")
+    };
 
-#[derive(Deserialize)]
-struct TapParams {
-    e: String,
-    c: String,
-}
-
-#[derive(Serialize)]
-struct TapOk {
-    uid: String,
-    counter: u32,
-}
-
-#[derive(Serialize)]
-struct ErrBody {
-    error: &'static str,
-}
-
-enum TapError {
-    BadRequest,
-    Unauthorized,
-}
-
-impl IntoResponse for TapError {
-    fn into_response(self) -> Response {
-        match self {
-            TapError::BadRequest => StatusCode::BAD_REQUEST.into_response(),
-            TapError::Unauthorized => (
-                StatusCode::UNAUTHORIZED,
-                Json(ErrBody {
-                    error: "invalid signature",
-                }),
-            )
-                .into_response(),
-        }
-    }
-}
-
-async fn tap(
-    State(state): State<AppState>,
-    Query(params): Query<TapParams>,
-) -> Result<Json<TapOk>, TapError> {
-    let e = hex::decode(&params.e).map_err(|_| TapError::BadRequest)?;
-    let c = hex::decode(&params.c).map_err(|_| TapError::BadRequest)?;
-
-    let picc_enc: [u8; 16] = e.try_into().map_err(|_| TapError::BadRequest)?;
-    let mac_recv: [u8; 8] = c.try_into().map_err(|_| TapError::BadRequest)?;
-
-    match verify_tap(&state.master, &picc_enc, &mac_recv) {
-        Ok(v) => Ok(Json(TapOk {
-            uid: hex::encode_upper(v.uid),
-            counter: v.counter,
-        })),
-        Err(VerifyError::InvalidSignature) => Err(TapError::Unauthorized),
+    match axum::http::HeaderValue::from_str(&target) {
+        Ok(location) => (
+            StatusCode::SEE_OTHER,
+            [(axum::http::header::LOCATION, location)],
+        )
+            .into_response(),
+        Err(_) => StatusCode::BAD_REQUEST.into_response(),
     }
 }
 
@@ -133,13 +86,9 @@ async fn main() {
         .await
         .expect("failed to connect to Postgres");
 
-    let master = load_master_key();
-    let state = AppState {
-        master: Arc::new(master),
-        db: db.clone(),
-    };
+    let master = Arc::new(load_master_key());
 
-    let app = Router::new().route("/tap", get(tap)).with_state(state);
+    let app = Router::new().route("/tap", get(tap));
 
     let mut undiscovered = None;
 
@@ -150,12 +99,14 @@ async fn main() {
             let sessions = auth.sessions.layer();
             let users = users::Users::new(db.clone());
             let challenges = challenges::Challenges::new(db.clone());
-            let devices = devices::Devices::new(db, auth.sessions.pool());
+            let devices = devices::Devices::new(db.clone(), auth.sessions.pool());
+            let taps = taps::Taps::new(db, master);
 
             app.merge(auth::routes::router(auth))
                 .merge(devices::routes::router(devices.clone()))
                 .merge(users::routes::router(users.clone()))
                 .merge(challenges::routes::router(challenges))
+                .merge(taps::routes::router(taps))
                 .layer(axum::middleware::from_fn_with_state(
                     devices.clone(),
                     devices::enforce,

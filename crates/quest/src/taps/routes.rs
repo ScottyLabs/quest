@@ -1,0 +1,65 @@
+use axum::extract::State;
+use axum::extract::rejection::JsonRejection;
+use axum::routing::post;
+use axum::{Extension, Json, Router};
+use entity::geography::Point;
+use serde::{Deserialize, Serialize};
+
+use super::{Proximity, Taps, proximity};
+use crate::auth::AuthError;
+use crate::auth::extract::CurrentUser;
+use crate::challenges::routes::ChallengeView;
+use crate::users::Users;
+
+pub fn router(taps: Taps) -> Router {
+    Router::new()
+        .route("/api/register_tap", post(register))
+        .with_state(taps)
+}
+
+#[derive(Deserialize)]
+struct TapBody {
+    url: String,
+    lat: Option<f64>,
+    lon: Option<f64>,
+}
+
+#[derive(Serialize)]
+struct Registered {
+    challenge: ChallengeView,
+    counter: i64,
+    first: bool,
+}
+
+async fn register(
+    State(taps): State<Taps>,
+    Extension(users): Extension<Users>,
+    CurrentUser(user): CurrentUser,
+    body: Result<Json<TapBody>, JsonRejection>,
+) -> Result<Json<Registered>, AuthError> {
+    let Json(body) = body.map_err(|_| AuthError::BadRequest("tap_body_invalid"))?;
+
+    let read = taps.read(&body.url)?;
+    let challenge = taps.challenge_for(&read.card_id).await?;
+
+    let at = match (body.lat, body.lon) {
+        (Some(lat), Some(lon)) if lat.is_finite() && lon.is_finite() => Some(Point::new(lon, lat)),
+        _ => None,
+    };
+
+    match proximity(challenge.location, at) {
+        Proximity::Accept => {}
+        Proximity::Reject(reason) => {
+            return Err(AuthError::BadRequest(reason.unwrap_or("tap_out_of_range")));
+        }
+    }
+
+    let row = users.row(&user).await?;
+    let first = taps.record(&read.card_id, read.counter, row.id, at).await?;
+
+    Ok(Json(Registered {
+        challenge: ChallengeView::new(challenge, true),
+        counter: read.counter,
+        first,
+    }))
+}

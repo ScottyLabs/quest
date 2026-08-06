@@ -8,5 +8,8 @@ project(':capacitor-app').projectDir = new File('../../../node_modules/.deno/@ca
 include ':capacitor-browser'
 project(':capacitor-browser').projectDir = new File('../../../node_modules/.deno/@capacitor+browser@8.0.4/node_modules/@capacitor/browser/android')
 
+include ':capgo-capacitor-nfc'
+project(':capgo-capacitor-nfc').projectDir = new File('../../../node_modules/.deno/@capgo+capacitor-nfc@8.2.2/node_modules/@capgo/capacitor-nfc/android')
+
 include ':perfood-capacitor-crypto-api'
 project(':perfood-capacitor-crypto-api').projectDir = new File('../../../node_modules/.deno/@perfood+capacitor-crypto-api@8.0.0/node_modules/@perfood/capacitor-crypto-api/android')

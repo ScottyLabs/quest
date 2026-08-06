@@ -30,6 +30,46 @@ interface BoardBody {
   challenges: ChallengeView[];
 }
 
+export interface Registered {
+  challenge: ChallengeView;
+  counter: number;
+  first: boolean;
+}
+
+interface TapFailure {
+  error?: string;
+}
+
+export class TapError extends Error {
+  readonly code: string;
+
+  constructor(code: string, message: string) {
+    super(message);
+    this.code = code;
+  }
+}
+
+const TAP_MESSAGES: Record<string, string> = {
+  tap_signature: "That tag couldn't be verified.",
+  tap_url_malformed: "That tag didn't carry a quest link.",
+  card_unassigned: "That tag isn't linked to a challenge yet.",
+  tap_replayed: "That tap was already counted.",
+  tap_out_of_range: "You're too far from this challenge.",
+};
+
+export async function registerTap(url: string): Promise<Registered> {
+  const response = await authFetch("/api/register_tap", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ url }),
+  });
+
+  if (response.ok) return (await response.json()) as Registered;
+
+  const code = ((await response.json().catch(() => ({}))) as TapFailure).error ?? "unknown";
+  throw new TapError(code, TAP_MESSAGES[code] ?? "Couldn't register that tap.");
+}
+
 export const CATEGORIES: string[] = Object.keys(THEMES);
 
 export const BALANCE = 260;

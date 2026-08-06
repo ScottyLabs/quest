@@ -5,7 +5,8 @@
     "check": "deno task --cwd apps/mobile check",
     "build": "deno task --cwd apps/mobile build",
     "dev": "deno task --cwd apps/mobile dev",
-    "mobile": "deno task --cwd apps/mobile"
+    "mobile": "deno task --cwd apps/mobile",
+    "ios": "scripts/ios-remote"
   },
   "exclude": [
     ".devenv",

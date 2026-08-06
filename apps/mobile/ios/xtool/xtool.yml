@@ -1,10 +1,19 @@
 version: 1
 
 # This won't reflect in production build
-bundleID: org.scottylabs.quest.dev
+bundleID: app.cmu.quest.dev
 product: App
 
 infoPath: Info.plist
+
+# NOTE: deliberately no `entitlementsPath`. xtool applies it as the app's
+# COMPLETE ad-hoc entitlements, then derives App ID capabilities from them via
+# `Entitlement.anyCapability`. The NFC entitlement has no such mapping in
+# xtool's `supportedTypes`, so the capability is never enabled on the App ID
+# (and any manually-enabled one is deleted) while the entitlement is still
+# carried into the signature -> installd rejects with 0xe8008015.
+# NFC on device therefore needs the Xcode path (see App/App.entitlements)
+# or a patched xtool. See scripts/xtool-nfc.patch.
 
 resources:
   - ../App/App/public

@@ -8,7 +8,6 @@ export interface Profile {
   created_at: string;
 }
 
-
 export async function profile(): Promise<Profile | null> {
   try {
     const response = await authFetch("/users/me");

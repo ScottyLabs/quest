@@ -2,6 +2,10 @@
 <resources>
     <string name="app_name">CMU Quest</string>
     <string name="title_activity_main">CMU Quest</string>
-    <string name="package_name">org.scottylabs.quest</string>
+    <string name="package_name">app.cmu.quest</string>
+    <!-- Deliberately still org.scottylabs.quest: the OAuth redirect and the
+         NFC /tap handoff are hardcoded to this scheme in crates/quest
+         (main.rs, auth/oidc.rs) and registered with Keycloak. A URL scheme
+         need not match the application id. -->
     <string name="custom_url_scheme">org.scottylabs.quest</string>
 </resources>

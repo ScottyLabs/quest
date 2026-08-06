@@ -3,7 +3,7 @@
   import { theme } from "$lib/theme";
   import type { Quest } from "$lib/quests.svelte";
 
-  let { quest, onclaim }: { quest: Quest; onclaim?: (id: string) => void } = $props();
+  let { quest, onscan }: { quest: Quest; onscan?: (quest: Quest) => void } = $props();
 
   const tile = $derived(theme(quest.category).accent);
 </script>
@@ -14,21 +14,19 @@
     <h2>{quest.title}</h2>
   </article>
 {:else}
-  <article class="card open">
-    <div class="art" style:background={tile}></div>
+  <button class="card open" onclick={() => onscan?.(quest)}>
+    <span class="art" style:background={tile}></span>
 
-    <div class="copy">
-      <h2>{quest.title}</h2>
-      <p>{quest.detail}</p>
-    </div>
+    <span class="copy">
+      <span class="title">{quest.title}</span>
+      <span class="detail">{quest.detail}</span>
+    </span>
 
-    <div class="reward">
+    <span class="reward">
       <CoinAmount amount={quest.reward} />
-      <button aria-label="Complete {quest.title}" onclick={() => onclaim?.(quest.id)}>
-        <img src="/img/quest/check.svg" alt="" width="52" height="45" />
-      </button>
-    </div>
-  </article>
+      <img src="/img/quest/check.svg" alt="" width="52" height="45" />
+    </span>
+  </button>
 {/if}
 
 <style>
@@ -61,8 +59,17 @@
 
   .open {
     gap: 10px;
+    width: 100%;
     padding: 0 8px 0 14px;
+    border: 0;
     background: var(--highlight);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .open:active {
+    filter: brightness(0.97);
   }
 
   .art {
@@ -84,16 +91,14 @@
     min-width: 0;
   }
 
-  .copy h2 {
-    margin: 0;
+  .title {
     color: var(--secondary);
     font-size: 14px;
     font-weight: 700;
     letter-spacing: 0.28px;
   }
 
-  .copy p {
-    margin: 0;
+  .detail {
     color: var(--tertiary);
     font-size: 11px;
     font-weight: 600;
@@ -107,12 +112,7 @@
     gap: 2px;
   }
 
-  .reward button {
-    display: grid;
-    padding: 0;
-    border: 0;
-    background: none;
-    cursor: pointer;
-    place-items: center;
+  .reward img {
+    display: block;
   }
 </style>

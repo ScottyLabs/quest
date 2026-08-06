@@ -6,14 +6,22 @@
 
   let { children } = $props();
 
-  // Must run before anything reads `session.user`.
   session.restore();
 </script>
 
-{#if session.deviceOwned}
+{#if session.phase === "restoring"}
+  <div class="booting"></div>
+{:else if session.deviceOwned}
   <DeviceBlocked onSignOut={() => session.clear()} />
 {:else}
   {@render children()}
 {/if}
 
 <Toast />
+
+<style>
+  .booting {
+    height: 100dvh;
+    background: var(--highlight);
+  }
+</style>

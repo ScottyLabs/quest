@@ -1,0 +1,61 @@
+{
+  "shared": {
+    "ring": "#ffffff",
+    "glyph": "#ffffff",
+    "doneFill": "#dbecdb",
+    "doneInk": "#54b751",
+    "coin": "#fdb813",
+    "detail": "#6d6e71"
+  },
+  "categories": {
+    "all": {
+      "label": "Challenges",
+      "accent": "#c41230",
+      "shade": "#831421",
+      "canvas": "#d7c2c5",
+      "logo": "/img/quest/theme/all.svg"
+    },
+    "essentials": {
+      "label": "The Essentials",
+      "accent": "#ef3e56",
+      "shade": "#bb2133",
+      "canvas": "#d5c0c3",
+      "logo": "/img/quest/theme/essentials.svg"
+    },
+    "bridges": {
+      "label": "Campus of Bridges",
+      "accent": "#008bc1",
+      "shade": "#3db5e4",
+      "canvas": "#8ad7e1",
+      "logo": "/img/quest/theme/bridges.svg"
+    },
+    "lets_eat": {
+      "label": "Let's Eat",
+      "accent": "#fdb813",
+      "shade": "#ae8f13",
+      "canvas": "#dbd0b2",
+      "logo": "/img/quest/theme/lets_eat.svg"
+    },
+    "cool_corners": {
+      "label": "Corners of Carnegie",
+      "accent": "#008b52",
+      "shade": "#18c289",
+      "canvas": "#89cfb2",
+      "logo": "/img/quest/theme/cool_corners.svg"
+    },
+    "minor_major_general": {
+      "label": "Minor-Major General",
+      "accent": "#008b9a",
+      "shade": "#4db4c2",
+      "canvas": "#89c7cf",
+      "logo": "/img/quest/theme/minor_major_general.svg"
+    },
+    "residence_relaxation": {
+      "label": "Residence & Relaxation",
+      "accent": "#ffc0ef",
+      "shade": null,
+      "canvas": null,
+      "logo": null
+    }
+  }
+}

@@ -13,6 +13,10 @@
   const step = $derived(STEPS[index]);
   const last = $derived(index === STEPS.length - 1);
 
+  $effect(() => {
+    if (session.signedIn) void goto("/app", { replaceState: true });
+  });
+
   async function login() {
     try {
       await session.login();
@@ -63,6 +67,7 @@
 
 <svelte:head><title>{step?.title ?? "Onboarding"}</title></svelte:head>
 
+{#if !session.signedIn}
 <div
   class="screen"
   role="group"
@@ -119,6 +124,7 @@
     </div>
   {/if}
 </div>
+{/if}
 
 <style>
   .screen {

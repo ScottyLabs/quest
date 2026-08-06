@@ -14,7 +14,6 @@ impl MigrationTrait for Migration {
 
                 CREATE TABLE "users" (
                     "id"         UUID         NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-                    "sub"        TEXT         NOT NULL UNIQUE,
                     "andrew_id"  VARCHAR(255) NOT NULL UNIQUE,
                     "dorm"       VARCHAR(255)     NULL
                         CONSTRAINT "users_dorm_check" CHECK ("dorm" IN (
@@ -50,7 +49,7 @@ impl MigrationTrait for Migration {
                     "name"        TEXT                   NOT NULL,
                     "tagline"     TEXT                   NOT NULL,
                     "description" TEXT                   NOT NULL,
-                    "card_id"     TEXT                   NOT NULL UNIQUE,
+                    "card_id"     TEXT                       NULL UNIQUE,
                     "category"    VARCHAR(255)           NOT NULL
                         CONSTRAINT "challenge_category_check" CHECK ("category" IN (
                             'essentials',
@@ -60,7 +59,7 @@ impl MigrationTrait for Migration {
                             'minor_major_general',
                             'residence_relaxation'
                         )),
-                    "location"    geography(Point, 4326) NOT NULL,
+                    "location"    geography(Point, 4326)     NULL,
                     "coin_value"  BIGINT                 NOT NULL,
                     "open_from"   TIMESTAMPTZ            NOT NULL DEFAULT now()
                 );

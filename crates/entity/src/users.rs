@@ -6,8 +6,6 @@ use sea_orm::entity::prelude::*;
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
-    #[sea_orm(column_type = "Text", unique)]
-    pub sub: String,
     #[sea_orm(unique)]
     pub andrew_id: String,
     pub dorm: Option<Dorm>,

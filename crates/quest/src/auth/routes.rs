@@ -93,7 +93,6 @@ async fn oidc_failed(err: MiddlewareError) -> AuthError {
 
 #[derive(Serialize)]
 pub struct UserView {
-    pub sub: String,
     pub email: Option<String>,
     pub name: String,
     pub andrew_id: String,
@@ -104,7 +103,6 @@ pub struct UserView {
 impl From<SessionUser> for UserView {
     fn from(u: SessionUser) -> Self {
         Self {
-            sub: u.sub,
             email: u.email,
             name: u.name,
             andrew_id: u.andrew_id,
@@ -154,11 +152,14 @@ async fn login(
     let target = validate_return(query.return_to.as_deref(), auth.app_url())?;
     let claims = IdClaims::from(&claims);
 
+    let Some(andrew_id) = claims.andrew_id() else {
+        return Ok(failed(Some(&target), "no_andrew_id"));
+    };
+
     let user = SessionUser {
         name: claims.display_name(),
-        andrew_id: claims.andrew_id(),
+        andrew_id,
         admin: auth.is_admin(&claims.groups),
-        sub: claims.sub,
         email: claims.email,
         groups: claims.groups,
     };
@@ -175,7 +176,7 @@ async fn login(
     };
 
     session.flush().await.ok();
-    let sub = user.sub.clone();
+    let andrew_id = user.andrew_id.clone();
     let store_down = || AuthError::Upstream("session_store_unavailable");
     session
         .insert(USER_KEY, user)
@@ -192,7 +193,7 @@ async fn login(
         .ok_or(AuthError::Upstream("session_no_id"))?
         .to_string();
 
-    auth.sessions.bind(&sub, &id).await?;
+    auth.sessions.bind(&andrew_id, &id).await?;
 
     Ok(handoff(
         &format!(
@@ -320,7 +321,7 @@ async fn logout(
         .flush()
         .await
         .map_err(|_| AuthError::Upstream("session_store_unavailable"))?;
-    auth.sessions.release(&user.sub).await?;
+    auth.sessions.release(&user.andrew_id).await?;
 
     Ok(Json(LogoutResponse {
         end_session_url: auth

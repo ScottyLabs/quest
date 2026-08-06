@@ -2,10 +2,9 @@ pub mod routes;
 
 use entity::enums::Dorm;
 use entity::users;
-use sea_orm::sea_query::{Expr, OnConflict};
+use sea_orm::sea_query::OnConflict;
 use sea_orm::{
-    ActiveModelTrait, ActiveValue, ColumnTrait, DatabaseConnection, DbErr, EntityTrait,
-    QueryFilter, SqlErr,
+    ActiveModelTrait, ActiveValue, ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter,
 };
 
 use crate::auth::AuthError;
@@ -23,56 +22,36 @@ impl Users {
 
     pub async fn upsert(&self, user: &SessionUser) -> Result<users::Model, AuthError> {
         let fresh = users::ActiveModel {
-            sub: ActiveValue::Set(user.sub.clone()),
             andrew_id: ActiveValue::Set(user.andrew_id.clone()),
             staff: ActiveValue::Set(user.admin),
             ..Default::default()
         };
 
-        let inserted = users::Entity::insert(fresh)
+        users::Entity::insert(fresh)
             .on_conflict(
-                OnConflict::column(users::Column::Sub)
-                    .update_columns([users::Column::AndrewId, users::Column::Staff])
+                OnConflict::column(users::Column::AndrewId)
+                    .update_column(users::Column::Staff)
                     .to_owned(),
             )
             .exec_without_returning(&self.db)
-            .await;
+            .await
+            .map_err(db_down)?;
 
-        match inserted {
-            Ok(_) => {}
-            Err(err) if unique_violation(&err) => self.adopt(user).await?,
-            Err(err) => return Err(db_down(err)),
-        }
-
-        self.by_sub(&user.sub)
+        self.by_andrew_id(&user.andrew_id)
             .await?
             .ok_or(AuthError::Upstream("user_row_missing"))
     }
 
-    async fn adopt(&self, user: &SessionUser) -> Result<(), AuthError> {
-        let moved = users::Entity::update_many()
-            .col_expr(users::Column::Sub, Expr::value(user.sub.clone()))
-            .col_expr(users::Column::Staff, Expr::value(user.admin))
-            .filter(users::Column::AndrewId.eq(&user.andrew_id))
-            .exec(&self.db)
-            .await;
-
-        match moved {
-            Err(err) if unique_violation(&err) => Ok(()),
-            other => other.map(|_| ()).map_err(db_down),
-        }
-    }
-
-    async fn by_sub(&self, sub: &str) -> Result<Option<users::Model>, AuthError> {
+    async fn by_andrew_id(&self, andrew_id: &str) -> Result<Option<users::Model>, AuthError> {
         users::Entity::find()
-            .filter(users::Column::Sub.eq(sub))
+            .filter(users::Column::AndrewId.eq(andrew_id))
             .one(&self.db)
             .await
             .map_err(db_down)
     }
 
     pub async fn row(&self, user: &SessionUser) -> Result<users::Model, AuthError> {
-        match self.by_sub(&user.sub).await? {
+        match self.by_andrew_id(&user.andrew_id).await? {
             Some(row) => Ok(row),
             None => self.upsert(user).await,
         }
@@ -92,10 +71,6 @@ impl Users {
 
         Ok(())
     }
-}
-
-fn unique_violation(err: &DbErr) -> bool {
-    matches!(err.sql_err(), Some(SqlErr::UniqueConstraintViolation(_)))
 }
 
 fn db_down(err: DbErr) -> AuthError {

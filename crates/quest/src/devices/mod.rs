@@ -142,17 +142,17 @@ impl Devices {
         Ok(held.public_key)
     }
 
-    pub async fn registered(&self, sub: &str) -> Result<Vec<devices::Model>, AuthError> {
+    pub async fn registered(&self, andrew_id: &str) -> Result<Vec<devices::Model>, AuthError> {
         devices::Entity::find()
             .inner_join(users::Entity)
-            .filter(users::Column::Sub.eq(sub))
+            .filter(users::Column::AndrewId.eq(andrew_id))
             .order_by_asc(devices::Column::CreatedAt)
             .all(&self.db)
             .await
             .map_err(db_down)
     }
 
-    pub async fn revoke(&self, sub: &str, public_key: &str) -> Result<(), AuthError> {
+    pub async fn revoke(&self, andrew_id: &str, public_key: &str) -> Result<(), AuthError> {
         let unknown = AuthError::NotFound("device_unknown");
         let (device, owner) = devices::Entity::find_by_id(public_key)
             .find_also_related(users::Entity)
@@ -161,7 +161,7 @@ impl Devices {
             .map_err(db_down)?
             .ok_or(unknown)?;
 
-        if owner.map(|owner| owner.sub).as_deref() != Some(sub) {
+        if owner.map(|owner| owner.andrew_id).as_deref() != Some(andrew_id) {
             return Err(unknown);
         }
 

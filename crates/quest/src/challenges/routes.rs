@@ -22,6 +22,12 @@ pub fn router(challenges: Challenges) -> Router {
 }
 
 #[derive(Serialize)]
+struct Location {
+    lat: f64,
+    lon: f64,
+}
+
+#[derive(Serialize)]
 struct ChallengeView {
     id: String,
     name: String,
@@ -29,6 +35,7 @@ struct ChallengeView {
     description: String,
     category: String,
     coin_value: i64,
+    location: Option<Location>,
     open_from: String,
     cleared: bool,
 }
@@ -42,8 +49,15 @@ impl ChallengeView {
             description: row.description,
             category: row.category.to_value(),
             coin_value: row.coin_value,
+            location: row.location.map(|at| Location {
+                lat: at.lat,
+                lon: at.lon,
+            }),
             open_from: row.open_from.to_rfc3339(),
-            cleared: cleared.contains(&row.card_id),
+            cleared: row
+                .card_id
+                .as_deref()
+                .is_some_and(|card| cleared.contains(card)),
         }
     }
 }

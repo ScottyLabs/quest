@@ -76,7 +76,7 @@ async fn list(
     State(devices): State<Devices>,
     CurrentUser(user): CurrentUser,
 ) -> Result<Json<Vec<DeviceView>>, AuthError> {
-    let registered = devices.registered(&user.sub).await?;
+    let registered = devices.registered(&user.andrew_id).await?;
 
     Ok(Json(registered.into_iter().map(DeviceView::from).collect()))
 }
@@ -94,7 +94,7 @@ async fn revoke(
     Path(public_key): Path<String>,
 ) -> Result<Json<Revoked>, AuthError> {
     let key = DeviceKey::parse(&public_key).ok_or(AuthError::NotFound("device_unknown"))?;
-    devices.revoke(&user.sub, key.hex()).await?;
+    devices.revoke(&user.andrew_id, key.hex()).await?;
 
     if key.hex() == bound {
         session

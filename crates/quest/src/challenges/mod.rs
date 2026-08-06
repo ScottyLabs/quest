@@ -47,7 +47,6 @@ impl Challenges {
             .ok_or(AuthError::NotFound("challenge_unknown"))
     }
 
-    /// Cards this user has tapped; `tap_events` joins `challenge` on `card_id`.
     pub async fn cleared(&self, user: Uuid) -> Result<HashSet<String>, AuthError> {
         let cards: Vec<String> = tap_events::Entity::find()
             .select_only()

@@ -9,16 +9,19 @@ pub struct Model {
     #[sea_orm(column_type = "Text")]
     pub name: String,
     #[sea_orm(column_type = "Text")]
+    pub tagline: String,
+    #[sea_orm(column_type = "Text")]
     pub description: String,
-    #[sea_orm(column_type = "Text", unique)]
-    pub card_id: String,
+    #[sea_orm(column_type = "Text", unique, nullable)]
+    pub card_id: Option<String>,
     pub category: ChallengeCategory,
     #[sea_orm(
         column_type = "custom(\"geography(Point, 4326)\")",
         select_as = "text",
-        save_as = "geography"
+        save_as = "geography",
+        nullable
     )]
-    pub location: Point,
+    pub location: Option<Point>,
     pub coin_value: i64,
     pub open_from: DateTimeWithTimeZone,
 }

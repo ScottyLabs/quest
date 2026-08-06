@@ -168,7 +168,6 @@ fn end_session_url(metadata: &ProviderMetadata, config: &OidcConfig) -> Option<S
 
 #[derive(Debug)]
 pub struct IdClaims {
-    pub sub: String,
     pub email: Option<String>,
     pub name: Option<String>,
     pub preferred_username: Option<String>,
@@ -178,7 +177,6 @@ pub struct IdClaims {
 impl From<&OidcClaims<GroupClaims>> for IdClaims {
     fn from(claims: &OidcClaims<GroupClaims>) -> Self {
         Self {
-            sub: claims.subject().to_string(),
             email: claims.email().map(|email| email.as_str().to_owned()),
             name: claims
                 .name()
@@ -201,13 +199,13 @@ impl IdClaims {
             .unwrap_or_else(|| "Unknown User".to_owned())
     }
 
-    pub fn andrew_id(&self) -> String {
+    pub fn andrew_id(&self) -> Option<String> {
         self.email
             .as_deref()
             .and_then(|email| email.split('@').next())
             .or(self.preferred_username.as_deref())
-            .unwrap_or("unknown")
-            .to_owned()
+            .map(str::to_owned)
+            .filter(|id| !id.is_empty())
     }
 }
 

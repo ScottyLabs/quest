@@ -19,7 +19,6 @@ pub fn router(users: Users) -> Router {
 
 #[derive(Serialize)]
 struct Profile {
-    sub: String,
     andrew_id: String,
     dorm: Option<String>,
     staff: bool,
@@ -33,7 +32,6 @@ async fn me(
     let row = users.row(&user).await?;
 
     Ok(Json(Profile {
-        sub: row.sub,
         andrew_id: row.andrew_id,
         dorm: row.dorm.map(|dorm| dorm.to_value()),
         staff: row.staff,

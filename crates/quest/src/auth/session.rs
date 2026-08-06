@@ -18,7 +18,6 @@ pub const SESSION_TTL: Duration = Duration::days(90);
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SessionUser {
-    pub sub: String,
     pub email: Option<String>,
     pub name: String,
     pub andrew_id: String,
@@ -32,8 +31,8 @@ pub struct Sessions {
     secure_cookies: bool,
 }
 
-fn active_key(sub: &str) -> String {
-    format!("quest:user:session:{sub}")
+fn active_key(andrew_id: &str) -> String {
+    format!("quest:user:session:{andrew_id}")
 }
 
 impl Sessions {
@@ -68,11 +67,11 @@ impl Sessions {
         self.pool.clone()
     }
 
-    pub async fn bind(&self, sub: &str, id: &str) -> Result<(), AuthError> {
+    pub async fn bind(&self, andrew_id: &str, id: &str) -> Result<(), AuthError> {
         let evicted: Option<String> = self
             .pool
             .set(
-                active_key(sub),
+                active_key(andrew_id),
                 id,
                 Some(Expiration::EX(SESSION_TTL.whole_seconds())),
                 None,
@@ -87,8 +86,8 @@ impl Sessions {
         }
     }
 
-    pub async fn release(&self, sub: &str) -> Result<(), AuthError> {
-        self.del(&active_key(sub)).await
+    pub async fn release(&self, andrew_id: &str) -> Result<(), AuthError> {
+        self.del(&active_key(andrew_id)).await
     }
 
     async fn del(&self, key: &str) -> Result<(), AuthError> {

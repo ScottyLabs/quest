@@ -70,7 +70,7 @@ impl MigrationTrait for Migration {
                         CONSTRAINT "tap_events_card_id_fkey" REFERENCES "challenge" ("card_id"),
                     "counter"  BIGINT                 NOT NULL,
                     "time"     BIGINT                 NOT NULL,
-                    "location" geography(Point, 4326) NOT NULL,
+                    "location" geography(Point, 4326)     NULL,
                     "user_id"  UUID                   NOT NULL
                         CONSTRAINT "tap_events_user_id_fkey" REFERENCES "users" ("id"),
                     CONSTRAINT "tap_events_card_id_counter_key" UNIQUE ("card_id", "counter")

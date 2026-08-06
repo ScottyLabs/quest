@@ -22,13 +22,13 @@ pub fn router(challenges: Challenges) -> Router {
 }
 
 #[derive(Serialize)]
-struct Location {
+pub struct Location {
     lat: f64,
     lon: f64,
 }
 
 #[derive(Serialize)]
-struct ChallengeView {
+pub struct ChallengeView {
     id: String,
     name: String,
     tagline: String,
@@ -41,7 +41,7 @@ struct ChallengeView {
 }
 
 impl ChallengeView {
-    fn new(row: challenge::Model, cleared: &HashSet<String>) -> Self {
+    pub fn new(row: challenge::Model, cleared: bool) -> Self {
         Self {
             id: row.id.to_string(),
             name: row.name,
@@ -54,11 +54,16 @@ impl ChallengeView {
                 lon: at.lon,
             }),
             open_from: row.open_from.to_rfc3339(),
-            cleared: row
-                .card_id
-                .as_deref()
-                .is_some_and(|card| cleared.contains(card)),
+            cleared,
         }
+    }
+
+    fn from_set(row: challenge::Model, cleared: &HashSet<String>) -> Self {
+        let done = row
+            .card_id
+            .as_deref()
+            .is_some_and(|card| cleared.contains(card));
+        Self::new(row, done)
     }
 }
 
@@ -95,7 +100,7 @@ async fn list(
         .list(category)
         .await?
         .into_iter()
-        .map(|found| ChallengeView::new(found, &cleared))
+        .map(|found| ChallengeView::from_set(found, &cleared))
         .collect();
 
     Ok(Json(Board {
@@ -116,7 +121,7 @@ async fn one(
     let row = users.row(&user).await?;
     let cleared = challenges.cleared(row.id).await?;
 
-    Ok(Json(ChallengeView::new(
+    Ok(Json(ChallengeView::from_set(
         challenges.one(id).await?,
         &cleared,
     )))

@@ -14,9 +14,10 @@ pub struct Model {
     #[sea_orm(
         column_type = "custom(\"geography(Point, 4326)\")",
         select_as = "text",
-        save_as = "geography"
+        save_as = "geography",
+        nullable
     )]
-    pub location: Point,
+    pub location: Option<Point>,
     pub user_id: Uuid,
 }
 

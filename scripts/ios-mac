@@ -1,0 +1,101 @@
+set -euo pipefail
+
+cd "$(cd "$(dirname "$0")/.." && pwd)"
+
+for dir in /opt/homebrew/bin /usr/local/bin "$HOME/.deno/bin" /opt/local/bin; do
+  [ -d "$dir" ] && PATH="$dir:$PATH"
+done
+export PATH
+
+command -v deno >/dev/null || {
+  echo "deno not found. PATH=$PATH" >&2
+  echo "install with: brew install deno" >&2
+  exit 1
+}
+
+xcodebuild -version >/dev/null 2>&1 || {
+  echo "xcodebuild unavailable. Active developer dir: $(xcode-select -p 2>&1)" >&2
+  echo "Install full Xcode, then point at it:" >&2
+  echo "  sudo xcode-select -s /Applications/Xcode.app/Contents/Developer" >&2
+  echo "  sudo xcodebuild -license accept" >&2
+  exit 1
+}
+
+keychain="$HOME/Library/Keychains/login.keychain-db"
+pass_file="$HOME/.quest-keychain-pass"
+
+if [ -z "${QUEST_KEYCHAIN_PASSWORD:-}" ] && [ -r "$pass_file" ]; then
+  QUEST_KEYCHAIN_PASSWORD=$(cat "$pass_file")
+fi
+if [ -n "${QUEST_KEYCHAIN_PASSWORD:-}" ]; then
+  security unlock-keychain -p "$QUEST_KEYCHAIN_PASSWORD" "$keychain"
+fi
+
+if [ -z "${QUEST_SKIP_KEYCHAIN:-}" ]; then
+  probe_id=$(security find-identity -v -p codesigning 2>/dev/null | awk '/^ *1\)/{print $2; exit}')
+  probe_dir=$(mktemp -d)
+  cp /usr/bin/true "$probe_dir/probe"
+  probe_ok=0
+  [ -n "$probe_id" ] && codesign -f -s "$probe_id" "$probe_dir/probe" >/dev/null 2>&1 && probe_ok=1
+  rm -rf "$probe_dir"
+
+  if [ "$probe_ok" -ne 1 ]; then
+    echo "codesign cannot sign in this ssh session (errSecInternalComponent)." >&2
+    echo "The GUI login does not unlock the keychain for ssh; it needs the password." >&2
+    echo >&2
+    echo "Store it once on the Mac - paste as ONE line, nothing lands in history:" >&2
+    echo >&2
+    echo "  (umask 077; printf 'login password: '; read -rs p; echo; printf '%s' \"\$p\" > $pass_file)" >&2
+    echo >&2
+    echo "Then re-run. Alternatively export QUEST_KEYCHAIN_PASSWORD for one build," >&2
+    echo "or QUEST_SKIP_KEYCHAIN=1 to bypass this check entirely." >&2
+    exit 1
+  fi
+fi
+
+asset_args=()
+if [ -z "${QUEST_WITH_ASSETS:-}" ]; then
+  asset_args=(EXCLUDED_SOURCE_FILE_NAMES="Assets.xcassets" ASSETCATALOG_COMPILER_APPICON_NAME="")
+fi
+
+echo "==> resolving deps"
+deno install --quiet
+
+: "${VITE_QUEST_API_BASE:?not set - run via scripts/ios-remote, which bakes it in}"
+echo "==> building web assets (backend: $VITE_QUEST_API_BASE)"
+VITE_QUEST_API_BASE="$VITE_QUEST_API_BASE" deno task --cwd apps/mobile build
+
+echo "==> cap sync ios${CAP_SERVER_URL:+ (dev server: $CAP_SERVER_URL)}"
+CAP_SERVER_URL="${CAP_SERVER_URL:-}" deno task --cwd apps/mobile cap sync ios
+
+cd apps/mobile/ios/App
+
+echo "==> xcodebuild${QUEST_WITH_ASSETS:+ (with asset catalog)}"
+[ ${#asset_args[@]} -eq 0 ] || echo "    skipping asset catalog: no app icon (QUEST_WITH_ASSETS=1 to include)"
+xcodebuild \
+  -project App.xcodeproj \
+  -scheme App \
+  -configuration Debug \
+  -destination generic/platform=iOS \
+  -derivedDataPath DerivedData \
+  -allowProvisioningUpdates \
+  ENABLE_DEBUG_DYLIB=NO \
+  ENABLE_PREVIEWS=NO \
+  "${asset_args[@]}" \
+  build
+
+app=$(find DerivedData/Build/Products -maxdepth 2 -name 'App.app' -print -quit)
+[ -n "$app" ] || { echo "no App.app under DerivedData" >&2; exit 1; }
+
+echo "==> signed entitlements"
+codesign -d --entitlements :- "$app" 2>/dev/null | grep -A2 'nfc\|application-identifier' || {
+  echo "  WARNING: no nfc/application-identifier entitlement in the signature" >&2
+}
+
+echo "==> packaging ipa"
+rm -rf dist
+mkdir -p dist/Payload
+cp -R "$app" dist/Payload/
+(cd dist && zip -qry App.ipa Payload && rm -rf Payload)
+
+echo "==> $(pwd)/dist/App.ipa"

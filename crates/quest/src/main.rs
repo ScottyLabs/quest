@@ -1,4 +1,5 @@
 mod auth;
+mod challenges;
 mod cors;
 mod db;
 mod devices;
@@ -148,11 +149,13 @@ async fn main() {
 
             let sessions = auth.sessions.layer();
             let users = users::Users::new(db.clone());
+            let challenges = challenges::Challenges::new(db.clone());
             let devices = devices::Devices::new(db, auth.sessions.pool());
 
             app.merge(auth::routes::router(auth))
                 .merge(devices::routes::router(devices.clone()))
                 .merge(users::routes::router(users.clone()))
+                .merge(challenges::routes::router(challenges))
                 .layer(axum::middleware::from_fn_with_state(
                     devices.clone(),
                     devices::enforce,

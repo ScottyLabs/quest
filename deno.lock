@@ -7,6 +7,7 @@
     "npm:@capacitor/cli@^8.4.2": "8.4.2",
     "npm:@capacitor/core@^8.4.2": "8.4.2",
     "npm:@capacitor/ios@^8.4.2": "8.4.2_@capacitor+core@8.4.2",
+    "npm:@capgo/capacitor-nfc@^8.2.2": "8.2.2_@capacitor+core@8.4.2",
     "npm:@perfood/capacitor-crypto-api@8": "8.0.0_@capacitor+core@8.4.2",
     "npm:@sveltejs/adapter-static@^3.0.10": "3.0.10_@sveltejs+kit@2.70.1__@sveltejs+vite-plugin-svelte@7.2.0___svelte@5.56.8___vite@8.1.5__svelte@5.56.8__typescript@5.9.3__vite@8.1.5_@sveltejs+vite-plugin-svelte@7.2.0__svelte@5.56.8__vite@8.1.5",
     "npm:@sveltejs/kit@*": "2.70.1_@sveltejs+vite-plugin-svelte@7.2.0__svelte@5.56.8__vite@8.1.5_svelte@5.56.8_typescript@5.9.3_vite@8.1.5",
@@ -70,6 +71,12 @@
     },
     "@capacitor/ios@8.4.2_@capacitor+core@8.4.2": {
       "integrity": "sha512-ClVzIjK++yRjsRPOpdEzhsZfbHfoEc0f4M6vD0v7sWh0qcoF6NkxNAeHpWTn4OPJpJfpGGoYsq+IfEHrYyBiWA==",
+      "dependencies": [
+        "@capacitor/core"
+      ]
+    },
+    "@capgo/capacitor-nfc@8.2.2_@capacitor+core@8.4.2": {
+      "integrity": "sha512-plz0eYXwEcq1gKnImqsa/s0hV+RZ5N11lWcEqgcfyH8AT6u6QDphNLsehVkgLHnsR+QNrHlwXvN6IbIksFYt+Q==",
       "dependencies": [
         "@capacitor/core"
       ]
@@ -1176,6 +1183,7 @@
             "npm:@capacitor/cli@^8.4.2",
             "npm:@capacitor/core@^8.4.2",
             "npm:@capacitor/ios@^8.4.2",
+            "npm:@capgo/capacitor-nfc@^8.2.2",
             "npm:@perfood/capacitor-crypto-api@8"
           ]
         }

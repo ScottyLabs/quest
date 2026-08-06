@@ -1,4 +1,4 @@
-package org.scottylabs.quest;
+package app.cmu.quest;
 
 import com.getcapacitor.BridgeActivity;
 

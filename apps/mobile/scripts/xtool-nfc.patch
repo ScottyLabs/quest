@@ -1,0 +1,48 @@
+diff --git a/Sources/XKit/DeveloperServices/App IDs/Entitlements/DeveloperServicesCapability.swift b/Sources/XKit/DeveloperServices/App IDs/Entitlements/DeveloperServicesCapability.swift
+index 13bbefd..c59d84c 100644
+--- a/Sources/XKit/DeveloperServices/App IDs/Entitlements/DeveloperServicesCapability.swift	
++++ b/Sources/XKit/DeveloperServices/App IDs/Entitlements/DeveloperServicesCapability.swift	
+@@ -91,6 +91,12 @@ extension HealthKitEntitlement: EntitlementWithCapability {
+     }
+ }
+ 
++extension NFCReaderSessionFormatsEntitlement: EntitlementWithCapability {
++    var capability: DeveloperServicesCapability {
++        DeveloperServicesCapability(.nfcTagReading, isFree: false)
++    }
++}
++
+ extension HomeKitEntitlement: EntitlementWithCapability {
+     var capability: DeveloperServicesCapability {
+         DeveloperServicesCapability(.homekit, isFree: true)
+diff --git a/Sources/XKit/Model/Entitlements/EntitlementTypes.swift b/Sources/XKit/Model/Entitlements/EntitlementTypes.swift
+index 16c8ab1..aac3feb 100644
+--- a/Sources/XKit/Model/Entitlements/EntitlementTypes.swift
++++ b/Sources/XKit/Model/Entitlements/EntitlementTypes.swift
+@@ -28,6 +28,7 @@ extension EntitlementContainer {
+         WirelessAccessoryEntitlement.self,
+         HomeKitEntitlement.self,
+         HealthKitEntitlement.self,
++        NFCReaderSessionFormatsEntitlement.self,
+     ]
+ }
+ 
+@@ -168,3 +169,18 @@ public struct HealthKitEntitlement: Entitlement, RawRepresentable {
+     public var rawValue: Bool
+     public init(rawValue: Bool) { self.rawValue = rawValue }
+ }
++
++public struct NFCReaderSessionFormatsEntitlement: Entitlement, RawRepresentable {
++    public static let identifier = "com.apple.developer.nfc.readersession.formats"
++
++    public var rawValue: [String]
++    public init(rawValue: [String]) { self.rawValue = rawValue }
++
++    public init(from decoder: Decoder) throws {
++        rawValue = try decoder.singleValueContainer().decode([String].self)
++    }
++    public func encode(to encoder: Encoder) throws {
++        var container = encoder.singleValueContainer()
++        try container.encode(rawValue)
++    }
++}

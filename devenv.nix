@@ -70,6 +70,7 @@ in
     ios.swift
     pkgs.usbmuxd
     pkgs.libimobiledevice
+    pkgs.ideviceinstaller
     pkgs.unzip
   ];
 

@@ -7,8 +7,53 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        // iOS only raises the local-network permission prompt for a NATIVE
+        // connection to a private address; a WKWebView fetch() to a LAN IP is
+        // just denied in silence. So ask at boot, before any JS runs - without
+        // this every request to a dev backend fails and the UI looks inert.
+        // (The xtool target has always done this; the Xcode target did not,
+        // which is why sign-in worked there and nowhere else.)
+        pokeLocalNetwork()
+
+        // Built without storyboards: Main.storyboard used to instantiate this
+        // controller and LaunchScreen.storyboard drew the splash. Compiling
+        // either needs `ibtool`, which renders through the WindowServer and so
+        // hangs forever in an ssh session - see scripts/ios-remote. The launch
+        // screen now comes from the UILaunchScreen key in Info.plist.
+        let window = UIWindow(frame: UIScreen.main.bounds)
+        window.rootViewController = CAPBridgeViewController()
+        window.makeKeyAndVisible()
+        self.window = window
         return true
+    }
+
+    /// Touch every locally-hosted URL the app is configured against: the live
+    /// reload server (`server.url`) and the API base, which `cap sync` copies
+    /// into `plugins.Quest.apiBase`. Responses are irrelevant - the connection
+    /// attempt is what makes iOS ask.
+    private func pokeLocalNetwork() {
+        guard
+            let url = Bundle.main.url(forResource: "capacitor.config", withExtension: "json"),
+            let data = try? Data(contentsOf: url),
+            let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+        else { return }
+
+        var targets: [String] = []
+        if let server = root["server"] as? [String: Any], let raw = server["url"] as? String {
+            targets.append(raw)
+        }
+        if let plugins = root["plugins"] as? [String: Any],
+            let quest = plugins["Quest"] as? [String: Any],
+            let raw = quest["apiBase"] as? String {
+            targets.append(raw)
+        }
+
+        for raw in targets {
+            guard let target = URL(string: raw) else { continue }
+            var request = URLRequest(url: target)
+            request.timeoutInterval = 5
+            URLSession.shared.dataTask(with: request).resume()
+        }
     }
 
     func applicationWillResignActive(_ application: UIApplication) {

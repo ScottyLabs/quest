@@ -1,9 +1,62 @@
 <script lang="ts">
+  import NfcSheet from "$lib/components/quest/NfcSheet.svelte";
   import QuestHeader from "$lib/components/quest/QuestHeader.svelte";
   import QuestList from "$lib/components/quest/QuestList.svelte";
-  import { BALANCE, CATEGORIES, done, inCategory, nextUnlock, quests } from "$lib/quests.svelte";
+  import { NfcError, openSettings, readiness, scan, showsSystemSheet } from "$lib/nfc";
+  import { warn } from "$lib/notice.svelte";
+  import {
+    BALANCE,
+    CATEGORIES,
+    done,
+    inCategory,
+    nextUnlock,
+    quests,
+    registerTap,
+    TapError,
+    type Quest,
+  } from "$lib/quests.svelte";
   import { theme } from "$lib/theme";
   import { active } from "$lib/theme.svelte";
+
+  let scanning = $state<Quest | null>(null);
+  let abort: AbortController | null = null;
+
+  async function beginScan(quest: Quest) {
+    if (scanning !== null) return;
+
+    const state = await readiness();
+    if (state === "unsupported") {
+      warn("This phone can't scan NFC tags.");
+      return;
+    }
+    if (state === "disabled") {
+      warn("Turn on NFC to scan this challenge.");
+      await openSettings();
+      return;
+    }
+
+    scanning = quest;
+    abort = new AbortController();
+
+    try {
+      const url = await scan(`Hold your phone near the ${quest.title} tag`, abort.signal);
+      const result = await registerTap(url);
+
+      if (result.challenge.id !== quest.id) {
+        warn(`That tag belongs to "${result.challenge.name}".`);
+      } else if (!result.first) {
+        warn("You already completed this one.");
+      }
+
+      await quests.reload();
+    } catch (error) {
+      if (error instanceof NfcError || error instanceof TapError) warn(error.message);
+      else warn("Couldn't register that tap.");
+    } finally {
+      scanning = null;
+      abort = null;
+    }
+  }
 
   const all = $derived(quests.data ?? []);
   const shown = $derived(inCategory(all, active.id));
@@ -70,12 +123,16 @@
     {:else if shown.length === 0}
       <p class="note">No challenges here yet.</p>
     {:else}
-      <QuestList quests={shown} onclaim={() => void quests.reload()} />
+      <QuestList quests={shown} onscan={beginScan} />
     {/if}
   </div>
 
   <span class="fade" style:opacity={fade} aria-hidden="true"></span>
 </div>
+
+{#if scanning && !showsSystemSheet}
+  <NfcSheet title={scanning.title} oncancel={() => abort?.abort()} />
+{/if}
 
 <style>
   .board {

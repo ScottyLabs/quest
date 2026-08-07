@@ -11,10 +11,10 @@
     inCategory,
     nextUnlock,
     quests,
-    registerTap,
     TapError,
     type Quest,
   } from "$lib/quests.svelte";
+  import { handleTap } from "$lib/tap";
   import { theme } from "$lib/theme";
   import { active } from "$lib/theme.svelte";
 
@@ -40,15 +40,7 @@
 
     try {
       const url = await scan(`Hold your phone near the ${quest.title} tag`, abort.signal);
-      const result = await registerTap(url);
-
-      if (result.challenge.id !== quest.id) {
-        warn(`That tag belongs to "${result.challenge.name}".`);
-      } else if (!result.first) {
-        warn("You already completed this one.");
-      }
-
-      await quests.reload();
+      await handleTap(url, quest.id);
     } catch (error) {
       if (error instanceof NfcError || error instanceof TapError) warn(error.message);
       else warn("Couldn't register that tap.");

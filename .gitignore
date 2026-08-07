@@ -26,6 +26,9 @@ build/
 local.properties
 .gradle/
 
+# iOS (ios-remote fetches the built ipa here)
+apps/mobile/ios/App/dist/
+
 # Environment
 .env
 

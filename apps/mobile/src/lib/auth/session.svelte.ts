@@ -5,6 +5,7 @@ import { Capacitor } from "@capacitor/core";
 import {
   apiBase,
   endSession,
+  enrollDevice,
   errorCode,
   fetchStatus,
   loginTicket,
@@ -70,10 +71,6 @@ class SessionStore {
     return this.#phase === "signedIn";
   }
 
-  /**
-   * This phone belongs to another account. Terminal: the server refused to
-   * mint a session, so there is nothing to retry on this device.
-   */
   get deviceOwned(): boolean {
     return this.#deviceOwned;
   }
@@ -95,6 +92,7 @@ class SessionStore {
 
       this.#session = stored;
       this.#phase = "signedIn";
+      await enrollDevice(stored.id).catch(() => false);
     } catch (error) {
       console.error("session restore failed", error);
       this.#phase = "signedOut";
@@ -223,6 +221,11 @@ export const session = new SessionStore();
 export async function authFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const response = await send(path, session.id, init);
   if (response.status !== 401) return response;
+
+  if (await enrollDevice(session.id).catch(() => false)) {
+    const retried = await send(path, session.id, init);
+    if (retried.status !== 401) return retried;
+  }
 
   const code = await responseError(response);
   session.clear();

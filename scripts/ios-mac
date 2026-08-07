@@ -18,6 +18,9 @@ xcodebuild -version >/dev/null 2>&1 || {
   echo "Install full Xcode, then point at it:" >&2
   echo "  sudo xcode-select -s /Applications/Xcode.app/Contents/Developer" >&2
   echo "  sudo xcodebuild -license accept" >&2
+  echo "If Xcode lives on an external volume, check the mount name first: an" >&2
+  echo "exFAT/FSKit disk can reappear as /Volumes/My-Disk instead of 'My Disk'," >&2
+  echo "which leaves xcode-select pointing at a path that no longer exists." >&2
   exit 1
 }
 
@@ -53,9 +56,94 @@ if [ -z "${QUEST_SKIP_KEYCHAIN:-}" ]; then
   fi
 fi
 
+# The catalog carries the app icon and the launch image (Info.plist's
+# UILaunchScreen names "Splash"), so it is built by default.
+#
+# But actool does not compile an iOS catalog itself: it forks ibtoold, which
+# asks CoreSimulator for a device type, which synchronously XPCs simdiskimaged.
+# When that daemon is wedged the reply never comes and the build hangs forever
+# with no output - not a slow build, a deadlock. So probe it first, and treat a
+# wedge as a build failure: an IPA without the app icon is not shippable.
+# --app-icon and --output-partial-info-plist are load-bearing here, NOT
+# decoration: without the partial plist actool skips app-icon compilation
+# entirely (it says so in a notice), returns 0 in ~2s, and never touches
+# CoreSimulator - a probe that always passes while the real build deadlocks.
+actool_answers() {
+  local out plist pid kids watchdog rc=0
+  out=$(mktemp -d)
+  plist=$(mktemp)
+  actool_log=$(mktemp)
+  "$(xcode-select -p)/usr/bin/actool" apps/mobile/ios/App/App/Assets.xcassets \
+    --compile "$out" --output-partial-info-plist "$plist" --app-icon AppIcon \
+    --output-format human-readable-text \
+    --platform iphoneos --minimum-deployment-target 16.0 \
+    --target-device iphone --target-device ipad --development-region en \
+    >"$actool_log" 2>&1 &
+  pid=$!
+  (
+    sleep "${QUEST_ACTOOL_PROBE_TIMEOUT:-45}"
+    kids=$(pgrep -P "$pid" 2>/dev/null || true)
+    kill -9 "$pid" $kids 2>/dev/null || true
+  ) &
+  watchdog=$!
+  wait "$pid" 2>/dev/null || rc=$?
+  # `wait` returns the instant actool dies, so anything after the kill inside
+  # the watchdog loses a race against this SIGTERM - reap here instead. The
+  # extra `wait` swallows bash's "Terminated" job notice.
+  { kill "$watchdog" && wait "$watchdog"; } 2>/dev/null || true
+  if [ "$rc" -ne 0 ]; then
+    # ibtoold becomes its own session leader at once, so it is already
+    # reparented to launchd and `pgrep -P` cannot see it. Sweep by name: it is
+    # an on-demand helper Xcode respawns, so a stray kill costs nothing.
+    pkill -9 -x -u "$(id -u)" ibtoold 2>/dev/null || true
+  fi
+  rm -rf "$out" "$plist"
+  return "$rc"
+}
+
 asset_args=()
-if [ -z "${QUEST_WITH_ASSETS:-}" ]; then
+skip_why=""
+if [ -n "${QUEST_SKIP_ASSETS:-}" ]; then
+  skip_why="QUEST_SKIP_ASSETS is set"
   asset_args=(EXCLUDED_SOURCE_FILE_NAMES="Assets.xcassets" ASSETCATALOG_COMPILER_APPICON_NAME="")
+else
+  echo "==> probing actool (waits up to ${QUEST_ACTOOL_PROBE_TIMEOUT:-45}s; a wedge is silent)"
+  actool_answers || {
+    rc=$?
+    echo >&2
+    if [ "$rc" -gt 128 ]; then
+      cat >&2 <<'WEDGED'
+actool never answered - it deadlocked, so no app icon and no launch image.
+
+This is not the assets. actool forks ibtoold, which asks CoreSimulator for a
+device type over a synchronous XPC with no timeout. If simdiskimaged is not
+answering, that call blocks forever:
+  launchctl print system/com.apple.CoreSimulator.simdiskimaged | grep -E 'state|runs|last exit'
+
+A climbing "runs" plus "JETSAM_REASON_MEMORY_PERPROCESSLIMIT" means the daemon
+is crash-looping: CoreSimulatorService submits it with a 15 MB inactive memory
+cap that its own idle footprint already reaches, so the kernel kills it ~2s in,
+forever. Give it a real launchd job without that cap (already installed on this
+Mac at /Library/LaunchDaemons/com.apple.CoreSimulator.simdiskimaged.plist -
+recreate it if it goes missing, then `sudo launchctl bootstrap system <plist>`).
+WEDGED
+    else
+      echo "actool failed (exit $rc), so no app icon and no launch image:" >&2
+      grep -E 'error:' "$actool_log" >&2 || tail -5 "$actool_log" >&2
+      cat >&2 <<'MISMATCH'
+
+"No simulator runtime version ... available to use with iphonesimulator SDK"
+means the installed runtime is NEWER than Xcode's SDK, which Apple forbids.
+Let Xcode fetch the one it wants (~8 GB, needs the disk space):
+  sudo DEVELOPER_DIR="$(xcode-select -p)" xcodebuild -downloadPlatform iOS
+MISMATCH
+    fi
+    echo >&2
+    echo "QUEST_SKIP_ASSETS=1 builds without an icon, if you need an IPA anyway." >&2
+    rm -f "$actool_log"
+    exit 1
+  }
+  rm -f "$actool_log"
 fi
 
 echo "==> resolving deps"
@@ -70,8 +158,10 @@ CAP_SERVER_URL="${CAP_SERVER_URL:-}" deno task --cwd apps/mobile cap sync ios
 
 cd apps/mobile/ios/App
 
-echo "==> xcodebuild${QUEST_WITH_ASSETS:+ (with asset catalog)}"
-[ ${#asset_args[@]} -eq 0 ] || echo "    skipping asset catalog: no app icon (QUEST_WITH_ASSETS=1 to include)"
+# Guard every expansion of asset_args: ssh runs this under macOS /bin/sh (bash
+# 3.2), where `set -u` rejects an empty array as unbound.
+echo "==> xcodebuild${skip_why:+ (no asset catalog)}"
+[ -z "$skip_why" ] || echo "    no app icon, no launch image: $skip_why"
 xcodebuild \
   -project App.xcodeproj \
   -scheme App \
@@ -81,7 +171,9 @@ xcodebuild \
   -allowProvisioningUpdates \
   ENABLE_DEBUG_DYLIB=NO \
   ENABLE_PREVIEWS=NO \
-  "${asset_args[@]}" \
+  COMPRESS_PNG_FILES=NO \
+  ASSETCATALOG_COMPILER_OPTIMIZATION=time \
+  ${asset_args[@]+"${asset_args[@]}"} \
   build
 
 app=$(find DerivedData/Build/Products -maxdepth 2 -name 'App.app' -print -quit)

@@ -19,14 +19,14 @@
   });
 </script>
 
-<svelte:head><title>Signing in - Quest</title></svelte:head>
+<svelte:head><title>Signing in - Orientation Quest</title></svelte:head>
 
 <main>
   {#if failure === null}
     <p>Signing you in...</p>
   {:else}
     <p>{failure}</p>
-    <a href="/">Back to quest</a>
+    <a href="/">Back to Orientation Quest</a>
   {/if}
 </main>
 

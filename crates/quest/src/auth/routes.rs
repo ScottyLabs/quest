@@ -256,11 +256,11 @@ fn handoff(target: &str, outcome: &str) -> Response {
     let body = Html(format!(
         "<!doctype html><meta charset=utf-8>\
          <meta name=viewport content=\"width=device-width,initial-scale=1\">\
-         <title>CMU Quest</title>\
+         <title>Orientation Quest</title>\
          <body style=\"font:16px/1.5 system-ui;margin:0;display:grid;place-items:center;\
          min-height:100vh;text-align:center;padding:2rem\">\
-         <main><p>{outcome} Returning to CMU Quest&hellip;</p>\
-         <p><a id=go href=\"{href}\">Return to CMU Quest</a></p></main>\
+         <main><p>{outcome} Returning to Orientation Quest&hellip;</p>\
+         <p><a id=go href=\"{href}\">Return to Orientation Quest</a></p></main>\
          <script>location.replace(document.getElementById('go').href)</script>",
         href = escape_attr(target)
     ));
@@ -294,7 +294,7 @@ fn error_page(detail: &str) -> Response {
     let body = Html(format!(
         "<!doctype html><meta charset=utf-8>\
          <meta name=viewport content=\"width=device-width,initial-scale=1\">\
-         <title>CMU Quest</title>\
+         <title>Orientation Quest</title>\
          <body style=\"font:16px/1.5 system-ui;margin:0;display:grid;place-items:center;\
          min-height:100vh;text-align:center;padding:2rem\">\
          <main><h1 style=\"font-size:1.25rem\">Sign-in failed</h1><p>{detail}</p></main>"

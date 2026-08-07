@@ -6,8 +6,13 @@
 	<string>$(CAPACITOR_DEBUG)</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
+	<!-- &#8194; is an EN SPACE, not a typo. SpringBoard tightens home-screen
+	     icon labels past ~10 characters and an ASCII space is the first thing
+	     it swallows, rendering this as "CMUO-Quest". An en space is twice as
+	     wide, so a gap survives the squeeze. The value is still exactly
+	     "CMU O-Quest" to anything that reads it. -->
 	<key>CFBundleDisplayName</key>
-        <string>CMU Quest</string>
+	<string>CMU&#8194;O-Quest</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -43,9 +48,9 @@
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Connects to your computer's dev server for live reload.</string>
 	<key>NFCReaderUsageDescription</key>
-	<string>CMU Quest reads challenge tags around campus to mark them complete.</string>
+	<string>Orientation Quest reads challenge tags around campus to mark them complete.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>CMU Quest records where a challenge tag was tapped to confirm you were there.</string>
+	<string>Orientation Quest records where a challenge tag was tapped to confirm you were there.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UILaunchScreen</key>

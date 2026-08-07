@@ -1,7 +1,9 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">CMU Quest</string>
-    <string name="title_activity_main">CMU Quest</string>
+    <!-- &#8194; is an EN SPACE: launchers tighten long icon labels and eat a
+         plain space. Value still reads exactly "CMU O-Quest". -->
+    <string name="app_name">CMU&#8194;O-Quest</string>
+    <string name="title_activity_main">CMU O-Quest</string>
     <string name="package_name">app.cmu.quest</string>
     <!-- Deliberately still org.scottylabs.quest: the OAuth redirect and the
          NFC /tap handoff are hardcoded to this scheme in crates/quest

@@ -88,10 +88,9 @@ render icon.svg 1024 1024 "$work/icon.png"
 # App Store rejects an icon with an alpha channel, even a fully opaque one.
 magick "$work/icon.png" -background "$backing" -alpha remove -alpha off \
   "$ios/AppIcon.appiconset/AppIcon-512@2x.png"
-render splash.svg 2732 2732 "$work/splash-ios.png"
-for suffix in "" -1 -2; do
-  cp "$work/splash-ios.png" "$ios/Splash.imageset/splash-2732x2732$suffix.png"
-done
+# One single-scale image, not Capacitor's identical 1x/2x/3x triple: iOS
+# aspect-fills it either way, and actool re-compresses every copy it is given.
+render splash.svg 2732 2732 "$ios/Splash.imageset/splash-2732x2732.png"
 
 echo "==> android"
 # Legacy (pre-adaptive, minSdk 24) launchers draw the bitmap unmasked, so bake

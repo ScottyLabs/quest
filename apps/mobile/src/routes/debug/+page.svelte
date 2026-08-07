@@ -2,8 +2,6 @@
   import { session } from "$lib/auth";
   import { diagnose, type Diagnosis } from "$lib/diagnose";
 
-  // No auth guard on purpose: this has to be reachable when sign-in is
-  // exactly what is broken.
   let checks = $state<Diagnosis | null>(null);
   let running = $state(false);
 
@@ -25,7 +23,7 @@
           .join("\n")
       : running
         ? "running…"
-        : "—"}</pre>
+        : "-"}</pre>
 
   <pre>signedIn: {session.signedIn}
 phase: {session.phase}
@@ -38,7 +36,8 @@ deviceOwned: {session.deviceOwned}</pre>
 
 <style>
   .page {
-    padding: calc(24px + env(safe-area-inset-top)) 16px 24px;
+    padding: calc(24px + var(--safe-top)) calc(16px + var(--safe-right))
+      max(24px, var(--safe-bottom)) calc(16px + var(--safe-left));
     font-family: ui-monospace, monospace;
     background: var(--highlight);
     min-height: 100dvh;

@@ -22,7 +22,7 @@ export async function handleTap(url: string, expected?: string): Promise<void> {
   if (!result.first) {
     warn(`That tag was "${landed.name}", already completed.`);
   } else if (expected !== undefined && landed.id !== expected) {
-    warn(`That tag was "${landed.name}" — counted it instead.`);
+    warn(`That tag was "${landed.name}", counted it instead.`);
   } else if (expected === undefined) {
     warn(`Counted "${landed.name}".`);
   }

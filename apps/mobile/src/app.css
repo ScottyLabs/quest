@@ -28,6 +28,23 @@
   --quest-done: #dbecdb;
   --quest-done-ink: #54b751;
   --quest-coin: #fdb813;
+
+  /* Both webviews run edge to edge, so backgrounds bleed and content pays the
+     inset. Needs viewport-fit=cover in app.html or every env() reads 0. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+
+  /* iOS: the home indicator only overlays content, so the designed gap absorbs
+     the inset. */
+  --dock-gap: max(32px, var(--safe-bottom));
+  --dock-clear: calc(78px + var(--dock-gap));
+}
+
+/* Android: the system bar is a real box, so the dock sits above it. */
+:root[data-platform="android"] {
+  --dock-gap: calc(12px + var(--safe-bottom));
 }
 
 *,

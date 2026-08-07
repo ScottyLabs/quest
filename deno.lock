@@ -6,6 +6,7 @@
     "npm:@capacitor/browser@^8.0.4": "8.0.4_@capacitor+core@8.4.2",
     "npm:@capacitor/cli@^8.4.2": "8.4.2",
     "npm:@capacitor/core@^8.4.2": "8.4.2",
+    "npm:@capacitor/geolocation@^8.2.0": "8.2.0_@capacitor+core@8.4.2",
     "npm:@capacitor/ios@^8.4.2": "8.4.2_@capacitor+core@8.4.2",
     "npm:@capgo/capacitor-nfc@^8.2.2": "8.2.2_@capacitor+core@8.4.2",
     "npm:@perfood/capacitor-crypto-api@8": "8.0.0_@capacitor+core@8.4.2",
@@ -69,11 +70,21 @@
         "tslib"
       ]
     },
+    "@capacitor/geolocation@8.2.0_@capacitor+core@8.4.2": {
+      "integrity": "sha512-N29QcoIPmme0xSxRkm7+3hjoHp6mBAOarxecvtCCZKyOBeKiJsFUq981cezg2XWBa6fhCXJMCCjQPngKK/dIag==",
+      "dependencies": [
+        "@capacitor/core",
+        "@capacitor/synapse"
+      ]
+    },
     "@capacitor/ios@8.4.2_@capacitor+core@8.4.2": {
       "integrity": "sha512-ClVzIjK++yRjsRPOpdEzhsZfbHfoEc0f4M6vD0v7sWh0qcoF6NkxNAeHpWTn4OPJpJfpGGoYsq+IfEHrYyBiWA==",
       "dependencies": [
         "@capacitor/core"
       ]
+    },
+    "@capacitor/synapse@1.0.4": {
+      "integrity": "sha512-/C1FUo8/OkKuAT4nCIu/34ny9siNHr9qtFezu4kxm6GY1wNFxrCFWjfYx5C1tUhVGz3fxBABegupkpjXvjCHrw=="
     },
     "@capgo/capacitor-nfc@8.2.2_@capacitor+core@8.4.2": {
       "integrity": "sha512-plz0eYXwEcq1gKnImqsa/s0hV+RZ5N11lWcEqgcfyH8AT6u6QDphNLsehVkgLHnsR+QNrHlwXvN6IbIksFYt+Q==",
@@ -1182,6 +1193,7 @@
             "npm:@capacitor/browser@^8.0.4",
             "npm:@capacitor/cli@^8.4.2",
             "npm:@capacitor/core@^8.4.2",
+            "npm:@capacitor/geolocation@^8.2.0",
             "npm:@capacitor/ios@^8.4.2",
             "npm:@capgo/capacitor-nfc@^8.2.2",
             "npm:@perfood/capacitor-crypto-api@8"

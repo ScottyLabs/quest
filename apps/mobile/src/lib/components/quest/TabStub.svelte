@@ -16,7 +16,7 @@
     justify-items: center;
     gap: 8px;
     min-height: 0;
-    padding: calc(80px + env(safe-area-inset-top)) 24px 110px;
+    padding: calc(80px + var(--safe-top)) 24px var(--dock-clear);
     overflow-y: auto;
     text-align: center;
   }

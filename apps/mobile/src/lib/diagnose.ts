@@ -1,6 +1,7 @@
 import { Capacitor } from "@capacitor/core";
 import { CryptoApi } from "@perfood/capacitor-crypto-api";
 import { devicePublicKey } from "$lib/auth";
+import { fix } from "$lib/geo";
 
 const TAG = "org.scottylabs.quest.device";
 
@@ -11,9 +12,9 @@ export interface Diagnosis {
   generateKey: string;
   publicKey: string;
   sign: string;
+  location: string;
 }
 
-/** Narrowed rather than asserted: `Capacitor.Plugins` is absent on the web. */
 function pluginRegistered(name: string): boolean {
   const root: unknown = globalThis;
   if (!(root && typeof root === "object" && "Capacitor" in root)) return false;
@@ -27,7 +28,6 @@ function pluginRegistered(name: string): boolean {
 
 const reason = (error: unknown): string => (error instanceof Error ? error.message : String(error));
 
-/** Answers, on the phone, why the keystore refused — no console is reachable there. */
 export async function diagnose(): Promise<Diagnosis> {
   const result: Diagnosis = {
     nativePlatform: Capacitor.isNativePlatform(),
@@ -36,6 +36,7 @@ export async function diagnose(): Promise<Diagnosis> {
     generateKey: "not attempted",
     publicKey: "not attempted",
     sign: "not attempted",
+    location: "not attempted",
   };
 
   try {
@@ -57,6 +58,11 @@ export async function diagnose(): Promise<Diagnosis> {
   } catch (error) {
     result.sign = reason(error);
   }
+
+  const where = await fix();
+  result.location = where
+    ? `${where.lat.toFixed(5)}, ${where.lon.toFixed(5)} ±${where.accuracy ?? "?"}m`
+    : "unavailable";
 
   return result;
 }

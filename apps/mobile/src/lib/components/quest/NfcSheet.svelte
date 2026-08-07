@@ -26,7 +26,8 @@
     justify-items: center;
     gap: 12px;
     width: 100%;
-    padding: 28px 24px calc(28px + env(safe-area-inset-bottom));
+    padding: 28px calc(24px + var(--safe-right)) max(28px, var(--safe-bottom))
+      calc(24px + var(--safe-left));
     border-radius: 24px 24px 0 0;
     background: var(--highlight);
     text-align: center;

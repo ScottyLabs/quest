@@ -131,7 +131,8 @@
     display: flex;
     flex-direction: column;
     min-height: 100dvh;
-    padding: calc(27px + env(safe-area-inset-top)) 16px calc(14px + env(safe-area-inset-bottom));
+    padding: calc(27px + var(--safe-top)) calc(16px + var(--safe-right))
+      max(14px, var(--safe-bottom)) calc(16px + var(--safe-left));
     background: var(--highlight);
     /* let vertical gestures through, keep horizontal ones for the carousel */
     touch-action: pan-y;

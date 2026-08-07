@@ -1,8 +1,11 @@
 <script lang="ts">
   import "../app.css";
+  import { Capacitor } from "@capacitor/core";
   import { session } from "$lib/auth";
   import DeviceBlocked from "$lib/components/DeviceBlocked.svelte";
   import Toast from "$lib/components/Toast.svelte";
+
+  document.documentElement.dataset.platform = Capacitor.getPlatform();
 
   let { children } = $props();
 

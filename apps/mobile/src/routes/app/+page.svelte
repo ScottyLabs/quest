@@ -2,6 +2,7 @@
   import NfcSheet from "$lib/components/quest/NfcSheet.svelte";
   import QuestHeader from "$lib/components/quest/QuestHeader.svelte";
   import QuestList from "$lib/components/quest/QuestList.svelte";
+  import { fix } from "$lib/geo";
   import { NfcError, openSettings, readiness, scan, showsSystemSheet } from "$lib/nfc";
   import { warn } from "$lib/notice.svelte";
   import {
@@ -35,12 +36,15 @@
       return;
     }
 
+    // Settle the location prompt first: it cannot land over the NFC sheet.
+    await fix();
+
     scanning = quest;
     abort = new AbortController();
 
     try {
       const url = await scan(`Hold your phone near the ${quest.title} tag`, abort.signal);
-      await handleTap(url, quest.id);
+      if (url !== null) await handleTap(url, quest.id);
     } catch (error) {
       if (error instanceof NfcError || error instanceof TapError) warn(error.message);
       else warn("Couldn't register that tap.");
@@ -138,7 +142,7 @@
   .quests {
     flex: 1;
     min-height: 0;
-    padding: 28px 23px 110px;
+    padding: 28px 23px var(--dock-clear);
     overflow-y: auto;
     overscroll-behavior: contain;
   }

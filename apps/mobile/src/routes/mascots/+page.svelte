@@ -19,7 +19,6 @@
     if (selected !== null) {
       localStorage.setItem("quest.mascot", selected);
 
-      // `setDorm` enrols first — the dorm PUT is proofed.
       const dorm = MASCOTS[selected]?.mascot.dorm;
       if (dorm && !(await setDorm(dorm))) warn("Couldn't save your dorm. We'll try again later.");
     }
@@ -47,7 +46,8 @@
     display: flex;
     flex-direction: column;
     height: 100dvh;
-    padding: calc(27px + env(safe-area-inset-top)) 0 calc(14px + env(safe-area-inset-bottom));
+    padding: calc(27px + var(--safe-top)) var(--safe-right) max(14px, var(--safe-bottom))
+      var(--safe-left);
     overflow: hidden;
     background: var(--highlight);
   }

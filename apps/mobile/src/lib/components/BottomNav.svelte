@@ -27,7 +27,8 @@
     left: 0;
     display: flex;
     justify-content: center;
-    padding: 126px 16px 32px;
+    padding: 126px calc(16px + var(--safe-right)) var(--dock-gap)
+      calc(16px + var(--safe-left));
     background: linear-gradient(180deg, transparent 1.56%, var(--shade) 123%);
     pointer-events: none;
   }

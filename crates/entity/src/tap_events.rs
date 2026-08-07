@@ -19,6 +19,8 @@ pub struct Model {
         nullable
     )]
     pub location: Option<Point>,
+    #[sea_orm(column_type = "Float", nullable)]
+    pub accuracy: Option<f32>,
     pub user_id: Uuid,
 }
 

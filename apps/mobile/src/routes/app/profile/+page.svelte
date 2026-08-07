@@ -26,10 +26,10 @@
   }
 </script>
 
-<svelte:head><title>Profile - Quest</title></svelte:head>
+<svelte:head><title>Profile - Orientation Quest</title></svelte:head>
 
 <section>
-  <h1>{session.user?.name ?? session.user?.andrewId ?? "Quest player"}</h1>
+  <h1>{session.user?.name ?? session.user?.andrewId ?? "Orientation Quest player"}</h1>
 
   <div class="card">
     {#if mascot}

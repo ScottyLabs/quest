@@ -2,8 +2,9 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- en space, matching ios/App/App/Info.plist - see the note there -->
 	<key>CFBundleDisplayName</key>
-	<string>CMU Quest</string>
+	<string>CMU&#8194;O-Quest</string>
 	<key>CAPACITOR_DEBUG</key>
 	<string>true</string>
 	<key>NSAppTransportSecurity</key>

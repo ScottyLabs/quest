@@ -14,7 +14,7 @@ const config: CapacitorConfig = {
   // NB: the `org.scottylabs.quest://` URL scheme is intentionally unchanged -
   // see android strings.xml and ios Info.plist CFBundleURLTypes.
   appId: "app.cmu.quest",
-  appName: "CMU Quest",
+  appName: "CMU O-Quest",
   webDir: "build",
   ...(devServer ? { server: { url: devServer, cleartext: true } } : {}),
   ...(apiBase ? { plugins: { Quest: { apiBase } } } : {}),

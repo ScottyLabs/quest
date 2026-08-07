@@ -98,7 +98,7 @@
   });
 </script>
 
-<svelte:head><title>{theme(active.id).label} - Quest</title></svelte:head>
+<svelte:head><title>{theme(active.id).label} - Orientation Quest</title></svelte:head>
 
 <QuestHeader
   theme={theme(active.id)}
@@ -115,7 +115,7 @@
     {#if cold && quests.loading}
       <p class="note">Loading challenges&hellip;</p>
     {:else if cold && quests.error !== null}
-      <p class="note">Couldn't reach the quest server. Pull again in a moment.</p>
+      <p class="note">Couldn't reach the Orientation Quest server. Pull again in a moment.</p>
     {:else if shown.length === 0}
       <p class="note">No challenges here yet.</p>
     {:else}

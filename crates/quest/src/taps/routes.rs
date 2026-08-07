@@ -5,7 +5,7 @@ use axum::{Extension, Json, Router};
 use entity::geography::Point;
 use serde::{Deserialize, Serialize};
 
-use super::{Proximity, Taps, proximity};
+use super::{Fix, Proximity, Taps, proximity};
 use crate::auth::AuthError;
 use crate::auth::extract::CurrentUser;
 use crate::challenges::routes::ChallengeView;
@@ -22,6 +22,7 @@ struct TapBody {
     url: String,
     lat: Option<f64>,
     lon: Option<f64>,
+    accuracy: Option<f32>,
 }
 
 #[derive(Serialize)]
@@ -42,12 +43,17 @@ async fn register(
     let read = taps.read(&body.url)?;
     let challenge = taps.challenge_for(&read.card_id).await?;
 
-    let at = match (body.lat, body.lon) {
-        (Some(lat), Some(lon)) if lat.is_finite() && lon.is_finite() => Some(Point::new(lon, lat)),
+    let fix = match (body.lat, body.lon) {
+        (Some(lat), Some(lon)) if lat.is_finite() && lon.is_finite() => Some(Fix {
+            at: Point::new(lon, lat),
+            accuracy: body
+                .accuracy
+                .filter(|metres| metres.is_finite() && *metres >= 0.0),
+        }),
         _ => None,
     };
 
-    match proximity(challenge.location, at) {
+    match proximity(challenge.location, fix.map(|fix| fix.at)) {
         Proximity::Accept => {}
         Proximity::Reject(reason) => {
             return Err(AuthError::BadRequest(reason.unwrap_or("tap_out_of_range")));
@@ -56,7 +62,7 @@ async fn register(
 
     let row = users.row(&user).await?;
     let first = taps
-        .record(challenge.id, &read.card_id, read.counter, row.id, at)
+        .record(challenge.id, &read.card_id, read.counter, row.id, fix)
         .await?;
 
     Ok(Json(Registered {

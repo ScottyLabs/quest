@@ -3,6 +3,7 @@ mod challenges;
 mod cors;
 mod db;
 mod devices;
+mod items;
 mod taps;
 mod tokens;
 mod users;
@@ -101,6 +102,7 @@ async fn main() {
             let users = users::Users::new(db.clone());
             let challenges = challenges::Challenges::new(db.clone());
             let devices = devices::Devices::new(db.clone(), auth.sessions.pool());
+            let items = items::Items::new(db.clone());
             let tokens = tokens::Tokens::new(db.clone());
             let taps = taps::Taps::new(db, master);
 
@@ -110,6 +112,7 @@ async fn main() {
                 .merge(challenges::routes::router(challenges))
                 .merge(taps::routes::router(taps))
                 .merge(tokens::routes::router(tokens))
+                .merge(items::routes::router(items))
                 .layer(axum::middleware::from_fn_with_state(
                     devices.clone(),
                     devices::enforce,

@@ -1,7 +1,7 @@
 pub mod routes;
 
 use sea_orm::prelude::{Date, Uuid};
-use sea_orm::{DatabaseConnection, DbBackend, DbErr, FromQueryResult, Statement};
+use sea_orm::{ConnectionTrait, DatabaseConnection, DbBackend, DbErr, FromQueryResult, Statement};
 use serde::Serialize;
 
 use crate::auth::AuthError;
@@ -90,24 +90,32 @@ impl Tokens {
     }
 
     pub async fn balances(&self, user: Uuid, scope: Scope) -> Result<Balances, AuthError> {
-        let (day, today) = scope.bind();
-
-        Balances::find_by_statement(Statement::from_sql_and_values(
-            DbBackend::Postgres,
-            BALANCES,
-            [
-                user.into(),
-                DAILY_CAP.into(),
-                DAILY_BONUS.into(),
-                day.into(),
-                today.into(),
-            ],
-        ))
-        .one(&self.db)
-        .await
-        .map_err(db_down)?
-        .ok_or(AuthError::Upstream("balances_missing"))
+        balances_of(&self.db, user, scope).await
     }
+}
+
+pub async fn balances_of<C: ConnectionTrait>(
+    conn: &C,
+    user: Uuid,
+    scope: Scope,
+) -> Result<Balances, AuthError> {
+    let (day, today) = scope.bind();
+
+    Balances::find_by_statement(Statement::from_sql_and_values(
+        DbBackend::Postgres,
+        BALANCES,
+        [
+            user.into(),
+            DAILY_CAP.into(),
+            DAILY_BONUS.into(),
+            day.into(),
+            today.into(),
+        ],
+    ))
+    .one(conn)
+    .await
+    .map_err(db_down)?
+    .ok_or(AuthError::Upstream("balances_missing"))
 }
 
 fn db_down(err: DbErr) -> AuthError {

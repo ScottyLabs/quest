@@ -24,6 +24,12 @@ pub struct Read {
     pub counter: i64,
 }
 
+#[derive(Copy, Clone, Debug)]
+pub struct Fix {
+    pub at: Point,
+    pub accuracy: Option<f32>,
+}
+
 pub enum Proximity {
     Accept,
     #[allow(dead_code)]
@@ -86,7 +92,7 @@ impl Taps {
         card_id: &str,
         counter: i64,
         user: Uuid,
-        at: Option<Point>,
+        fix: Option<Fix>,
     ) -> Result<bool, AuthError> {
         let txn = self.db.begin().await.map_err(db_down)?;
 
@@ -130,7 +136,8 @@ impl Taps {
             card_id: ActiveValue::Set(card_id.to_owned()),
             counter: ActiveValue::Set(counter),
             time: ActiveValue::Set(now()),
-            location: ActiveValue::Set(at),
+            location: ActiveValue::Set(fix.map(|fix| fix.at)),
+            accuracy: ActiveValue::Set(fix.and_then(|fix| fix.accuracy)),
             user_id: ActiveValue::Set(user),
             ..Default::default()
         };

@@ -55,7 +55,9 @@ async fn register(
     }
 
     let row = users.row(&user).await?;
-    let first = taps.record(&read.card_id, read.counter, row.id, at).await?;
+    let first = taps
+        .record(challenge.id, &read.card_id, read.counter, row.id, at)
+        .await?;
 
     Ok(Json(Registered {
         challenge: ChallengeView::new(challenge, true),

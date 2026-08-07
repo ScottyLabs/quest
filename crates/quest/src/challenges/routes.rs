@@ -58,11 +58,8 @@ impl ChallengeView {
         }
     }
 
-    fn from_set(row: challenge::Model, cleared: &HashSet<String>) -> Self {
-        let done = row
-            .card_id
-            .as_deref()
-            .is_some_and(|card| cleared.contains(card));
+    fn from_set(row: challenge::Model, cleared: &HashSet<Uuid>) -> Self {
+        let done = cleared.contains(&row.id);
         Self::new(row, done)
     }
 }

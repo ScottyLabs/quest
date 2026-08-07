@@ -12,8 +12,6 @@ pub struct Model {
     pub tagline: String,
     #[sea_orm(column_type = "Text")]
     pub description: String,
-    #[sea_orm(column_type = "Text", unique, nullable)]
-    pub card_id: Option<String>,
     pub category: ChallengeCategory,
     #[sea_orm(
         column_type = "custom(\"geography(Point, 4326)\")",
@@ -28,10 +26,18 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
+    #[sea_orm(has_many = "super::challenge_card::Entity")]
+    ChallengeCard,
     #[sea_orm(has_many = "super::daily_challenge::Entity")]
     DailyChallenge,
     #[sea_orm(has_many = "super::tap_events::Entity")]
     TapEvents,
+}
+
+impl Related<super::challenge_card::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ChallengeCard.def()
+    }
 }
 
 impl Related<super::daily_challenge::Entity> for Entity {

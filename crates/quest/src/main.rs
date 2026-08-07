@@ -4,6 +4,7 @@ mod cors;
 mod db;
 mod devices;
 mod taps;
+mod tokens;
 mod users;
 
 use std::sync::Arc;
@@ -100,6 +101,7 @@ async fn main() {
             let users = users::Users::new(db.clone());
             let challenges = challenges::Challenges::new(db.clone());
             let devices = devices::Devices::new(db.clone(), auth.sessions.pool());
+            let tokens = tokens::Tokens::new(db.clone());
             let taps = taps::Taps::new(db, master);
 
             app.merge(auth::routes::router(auth))
@@ -107,6 +109,7 @@ async fn main() {
                 .merge(users::routes::router(users.clone()))
                 .merge(challenges::routes::router(challenges))
                 .merge(taps::routes::router(taps))
+                .merge(tokens::routes::router(tokens))
                 .layer(axum::middleware::from_fn_with_state(
                     devices.clone(),
                     devices::enforce,

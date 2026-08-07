@@ -38,6 +38,10 @@ interface TicketBody {
   ticket: string;
 }
 
+interface EnrolledBody {
+  enrolled: boolean;
+}
+
 const KNOWN_CODES: readonly AuthErrorCode[] = [
   "auth_not_configured",
   "oidc_discovery_failed",
@@ -60,8 +64,12 @@ const KNOWN_CODES: readonly AuthErrorCode[] = [
   "no_andrew_id",
 ];
 
-/** The pre-session routes; mirrors `bootstrap` on the server. */
-const UNPROOFED: readonly string[] = ["/auth/challenge", "/auth/device", "/auth/login"];
+const UNPROOFED: readonly string[] = [
+  "/auth/challenge",
+  "/auth/device",
+  "/auth/device/enroll",
+  "/auth/login",
+];
 
 async function readJson<T>(response: Response): Promise<T | undefined> {
   try {
@@ -114,11 +122,6 @@ function parseUser(raw: UserBody | undefined): QuestUser {
   };
 }
 
-/**
- * Carries the device identity into `/auth/login`, which is a browser redirect
- * and cannot send a proof header. The server locks the account to whatever key
- * signed the nonce, so this runs before every sign-in.
- */
 export async function loginTicket(): Promise<string> {
   const challenge = await send("/auth/challenge", null);
   if (!challenge.ok) throw new AuthError(await responseError(challenge));
@@ -147,7 +150,17 @@ export async function loginTicket(): Promise<string> {
   return ticket;
 }
 
-/** Null when the session is gone; the server answers 401, not a body. */
+export async function enrollDevice(id: string): Promise<boolean> {
+  const response = await send("/auth/device/enroll", id, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ ticket: await loginTicket() }),
+  });
+
+  if (!response.ok) return false;
+  return (await readJson<EnrolledBody>(response))?.enrolled === true;
+}
+
 export async function fetchStatus(id: string): Promise<QuestUser | null> {
   const response = await send("/auth/status", id);
   if (response.status === 401) return null;

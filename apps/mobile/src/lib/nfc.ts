@@ -55,25 +55,76 @@ function tapUrl(records: NdefRecord[] | null | undefined): string | null {
   return null;
 }
 
+type Waiter = { resolve: (url: string) => void; reject: (error: unknown) => void };
+
+const onAndroid = () => Capacitor.getPlatform() === "android";
+
+let ambient: ((url: string) => void) | null = null;
+let waiter: Waiter | null = null;
+let armed = false;
+
+function deliver(url: string | null): void {
+  const pending = waiter;
+  waiter = null;
+
+  if (pending) {
+    if (url === null) pending.reject(new NfcError("Please scan a valid Orientation Quest poster"));
+    else pending.resolve(url);
+    return;
+  }
+
+  if (url !== null) ambient?.(url);
+}
+
+export async function arm(handler: (url: string) => void): Promise<() => void> {
+  ambient = handler;
+  if (!onAndroid() || armed) {
+    return () => {
+      ambient = null;
+    };
+  }
+
+  const tag = await CapacitorNfc.addListener("nfcEvent", (event) => {
+    deliver(tapUrl(event.tag.ndefMessage));
+  });
+  await CapacitorNfc.startScanning({ invalidateAfterFirstRead: false });
+  armed = true;
+
+  return () => {
+    ambient = null;
+    armed = false;
+    void tag.remove();
+    void CapacitorNfc.stopScanning().catch(() => undefined);
+  };
+}
+
 export async function scan(prompt: string, signal?: AbortSignal): Promise<string> {
   const { promise, resolve, reject } = Promise.withResolvers<string>();
+  const cancel = () => {
+    waiter = null;
+    reject(new NfcError("Scan cancelled."));
+  };
+  signal?.addEventListener("abort", cancel, { once: true });
+
+  if (armed) {
+    waiter = { resolve, reject };
+    try {
+      return await promise;
+    } finally {
+      signal?.removeEventListener("abort", cancel);
+      waiter = null;
+    }
+  }
 
   const tag = await CapacitorNfc.addListener("nfcEvent", (event) => {
     const url = tapUrl(event.tag.ndefMessage);
-    if (url === null) {
-      reject(new NfcError("Please scan a valid Orientation Quest poster"));
-      return;
-    }
-
-    resolve(url);
+    if (url === null) reject(new NfcError("Please scan a valid Orientation Quest poster"));
+    else resolve(url);
   });
 
   const ended = await CapacitorNfc.addListener("nfcSessionEnd", ({ reason }) => {
     reject(new NfcError(reason === "sessionTimeout" ? "Scan timed out." : "Scan cancelled."));
   });
-
-  const cancel = () => reject(new NfcError("Scan cancelled."));
-  signal?.addEventListener("abort", cancel, { once: true });
 
   try {
     await CapacitorNfc.startScanning({ alertMessage: prompt, invalidateAfterFirstRead: true });

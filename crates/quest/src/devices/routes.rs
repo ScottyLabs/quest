@@ -1,14 +1,16 @@
 use axum::extract::{Path, State};
 use axum::http::HeaderMap;
 use axum::routing::{delete, get, post};
-use axum::{Json, Router};
+use axum::{Extension, Json, Router};
 use serde::{Deserialize, Serialize};
 use tower_sessions::Session;
 
 use super::key::{DeviceKey, decode};
 use super::{DeviceView, Devices, NONCE_TTL_SECS, TICKET_TTL_SECS, label};
 use crate::auth::AuthError;
-use crate::auth::extract::{CurrentDevice, CurrentUser};
+use crate::auth::extract::{CurrentDevice, CurrentUser, SignedIn};
+use crate::auth::session::DEVICE_KEY;
+use crate::users::Users;
 
 const LOGIN_CONTEXT: &str = "quest-device-login:";
 
@@ -16,6 +18,7 @@ pub fn router(devices: Devices) -> Router {
     Router::new()
         .route("/auth/challenge", get(challenge))
         .route("/auth/device", post(verify))
+        .route("/auth/device/enroll", post(enroll))
         .route("/devices", get(list))
         .route("/devices/{public_key}", delete(revoke))
         .with_state(devices)
@@ -39,7 +42,6 @@ struct Verify {
     public_key: String,
     nonce: String,
     signature: String,
-    /// Display only, and optional: absent means the `User-Agent` decides.
     #[serde(default)]
     label: Option<String>,
 }
@@ -69,6 +71,56 @@ async fn verify(
     Ok(Json(Ticket {
         ticket: devices.issue_ticket(&body.nonce, &key, label).await?,
         expires_in: TICKET_TTL_SECS,
+    }))
+}
+
+#[derive(Deserialize)]
+struct Enroll {
+    ticket: String,
+}
+
+#[derive(Serialize)]
+struct Enrolled {
+    enrolled: bool,
+    public_key: String,
+}
+
+async fn enroll(
+    State(devices): State<Devices>,
+    Extension(users): Extension<Users>,
+    SignedIn(user): SignedIn,
+    session: Session,
+    Json(body): Json<Enroll>,
+) -> Result<Json<Enrolled>, AuthError> {
+    let unavailable = || AuthError::Upstream("session_store_unavailable");
+    let row = users.row(&user).await?;
+
+    let bound = session
+        .get::<String>(DEVICE_KEY)
+        .await
+        .map_err(|_| unavailable())?;
+
+    let public_key = devices.claim(Some(body.ticket.as_str()), row.id).await?;
+
+    if let Some(bound) = bound {
+        if bound != public_key {
+            return Err(AuthError::Conflict("device_mismatch"));
+        }
+
+        return Ok(Json(Enrolled {
+            enrolled: false,
+            public_key,
+        }));
+    }
+
+    session
+        .insert(DEVICE_KEY, &public_key)
+        .await
+        .map_err(|_| unavailable())?;
+
+    Ok(Json(Enrolled {
+        enrolled: true,
+        public_key,
     }))
 }
 

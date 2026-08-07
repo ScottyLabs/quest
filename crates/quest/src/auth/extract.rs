@@ -15,6 +15,9 @@ pub struct CurrentUser(pub SessionUser);
 #[derive(Clone, Debug)]
 pub struct CurrentDevice(pub String);
 
+#[derive(Clone, Debug)]
+pub struct SignedIn(pub SessionUser);
+
 pub fn bearer(headers: &HeaderMap) -> Option<&str> {
     headers
         .get(AUTHORIZATION)?
@@ -43,6 +46,26 @@ async fn session_of(parts: &mut Parts) -> Result<Session, AuthError> {
     Session::from_request_parts(parts, &())
         .await
         .map_err(|_| AuthError::Unauthorized("unauthorized"))
+}
+
+async fn signed_in(parts: &mut Parts) -> Result<SessionUser, AuthError> {
+    session_of(parts)
+        .await?
+        .get::<SessionUser>(USER_KEY)
+        .await
+        .map_err(|_| AuthError::Upstream("session_store_unavailable"))?
+        .ok_or(AuthError::Unauthorized("unauthorized"))
+}
+
+impl<S> FromRequestParts<S> for SignedIn
+where
+    S: Send + Sync,
+{
+    type Rejection = AuthError;
+
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        signed_in(parts).await.map(Self)
+    }
 }
 
 pub async fn session_binding(

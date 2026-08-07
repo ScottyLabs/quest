@@ -1,0 +1,15 @@
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.13.0'
+    }
+}
+
+allprojects {
+    tasks.withType(JavaCompile).configureEach {
+        options.compilerArgs << '-Xlint:deprecation' << '-Xlint:unchecked'
+    }
+}

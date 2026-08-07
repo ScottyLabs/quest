@@ -238,6 +238,7 @@ fn bootstrap(method: &Method, path: &str) -> bool {
         "/tap" => method == Method::GET,
         "/auth/challenge" => method == Method::GET,
         "/auth/device" => method == Method::POST,
+        "/auth/device/enroll" => method == Method::POST,
         "/auth/login" => method == Method::GET,
         "/auth/callback" => true,
         _ => false,

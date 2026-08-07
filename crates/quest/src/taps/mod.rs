@@ -3,7 +3,7 @@ pub mod routes;
 use std::sync::Arc;
 
 use entity::geography::Point;
-use entity::{challenge, tap_events};
+use entity::{challenge, challenge_card, tap_events};
 use quest::crypto::{VerifyError, verify_tap};
 use sea_orm::prelude::Uuid;
 use sea_orm::{
@@ -66,16 +66,23 @@ impl Taps {
     }
 
     pub async fn challenge_for(&self, card_id: &str) -> Result<challenge::Model, AuthError> {
-        challenge::Entity::find()
-            .filter(challenge::Column::CardId.eq(card_id))
+        let (card, found) = challenge_card::Entity::find_by_id(card_id)
+            .find_also_related(challenge::Entity)
             .one(&self.db)
             .await
             .map_err(db_down)?
-            .ok_or(AuthError::NotFound("card_unassigned"))
+            .ok_or(AuthError::NotFound("card_unassigned"))?;
+
+        if card.retired_at.is_some() {
+            return Err(AuthError::NotFound("card_retired"));
+        }
+
+        found.ok_or(AuthError::Upstream("challenge_row_missing"))
     }
 
     pub async fn record(
         &self,
+        challenge_id: Uuid,
         card_id: &str,
         counter: i64,
         user: Uuid,
@@ -91,6 +98,18 @@ impl Taps {
         .await
         .map_err(db_down)?;
 
+        let mine = tap_events::Entity::find()
+            .filter(tap_events::Column::ChallengeId.eq(challenge_id))
+            .filter(tap_events::Column::UserId.eq(user))
+            .one(&txn)
+            .await
+            .map_err(db_down)?;
+
+        if mine.is_some() {
+            txn.rollback().await.ok();
+            return Ok(false);
+        }
+
         let highest: Option<i64> = tap_events::Entity::find()
             .select_only()
             .column_as(tap_events::Column::Counter.max(), "max")
@@ -102,12 +121,12 @@ impl Taps {
             .flatten();
 
         if highest.is_some_and(|max| counter <= max) {
-            let verdict = owner_matches(&txn, card_id, counter, user).await;
             txn.rollback().await.ok();
-            return verdict;
+            return Err(AuthError::Conflict("tap_replayed"));
         }
 
         let fresh = tap_events::ActiveModel {
+            challenge_id: ActiveValue::Set(challenge_id),
             card_id: ActiveValue::Set(card_id.to_owned()),
             counter: ActiveValue::Set(counter),
             time: ActiveValue::Set(now()),
@@ -123,25 +142,6 @@ impl Taps {
 
         txn.commit().await.map_err(db_down)?;
         Ok(true)
-    }
-}
-
-async fn owner_matches<C: ConnectionTrait>(
-    db: &C,
-    card_id: &str,
-    counter: i64,
-    user: Uuid,
-) -> Result<bool, AuthError> {
-    let existing = tap_events::Entity::find()
-        .filter(tap_events::Column::CardId.eq(card_id))
-        .filter(tap_events::Column::Counter.eq(counter))
-        .one(db)
-        .await
-        .map_err(db_down)?;
-
-    match existing {
-        Some(row) if row.user_id == user => Ok(false),
-        _ => Err(AuthError::Conflict("tap_replayed")),
     }
 }
 

@@ -47,10 +47,10 @@ impl Challenges {
             .ok_or(AuthError::NotFound("challenge_unknown"))
     }
 
-    pub async fn cleared(&self, user: Uuid) -> Result<HashSet<String>, AuthError> {
-        let cards: Vec<String> = tap_events::Entity::find()
+    pub async fn cleared(&self, user: Uuid) -> Result<HashSet<Uuid>, AuthError> {
+        let ids: Vec<Uuid> = tap_events::Entity::find()
             .select_only()
-            .column(tap_events::Column::CardId)
+            .column(tap_events::Column::ChallengeId)
             .filter(tap_events::Column::UserId.eq(user))
             .distinct()
             .into_tuple()
@@ -58,7 +58,7 @@ impl Challenges {
             .await
             .map_err(db_down)?;
 
-        Ok(cards.into_iter().collect())
+        Ok(ids.into_iter().collect())
     }
 }
 

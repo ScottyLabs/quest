@@ -1,6 +1,7 @@
 pub mod prelude;
 
 pub mod challenge;
+pub mod challenge_card;
 pub mod daily_challenge;
 pub mod devices;
 pub mod enums;

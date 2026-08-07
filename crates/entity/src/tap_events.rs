@@ -6,6 +6,7 @@ use sea_orm::entity::prelude::*;
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i64,
+    pub challenge_id: Uuid,
     #[sea_orm(column_type = "Text", unique_key = "tap_events_card_id_counter_key")]
     pub card_id: String,
     #[sea_orm(unique_key = "tap_events_card_id_counter_key")]
@@ -25,12 +26,20 @@ pub struct Model {
 pub enum Relation {
     #[sea_orm(
         belongs_to = "super::challenge::Entity",
-        from = "Column::CardId",
-        to = "super::challenge::Column::CardId",
+        from = "Column::ChallengeId",
+        to = "super::challenge::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"
     )]
     Challenge,
+    #[sea_orm(
+        belongs_to = "super::challenge_card::Entity",
+        from = "Column::CardId",
+        to = "super::challenge_card::Column::CardId",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    ChallengeCard,
     #[sea_orm(
         belongs_to = "super::users::Entity",
         from = "Column::UserId",
@@ -44,6 +53,12 @@ pub enum Relation {
 impl Related<super::challenge::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Challenge.def()
+    }
+}
+
+impl Related<super::challenge_card::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ChallengeCard.def()
     }
 }
 

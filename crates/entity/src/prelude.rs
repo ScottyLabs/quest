@@ -1,4 +1,5 @@
 pub use super::challenge::Entity as Challenge;
+pub use super::challenge_card::Entity as ChallengeCard;
 pub use super::daily_challenge::Entity as DailyChallenge;
 pub use super::devices::Entity as Devices;
 pub use super::enums::{ChallengeCategory, Dorm};

@@ -14,7 +14,6 @@
     });
   });
 
-  // `/users/me` may not exist yet; fall back to the pick the carousel cached.
   const cached = $derived(loading ? null : localStorage.getItem("quest.mascot"));
   const slug = $derived(
     Object.keys(MASCOTS).find((key) => MASCOTS[key]?.mascot.dorm === me?.dorm) ?? cached,
@@ -43,9 +42,9 @@
 
     <dl>
       <dt>Andrew ID</dt>
-      <dd>{me?.andrew_id ?? session.user?.andrewId ?? "—"}</dd>
+      <dd>{me?.andrew_id ?? session.user?.andrewId ?? "-"}</dd>
       <dt>Dorm</dt>
-      <dd>{me?.dorm ?? mascot?.dorm ?? "—"}</dd>
+      <dd>{me?.dorm ?? mascot?.dorm ?? "-"}</dd>
     </dl>
   </div>
 
@@ -60,7 +59,7 @@
     justify-items: center;
     gap: 16px;
     min-height: 0;
-    padding: calc(24px + env(safe-area-inset-top)) 23px 110px;
+    padding: calc(24px + var(--safe-top)) 23px var(--dock-clear);
     overflow-y: auto;
   }
 

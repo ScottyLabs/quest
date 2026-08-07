@@ -44,6 +44,8 @@
 	<string>Connects to your computer's dev server for live reload.</string>
 	<key>NFCReaderUsageDescription</key>
 	<string>CMU Quest reads challenge tags around campus to mark them complete.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>CMU Quest records where a challenge tag was tapped to confirm you were there.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UILaunchScreen</key>

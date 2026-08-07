@@ -16,11 +16,11 @@
      rail and Confirm sit on measured marks and must not move for an error. */
   .wrap {
     position: fixed;
-    inset: auto 0 calc(24px + env(safe-area-inset-bottom));
+    inset: auto 0 max(24px, var(--safe-bottom));
     z-index: 50;
     display: flex;
     justify-content: center;
-    padding: 0 16px;
+    padding: 0 calc(16px + var(--safe-right)) 0 calc(16px + var(--safe-left));
     pointer-events: none;
   }
 

@@ -58,7 +58,7 @@
   header {
     position: relative;
     flex: none;
-    padding-top: calc(14px + env(safe-area-inset-top));
+    padding-top: calc(14px + var(--safe-top));
   }
 
   .wave {

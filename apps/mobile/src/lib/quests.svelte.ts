@@ -1,5 +1,6 @@
 import { authFetch } from "$lib/auth";
 import { Resource } from "$lib/cache.svelte";
+import { fix } from "$lib/geo";
 import { FALLBACK, THEMES } from "$lib/theme";
 
 export type QuestState = "open" | "done";
@@ -58,12 +59,12 @@ const TAP_MESSAGES: Record<string, string> = {
 };
 
 export async function registerTap(url: string): Promise<Registered> {
+  const where = await fix();
   const response = await authFetch("/api/register_tap", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ url }),
+    body: JSON.stringify({ url, ...where }),
   });
-
   if (response.ok) return (await response.json()) as Registered;
 
   const code = ((await response.json().catch(() => ({}))) as TapFailure).error ?? "unknown";

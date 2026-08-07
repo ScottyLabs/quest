@@ -41,6 +41,8 @@
     display: flex;
     flex-direction: column;
     height: 100dvh;
+    padding-right: var(--safe-right);
+    padding-left: var(--safe-left);
     overflow: hidden;
     background: var(--canvas);
   }

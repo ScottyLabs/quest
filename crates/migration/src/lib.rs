@@ -3,6 +3,7 @@ pub use sea_orm_migration::prelude::*;
 mod m20260804_000100_initial_schema;
 mod m20260806_000100_one_tap_per_challenge;
 mod m20260806_000200_challenge_cards;
+mod m20260806_000300_card_id_format;
 
 pub struct Migrator;
 
@@ -13,6 +14,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260804_000100_initial_schema::Migration),
             Box::new(m20260806_000100_one_tap_per_challenge::Migration),
             Box::new(m20260806_000200_challenge_cards::Migration),
+            Box::new(m20260806_000300_card_id_format::Migration),
         ]
     }
 }

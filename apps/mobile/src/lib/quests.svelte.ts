@@ -75,6 +75,18 @@ export const CATEGORIES: string[] = Object.keys(THEMES);
 
 export const BALANCE = 260;
 
+//TODO: temporary placeholder
+export const DAILY: Quest = {
+  id: "daily-placeholder",
+  title: "You have got Mail",
+  detail: "Deliver or pick up mail in the University Center",
+  description: "Deliver or pick up mail in the University Center",
+  reward: 5,
+  state: "open",
+  category: FALLBACK,
+  opensAt: new Date(0).toISOString(),
+};
+
 const TTL = 15 * 60 * 1000;
 
 async function load(): Promise<Quest[]> {

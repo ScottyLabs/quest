@@ -1,8 +1,9 @@
 <script lang="ts">
   import CategoryChips from "./CategoryChips.svelte";
-  import CategoryMedallion from "./CategoryMedallion.svelte";
-  import StatPill from "./StatPill.svelte";
-  import ScottyCoin from "$lib/components/ScottyCoin.svelte";
+  import CategoryCrest from "./CategoryCrest.svelte";
+  import QuestTally from "./QuestTally.svelte";
+  import QuestToolbar from "./QuestToolbar.svelte";
+  import WaveEdge from "./WaveEdge.svelte";
   import type { Theme } from "$lib/theme";
 
   let {
@@ -18,98 +19,120 @@
     categories: string[];
     current: string;
     onpick: (id: string) => void;
+    // cleared and shown in the picked category
     done: number;
     total: number;
     balance: number;
   } = $props();
+
+  const lines = $derived((theme.title ?? theme.label).split("\n"));
 </script>
 
 <header>
-  <span class="wave" aria-hidden="true"></span>
+  <div class="crown">
+    <CategoryCrest {theme} />
 
-  <div class="top">
-    <StatPill value="{done}/{total}" label="Completed">
-      {#snippet leading()}
-        <img src="/img/quest/flag.svg" alt="" width="21" height="21" />
-      {/snippet}
-    </StatPill>
+    <h1>
+      {#if theme.mark}
+        <img
+          class="mark"
+          src={theme.mark.src}
+          alt=""
+          style:--mx="calc({theme.mark.x} * var(--u))"
+          style:--my="calc({theme.mark.y} * var(--u))"
+          style:--mw="calc({theme.mark.w} * var(--u))"
+        />
+      {/if}
+      {#each lines as line, i (i)}
+        <span class="line">{line}</span>
+      {/each}
+    </h1>
 
-    <div class="medallion"><CategoryMedallion {theme} /></div>
-
-    <StatPill value={String(balance)} label="ScottyCoins">
-      {#snippet leading()}
-        <ScottyCoin size={30} alt="" />
-      {/snippet}
-    </StatPill>
-  </div>
-
-  <div class="title">
-    <img src="/img/quest/filter-lines.svg" alt="" width="21" height="21" />
-    <h1>{theme.label}</h1>
-    <img src="/img/quest/info-circle.svg" alt="" width="18" height="18" />
+    <QuestTally {done} {total} />
   </div>
 
   <div class="chips">
     <CategoryChips {categories} {current} {onpick} />
   </div>
+
+  <QuestToolbar {balance} />
+
+  <span class="veil"><WaveEdge shape="veil" /></span>
+  <span class="crown-fade" aria-hidden="true"></span>
 </header>
 
 <style>
   header {
     position: relative;
+    z-index: 2;
     flex: none;
-    padding-top: calc(14px + var(--safe-top));
+    padding-top: calc(var(--safe-top) + 12 * var(--u));
+    background: var(--crown);
   }
 
-  .wave {
+  .veil {
+    position: absolute;
+    right: 0;
+    bottom: calc(30 * var(--u));
+    left: 0;
+    z-index: 2;
+    height: calc(274 * var(--u));
+    color: var(--veil);
+  }
+
+  .crown-fade {
     position: absolute;
     top: 0;
+    right: 0;
     left: 0;
-    display: block;
-    width: 100%;
-    aspect-ratio: 439 / 184;
-    background: var(--accent);
-    -webkit-mask: url("/img/quest/header-wave.svg") no-repeat top center / 100% 100%;
-    mask: url("/img/quest/header-wave.svg") no-repeat top center / 100% 100%;
+    z-index: 3;
+    height: calc(var(--safe-top) + 137 * var(--u));
+    background:
+      linear-gradient(180deg, var(--crown), var(--sink)) bottom / 100% calc(187 * var(--u))
+        no-repeat,
+      var(--crown);
   }
 
-  .top,
-  .title,
+  .crown {
+    position: relative;
+    z-index: 4;
+    display: flex;
+    align-items: flex-end;
+    gap: calc(10 * var(--u));
+    min-height: calc(101 * var(--u));
+    padding: 0 calc(86 * var(--u)) 0 calc(24 * var(--u));
+  }
+
   .chips {
     position: relative;
-  }
-
-  .top {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    padding: 0 18px;
-  }
-
-  .medallion {
-    margin-top: -10px;
-  }
-
-  .title {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    padding: 0 18px;
-  }
-
-  .chips {
-    margin-top: 8px;
+    z-index: 4;
+    margin: calc(42 * var(--u)) 0 calc(10 * var(--u));
   }
 
   h1 {
+    position: relative;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-self: center;
+    min-width: 0;
     margin: 0;
-    overflow: hidden;
     color: var(--highlight);
-    font-size: 21px;
+    font-size: calc(32 * var(--u));
     font-weight: 700;
-    letter-spacing: 0.42px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    letter-spacing: calc(0.64 * var(--u));
+    line-height: 1.36;
+  }
+
+  .line {
+    position: relative;
+    z-index: 1;
+  }
+
+  .mark {
+    position: absolute;
+    top: var(--my);
+    left: var(--mx);
+    width: var(--mw);
   }
 </style>

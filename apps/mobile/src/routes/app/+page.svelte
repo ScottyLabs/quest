@@ -2,12 +2,14 @@
   import NfcSheet from "$lib/components/quest/NfcSheet.svelte";
   import QuestHeader from "$lib/components/quest/QuestHeader.svelte";
   import QuestList from "$lib/components/quest/QuestList.svelte";
+  import WaveEdge from "$lib/components/quest/WaveEdge.svelte";
   import { fix } from "$lib/geo";
   import { NfcError, openSettings, readiness, scan, showsSystemSheet } from "$lib/nfc";
   import { warn } from "$lib/notice.svelte";
   import {
     BALANCE,
     CATEGORIES,
+    DAILY,
     done,
     inCategory,
     nextUnlock,
@@ -35,8 +37,6 @@
       await openSettings();
       return;
     }
-
-    // Settle the location prompt first: it cannot land over the NFC sheet.
     await fix();
 
     scanning = quest;
@@ -60,16 +60,10 @@
   const cold = $derived(quests.data === null);
 
   let scroller = $state<HTMLElement | null>(null);
-  let top = $state(0);
-
-  const fade = $derived(Math.min(top / 64, 1));
 
   $effect(() => {
     const category = active.id;
-    if (scroller && category) {
-      scroller.scrollTop = 0;
-      top = 0;
-    }
+    if (scroller && category) scroller.scrollTop = 0;
   });
 
   $effect(() => {
@@ -111,19 +105,24 @@
 />
 
 <div class="board">
-  <div class="quests" bind:this={scroller} onscroll={() => (top = scroller?.scrollTop ?? 0)}>
+  <span class="vignette left" aria-hidden="true"></span>
+  <span class="vignette right" aria-hidden="true"></span>
+  <span class="band"><WaveEdge shape="band" /></span>
+
+  <div class="quests" bind:this={scroller}>
     {#if cold && quests.loading}
       <p class="note">Loading challenges&hellip;</p>
     {:else if cold && quests.error !== null}
       <p class="note">Couldn't reach the Orientation Quest server. Pull again in a moment.</p>
-    {:else if shown.length === 0}
-      <p class="note">No challenges here yet.</p>
     {:else}
-      <QuestList quests={shown} onscan={beginScan} />
+      <QuestList quests={shown} daily={DAILY} onscan={beginScan} />
+      {#if shown.length === 0}
+        <p class="note">No challenges here yet.</p>
+      {/if}
     {/if}
   </div>
 
-  <span class="fade" style:opacity={fade} aria-hidden="true"></span>
+  <span class="scrim" aria-hidden="true"></span>
 </div>
 
 {#if scanning && !showsSystemSheet}
@@ -139,28 +138,66 @@
     min-height: 0;
   }
 
-  .quests {
-    flex: 1;
-    min-height: 0;
-    padding: 28px 23px var(--dock-clear);
-    overflow-y: auto;
-    overscroll-behavior: contain;
+  .vignette {
+    position: absolute;
+    top: 0;
+    width: 40.1%;
+    height: calc(561 * var(--u));
+    opacity: 0.215;
+    pointer-events: none;
   }
 
-  .fade {
+  .left {
+    left: 0;
+    background: linear-gradient(90deg, var(--tint), transparent);
+  }
+
+  .right {
+    right: 0;
+    background: linear-gradient(270deg, var(--tint), transparent);
+  }
+
+  .band {
     position: absolute;
     top: 0;
     right: 0;
     left: 0;
-    height: 44px;
-    background: linear-gradient(180deg, var(--canvas) 15%, transparent);
+    height: calc(57 * var(--u));
+    overflow: hidden;
+    color: var(--sink);
+  }
+
+  .band > :global(svg) {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: calc(361 * var(--u));
+  }
+
+  .quests {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    padding: calc(58 * var(--u)) calc(23 * var(--u)) var(--dock-clear);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .scrim {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: calc(30 * var(--u));
+    background: linear-gradient(180deg, rgb(0 0 0 / 0.26), transparent);
     pointer-events: none;
   }
 
   .note {
-    margin: 24px 0 0;
+    margin: calc(24 * var(--u)) 0 0;
     color: var(--shade);
-    font-size: 15px;
+    font-size: calc(15 * var(--u));
     font-weight: 600;
     text-align: center;
   }

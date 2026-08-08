@@ -44,8 +44,8 @@
 <style>
   .rail {
     display: flex;
-    gap: 8px;
-    padding: 0 14px;
+    gap: calc(8 * var(--u));
+    padding: 0 calc(23 * var(--u));
     overflow-x: auto;
     scrollbar-width: none;
   }
@@ -55,21 +55,27 @@
   }
 
   .chip {
+    display: flex;
     flex: none;
-    padding: 10px;
+    align-items: center;
+    justify-content: center;
+    min-width: calc(75 * var(--u));
+    height: calc(30 * var(--u));
+    padding: 0 calc(10 * var(--u));
     border: 0;
-    border-radius: 4px;
+    border-radius: calc(4 * var(--u));
     background: none;
-    color: var(--highlight);
+    color: rgb(255 255 255 / 0.66);
     font-family: inherit;
-    font-size: 13px;
+    font-size: calc(14 * var(--u));
     font-weight: 700;
-    letter-spacing: 0.26px;
+    letter-spacing: calc(0.28 * var(--u));
     white-space: nowrap;
     cursor: pointer;
   }
 
   .chip.on {
     background: rgb(255 255 255 / 0.25);
+    color: var(--highlight);
   }
 </style>

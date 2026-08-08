@@ -28,7 +28,7 @@ let
       url = "https://github.com/xtool-org/xtool/releases/download/${xtoolVersion}/xtool-${xtoolSource.arch}.AppImage";
       inherit (xtoolSource) hash;
     };
-    extraPkgs = pkgs: xtoolRuntimeDeps pkgs;
+    extraPkgs = xtoolRuntimeDeps;
   };
 
   xtoolRuntimeDeps =

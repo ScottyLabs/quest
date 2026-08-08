@@ -1,4 +1,4 @@
-package app.cmu.quest;
+package quest.cmu.app;
 
 import com.getcapacitor.BridgeActivity;
 

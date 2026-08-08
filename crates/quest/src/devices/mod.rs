@@ -236,6 +236,8 @@ fn bootstrap(method: &Method, path: &str) -> bool {
     match path {
         _ if method == Method::OPTIONS => true,
         "/tap" => method == Method::GET,
+        "/.well-known/apple-app-site-association" => method == Method::GET,
+        "/.well-known/assetlinks.json" => method == Method::GET,
         "/auth/challenge" => method == Method::GET,
         "/auth/device" => method == Method::POST,
         "/auth/device/enroll" => method == Method::POST,

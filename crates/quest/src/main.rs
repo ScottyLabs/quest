@@ -1,3 +1,4 @@
+mod applinks;
 mod auth;
 mod challenges;
 mod cors;
@@ -90,7 +91,9 @@ async fn main() {
 
     let master = Arc::new(load_master_key());
 
-    let app = Router::new().route("/tap", get(tap));
+    let app = Router::new()
+        .route("/tap", get(tap))
+        .merge(applinks::router());
 
     let mut undiscovered = None;
 

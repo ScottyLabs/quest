@@ -40,7 +40,13 @@
             src = ./.;
             pname = "quest";
             version = "0.1.0";
-            paths = [ "crates/quest" ];
+            # quest has path deps on both, and `crates/*` makes them workspace
+            # members, so cargo needs their manifests in the sandbox too
+            paths = [
+              "crates/quest"
+              "crates/entity"
+              "crates/migration"
+            ];
             nativeBuildInputs = [
               pkgs.pkg-config
             ];
@@ -57,6 +63,7 @@
         in
         {
           inherit quest mobile;
+          default = quest;
         }
       );
     };

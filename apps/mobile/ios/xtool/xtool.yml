@@ -1,7 +1,7 @@
 version: 1
 
 # This won't reflect in production build
-bundleID: app.cmu.quest.dev
+bundleID: quest.cmu.app.dev
 product: App
 
 infoPath: Info.plist

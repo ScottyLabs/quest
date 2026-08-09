@@ -1,4 +1,4 @@
-import tokens from "./themes.json" with { type: "json" };
+import tokens from "./data/themes.json" with { type: "json" };
 
 export interface Mark {
   src: string;

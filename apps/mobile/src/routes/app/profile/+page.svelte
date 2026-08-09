@@ -1,24 +1,54 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import BadgeRail from "$lib/components/profile/BadgeRail.svelte";
+  import WaveEdge from "$lib/components/ui/WaveEdge.svelte";
+  import WarningDialog from "$lib/components/shell/WarningDialog.svelte";
+  import { BADGE_ROWS, type Progress } from "$lib/badges";
   import { session } from "$lib/auth";
+  import { fit } from "$lib/fit";
   import { MASCOTS } from "$lib/mascots";
+  import { done, inCategory, quests } from "$lib/quests.svelte";
   import { profile, type Profile } from "$lib/user";
+  import { refresh, wallet } from "$lib/wallet.svelte";
 
   let me = $state<Profile | null>(null);
-  let loading = $state(true);
+  let open = $state<string | null>(null);
+  let confirming = $state(false);
 
   $effect(() => {
-    void profile().then((found) => {
-      me = found;
-      loading = false;
-    });
+    void profile().then((found) => (me = found));
   });
 
-  const cached = $derived(loading ? null : localStorage.getItem("quest.mascot"));
+  $effect(() => {
+    void quests.ensure();
+    void refresh();
+  });
+
+  const cached = localStorage.getItem("quest.mascot");
   const slug = $derived(
     Object.keys(MASCOTS).find((key) => MASCOTS[key]?.mascot.dorm === me?.dorm) ?? cached,
   );
-  const mascot = $derived(slug === null ? null : (MASCOTS[slug]?.mascot ?? null));
+  const entry = $derived(slug === null ? null : (MASCOTS[slug] ?? null));
+  const dorm = $derived(entry?.mascot.home ?? "");
+
+  const name = $derived(session.user?.name ?? session.user?.andrewId ?? "Orientation Quest");
+  const handle = $derived(me?.andrew_id ?? session.user?.andrewId ?? "");
+
+  const all = $derived(quests.data ?? []);
+  const progress = $derived<Progress>({
+    challenges: done(all),
+    total: all.length,
+    gems: wallet.lifetimeGems,
+    finished: new Set(
+      BADGE_ROWS.flatMap((row) => row.badges)
+        .map((badge) => badge.category)
+        .filter((id): id is string => id !== undefined)
+        .filter((id) => {
+          const list = inCategory(all, id);
+          return list.length > 0 && done(list) === list.length;
+        }),
+    ),
+  });
 
   async function signOut() {
     await session.logout();
@@ -26,112 +56,242 @@
   }
 </script>
 
-<svelte:head><title>Profile - Orientation Quest</title></svelte:head>
+<svelte:head><title>Badges - Orientation Quest</title></svelte:head>
+
+<svelte:window onpointerdown={() => (open = null)} />
 
 <section>
-  <h1>{session.user?.name ?? session.user?.andrewId ?? "Orientation Quest player"}</h1>
+  <header>
+    <span class="deep" aria-hidden="true"><WaveEdge shape="crown" /></span>
+    <span class="mid" aria-hidden="true"><WaveEdge shape="crown" /></span>
+    <span class="glow" aria-hidden="true"></span>
 
-  <div class="card">
-    {#if mascot}
-      <img src="/img/mascots/{slug}.svg" alt="" width="96" height="96" />
-      <p class="dorm">{mascot.name}</p>
-    {:else}
-      <p class="quiet">No dorm chosen yet.</p>
-      <button class="link" onclick={() => goto("/mascots")}>Choose your dorm</button>
+    {#if dorm}
+      <svg class="arc" viewBox="0 0 286 286" aria-hidden="true">
+        <path id="crest-arc" d="M 152 39 A 104 104 0 0 1 228 203" fill="none" />
+        <text>
+          <textPath href="#crest-arc" startOffset="50%" text-anchor="middle">{dorm}</textPath>
+        </text>
+      </svg>
     {/if}
 
-    <dl>
-      <dt>Andrew ID</dt>
-      <dd>{me?.andrew_id ?? session.user?.andrewId ?? "-"}</dd>
-      <dt>Dorm</dt>
-      <dd>{me?.dorm ?? mascot?.dorm ?? "-"}</dd>
-    </dl>
-  </div>
+    <span class="crest">
+      {#if entry}
+        <img src="/img/mascots/{slug}.svg" alt="" />
+      {/if}
+    </span>
 
-  <button class="out" onclick={signOut}>Sign out</button>
+    <div class="who">
+      <p class="name" use:fit={name}>{name}</p>
+      <p class="handle" use:fit={handle}>{handle}</p>
+      <p class="kind">Badges</p>
+    </div>
+  </header>
+
+  <div class="board">
+    {#if entry === null}
+      <button class="pick" type="button" onclick={() => goto("/mascots")}>
+        Choose your dorm
+      </button>
+    {/if}
+
+    {#each BADGE_ROWS as row (row.id)}
+      <BadgeRail {row} {progress} bind:open />
+    {/each}
+
+    <div class="acts">
+      <button class="out" type="button" onclick={signOut}>Sign out</button>
+      <button class="nuke" type="button" onclick={() => (confirming = true)}>
+        Delete account
+      </button>
+    </div>
+  </div>
 </section>
+
+{#if confirming}
+  <WarningDialog
+    title="Delete your account?"
+    body="This permanantly deletes your account and removes your Orientation Quest progress. Are you sure?"
+    confirm="Delete account"
+    dismiss="Keep it"
+    onconfirm={signOut}
+    ondismiss={() => (confirming = false)}
+  />
+{/if}
 
 <style>
   section {
-    display: grid;
+    display: flex;
     flex: 1;
-    align-content: start;
-    justify-items: center;
-    gap: 16px;
+    flex-direction: column;
     min-height: 0;
-    padding: calc(24px + var(--safe-top)) 23px var(--dock-clear);
+    overflow-x: clip;
     overflow-y: auto;
-  }
-
-  h1 {
-    margin: 0;
-    color: var(--highlight);
-    font-size: 21px;
-    font-weight: 700;
-    letter-spacing: 0.42px;
-  }
-
-  .card {
-    display: grid;
-    justify-items: center;
-    gap: 8px;
-    width: 100%;
-    padding: 20px;
-    border-radius: 20px;
+    overscroll-behavior: contain;
     background: var(--highlight);
-    text-align: center;
   }
 
-  .dorm {
-    margin: 0;
-    color: var(--shade);
-    font-size: 17px;
-    font-weight: 600;
+  header {
+    position: relative;
+    flex: none;
+    height: calc(373 * var(--u));
+    overflow: clip;
   }
 
-  .quiet {
-    margin: 0;
-    color: var(--tertiary);
-    font-size: 15px;
+  .deep,
+  .mid {
+    position: absolute;
+    pointer-events: none;
   }
 
-  dl {
+  .deep {
+    top: calc(-58 * var(--u));
+    right: calc(-22 * var(--u));
+    left: calc(-31 * var(--u));
+    height: calc(427 * var(--u));
+    color: #831421;
+  }
+
+  .mid {
+    top: calc(-106 * var(--u));
+    right: calc(-30 * var(--u));
+    left: calc(-23 * var(--u));
+    height: calc(387 * var(--u));
+    color: #c41230;
+  }
+
+  .glow {
+    position: absolute;
+    top: calc(-6 * var(--u));
+    right: calc(-25 * var(--u));
+    left: calc(-3 * var(--u));
+    height: calc(187 * var(--u));
+    background: linear-gradient(180deg, #c41230, #990012);
+    pointer-events: none;
+  }
+
+  .arc {
+    position: absolute;
+    top: calc(44 * var(--u));
+    left: calc(-18 * var(--u));
+    width: calc(286 * var(--u));
+    height: calc(286 * var(--u));
+    fill: var(--highlight);
+    font-size: calc(23 * var(--u));
+    font-weight: 700;
+    letter-spacing: calc(1.2 * var(--u));
+    pointer-events: none;
+    text-transform: uppercase;
+  }
+
+  .crest {
+    position: absolute;
+    top: calc(87 * var(--u));
+    left: calc(24 * var(--u));
     display: grid;
-    grid-template-columns: auto auto;
-    gap: 4px 16px;
-    margin: 8px 0 0;
-    font-size: 14px;
+    width: calc(201 * var(--u));
+    height: calc(201 * var(--u));
+    background: #9f0216;
+    border: calc(13 * var(--u)) solid var(--highlight);
+    border-radius: 50%;
+    overflow: clip;
+    place-items: center;
   }
 
-  dt {
-    color: var(--tertiary);
+  .crest img {
+    width: calc(142 * var(--u));
+    height: calc(142 * var(--u));
+    border-radius: 50%;
+    object-fit: contain;
+  }
+
+  .who {
+    position: absolute;
+    top: calc(70 * var(--u));
+    right: calc(16 * var(--u));
+    width: calc(159 * var(--u));
+    color: var(--highlight);
     text-align: right;
   }
 
-  dd {
+  .who p {
     margin: 0;
-    color: var(--secondary);
-    text-align: left;
+    overflow: hidden;
+    font-size: calc(32 * var(--u));
+    letter-spacing: calc(0.64 * var(--u));
+    line-height: 1.44;
+    overflow-wrap: anywhere;
   }
 
-  .link {
+  .name {
+    height: calc(92 * var(--u));
+    font-weight: 700;
+  }
+
+  .who .handle {
+    height: calc(46 * var(--u));
+    margin-top: calc(30 * var(--u));
+  }
+
+  .who .kind {
+    margin-top: calc(53 * var(--u));
+    font-style: italic;
+    font-weight: 600;
+  }
+
+  .board {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: calc(16 * var(--u));
+    width: 100%;
+    max-width: calc(439 * var(--u));
+    margin-inline: auto;
+    padding: 0 calc(22 * var(--u)) var(--dock-clear);
+  }
+
+  .pick {
+    align-self: flex-start;
+    padding: calc(8 * var(--u)) calc(16 * var(--u));
     border: 0;
-    background: none;
-    color: var(--shade);
-    font: inherit;
-    text-decoration: underline;
+    border-radius: calc(20 * var(--u));
+    background: var(--primary);
+    color: var(--highlight);
+    font-family: inherit;
+    font-size: calc(15 * var(--u));
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .acts {
+    display: flex;
+    gap: calc(12 * var(--u));
+    margin-top: calc(16 * var(--u));
+  }
+
+  .acts button {
+    flex: 1;
+    padding: calc(12 * var(--u)) calc(10 * var(--u));
+    border: 0;
+    border-radius: calc(14 * var(--u));
+    font-family: inherit;
+    font-size: calc(15 * var(--u));
+    font-weight: 700;
+    letter-spacing: calc(0.3 * var(--u));
     cursor: pointer;
   }
 
   .out {
-    width: 100%;
-    padding: 14px 16px;
-    border: 0;
-    border-radius: 999px;
-    background: var(--shade);
+    background: var(--tertiary-normal);
+    color: var(--ink-shade);
+  }
+
+  .nuke {
+    background: var(--primary);
     color: var(--highlight);
-    font: inherit;
-    font-weight: 600;
-    cursor: pointer;
+  }
+
+  .acts button:active {
+    translate: 0 calc(1 * var(--u));
   }
 </style>

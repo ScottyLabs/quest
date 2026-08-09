@@ -1,5 +1,5 @@
 <script lang="ts">
-  import DailyCard from "./DailyCard.svelte";
+  import DailyCard from "../daily/DailyCard.svelte";
   import DoneCard from "./DoneCard.svelte";
   import LockedCard from "./LockedCard.svelte";
   import OpenCard from "./OpenCard.svelte";

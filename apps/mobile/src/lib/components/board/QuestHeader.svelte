@@ -3,7 +3,7 @@
   import CategoryCrest from "./CategoryCrest.svelte";
   import QuestTally from "./QuestTally.svelte";
   import QuestToolbar from "./QuestToolbar.svelte";
-  import WaveEdge from "./WaveEdge.svelte";
+  import WaveEdge from "../ui/WaveEdge.svelte";
   import { search } from "$lib/search.svelte";
   import type { Theme } from "$lib/theme";
 

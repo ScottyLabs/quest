@@ -7,6 +7,7 @@ export interface Tab {
   activeIcon: string;
   box: Box;
   activeBox: Box;
+  scrim: boolean;
 }
 
 const ACTIVE: Box = [40, 40];
@@ -19,6 +20,7 @@ export const TABS: Tab[] = [
     activeIcon: "/img/nav/profile-active.svg",
     box: [29, 32],
     activeBox: ACTIVE,
+    scrim: false,
   },
   {
     href: "/app/leaderboard",
@@ -27,6 +29,7 @@ export const TABS: Tab[] = [
     activeIcon: "/img/nav/leaderboard-active.svg",
     box: [32, 32],
     activeBox: ACTIVE,
+    scrim: false,
   },
   {
     href: "/app",
@@ -35,6 +38,7 @@ export const TABS: Tab[] = [
     activeIcon: "/img/nav/quests-active.svg",
     box: [32, 32],
     activeBox: ACTIVE,
+    scrim: true,
   },
   {
     href: "/app/store",
@@ -43,6 +47,16 @@ export const TABS: Tab[] = [
     activeIcon: "/img/nav/store-active.svg",
     box: [36, 36],
     activeBox: ACTIVE,
+    scrim: false,
+  },
+  {
+    href: "/app/info",
+    label: "Information",
+    icon: "/img/nav/info.svg",
+    activeIcon: "/img/nav/info-active.svg",
+    box: [33, 33],
+    activeBox: ACTIVE,
+    scrim: false,
   },
 ];
 

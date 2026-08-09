@@ -1,9 +1,9 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import BottomNav from "$lib/components/BottomNav.svelte";
-  import DailyBriefing from "$lib/components/quest/DailyBriefing.svelte";
-  import TapResultSheet from "$lib/components/quest/TapResultSheet.svelte";
-  import WarningDialog from "$lib/components/WarningDialog.svelte";
+  import BottomNav from "$lib/components/shell/BottomNav.svelte";
+  import DailyBriefing from "$lib/components/daily/DailyBriefing.svelte";
+  import TapResultSheet from "$lib/components/tap/TapResultSheet.svelte";
+  import WarningDialog from "$lib/components/shell/WarningDialog.svelte";
   import { session } from "$lib/auth";
   import { caution, hush } from "$lib/caution.svelte";
   import { celebration, closeCelebration } from "$lib/celebrate.svelte";

@@ -1,8 +1,8 @@
 <script lang="ts">
-  import CardShell from "./CardShell.svelte";
+  import CardShell from "../card/CardShell.svelte";
   import DailyMark from "./DailyMark.svelte";
-  import QuestArt from "./QuestArt.svelte";
-  import QuestCopy from "./QuestCopy.svelte";
+  import QuestArt from "../card/QuestArt.svelte";
+  import QuestCopy from "../card/QuestCopy.svelte";
   import type { Quest } from "$lib/quests.svelte";
 
   let { quest, onscan }: { quest: Quest; onscan?: (quest: Quest) => void } = $props();

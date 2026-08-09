@@ -1,0 +1,169 @@
+{
+  "rows": [
+    {
+      "id": "challenges",
+      "label": "Challenges",
+      "metric": "challenges",
+      "badges": [
+        {
+          "id": "novice-quester",
+          "name": "Novice Quester",
+          "detail": "Complete your first Challenge!",
+          "at": 1,
+          "art": "/img/badges/challenges-unlocked-0.svg",
+          "locked": "/img/badges/challenges-locked-0.svg"
+        },
+        {
+          "id": "explorer",
+          "name": "Beginner Explorer",
+          "detail": "Complete 25 Challenges!",
+          "at": 25,
+          "art": "/img/badges/challenges-unlocked-1.svg",
+          "locked": "/img/badges/challenges-locked-1.svg"
+        },
+        {
+          "id": "traveler",
+          "name": "Intermediate Traveler",
+          "detail": "Complete 50 Challenges!",
+          "at": 50,
+          "art": "/img/badges/challenges-unlocked-2.svg",
+          "locked": "/img/badges/challenges-locked-2.svg"
+        },
+        {
+          "id": "adventurer",
+          "name": "Experienced Adventurer",
+          "detail": "Complete 75 Challenges!",
+          "at": 75,
+          "art": "/img/badges/challenges-unlocked-3.svg",
+          "locked": "/img/badges/challenges-locked-3.svg"
+        },
+        {
+          "id": "professional",
+          "name": "Professional Quester",
+          "detail": "Complete 100 Challenges!",
+          "at": 100,
+          "art": "/img/badges/challenges-unlocked-4.svg",
+          "locked": "/img/badges/challenges-locked-4.svg"
+        },
+        {
+          "id": "champion",
+          "name": "Challenge Champion",
+          "detail": "Completed every challenge!",
+          "at": "all",
+          "art": "/img/badges/challenges-unlocked-5.svg",
+          "locked": "/img/badges/challenges-locked-5.svg"
+        }
+      ]
+    },
+    {
+      "id": "category",
+      "label": "Category",
+      "metric": "category",
+      "badges": [
+        {
+          "id": "essentials",
+          "name": "Essentials Expert",
+          "detail": "Finish every Challenge in The Essentials!",
+          "category": "essentials",
+          "art": "/img/badges/category-unlocked-0.svg",
+          "locked": "/img/badges/category-locked-0.svg"
+        },
+        {
+          "id": "lets-eat",
+          "name": "Eatery Enthusiast",
+          "detail": "Finish every Challenge in Let's Eat!",
+          "category": "lets_eat",
+          "art": "/img/badges/category-unlocked-1.svg",
+          "locked": "/img/badges/category-locked-4.svg"
+        },
+        {
+          "id": "cool-corners",
+          "name": "Corner Connoisseur",
+          "detail": "Finish every Challenge in Cool Corners of Carnegie!",
+          "category": "cool_corners",
+          "art": "/img/badges/category-unlocked-2.svg",
+          "locked": "/img/badges/category-locked-5.svg"
+        },
+        {
+          "id": "bridges",
+          "name": "Bridges Bigwig",
+          "detail": "Finish every Challenge in Campus of Bridges!",
+          "category": "bridges",
+          "art": "/img/badges/category-unlocked-3.svg",
+          "locked": "/img/badges/category-locked-2.svg"
+        },
+        {
+          "id": "minor-major-general",
+          "name": "Minor-Major Master",
+          "detail": "Finish every Challenge in Minor\u2011Major General!",
+          "category": "minor_major_general",
+          "art": "/img/badges/category-unlocked-4.svg",
+          "locked": "/img/badges/category-locked-3.svg"
+        },
+        {
+          "id": "residence-relaxation",
+          "name": "Residence Rockstar",
+          "detail": "Finish every Challenge in Residence & Relaxation!",
+          "category": "residence_relaxation",
+          "art": "/img/badges/category-unlocked-5.svg",
+          "locked": "/img/badges/category-locked-1.svg"
+        }
+      ]
+    },
+    {
+      "id": "gems",
+      "label": "Gems",
+      "metric": "gems",
+      "badges": [
+        {
+          "id": "squire",
+          "name": "Gemstone Squire",
+          "detail": "Collect 10 Gems",
+          "at": 10,
+          "art": "/img/badges/gems-unlocked-0.svg",
+          "locked": "/img/badges/gems-locked-0.svg"
+        },
+        {
+          "id": "knight",
+          "name": "Gemstone Knight",
+          "detail": "Collect 20 Gems!",
+          "at": 20,
+          "art": "/img/badges/gems-unlocked-1.svg",
+          "locked": "/img/badges/gems-locked-1.svg"
+        },
+        {
+          "id": "magi",
+          "name": "Gemstone Magi",
+          "detail": "Collect 30 Gems!",
+          "at": 30,
+          "art": "/img/badges/gems-unlocked-2.svg",
+          "locked": "/img/badges/gems-locked-2.svg"
+        },
+        {
+          "id": "dragon",
+          "name": "Gemstone Dragon",
+          "detail": "Collect 40 Gems!",
+          "at": 40,
+          "art": "/img/badges/gems-unlocked-3.svg",
+          "locked": "/img/badges/gems-locked-3.svg"
+        },
+        {
+          "id": "hero",
+          "name": "Gemstone Hero",
+          "detail": "Collect 50 Gems!",
+          "at": 50,
+          "art": "/img/badges/gems-unlocked-4.svg",
+          "locked": "/img/badges/gems-locked-4.svg"
+        },
+        {
+          "id": "legent",
+          "name": "Gemstone Legend",
+          "detail": "Collect 75 Gems!",
+          "at": 75,
+          "art": "/img/badges/gems-unlocked-5.svg",
+          "locked": "/img/badges/gems-locked-5.svg"
+        }
+      ]
+    }
+  ]
+}

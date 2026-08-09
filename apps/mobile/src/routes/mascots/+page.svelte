@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import Button from "$lib/components/Button.svelte";
-  import TopBar from "$lib/components/TopBar.svelte";
+  import Button from "$lib/components/ui/Button.svelte";
+  import TopBar from "$lib/components/shell/TopBar.svelte";
   import Carousel from "$lib/components/mascots/Carousel.svelte";
   import Hero from "$lib/components/mascots/Hero.svelte";
   import { MASCOTS } from "$lib/mascots";

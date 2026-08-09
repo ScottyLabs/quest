@@ -6,7 +6,15 @@ export interface Span {
 export type Media =
   | { kind: "image"; src: string; size: number }
   | { kind: "coin" }
-  | { kind: "card"; label: string };
+  | {
+      kind: "offer";
+      name: string;
+      cost: number;
+      claimed: [number, number];
+      stock: number;
+      art: string;
+    }
+  | { kind: "claim"; name: string; progress: [number, number] };
 
 export interface Step {
   title: string;
@@ -43,7 +51,14 @@ export const STEPS: Step[] = [
       { text: "Terrier Trade", strong: true },
       { text: " to earn Carnegie Cup points, CMU Merch, and more" },
     ],
-    media: { kind: "card", label: "Tartan T-Shirt" },
+    media: {
+      kind: "offer",
+      name: "Tartan T-Shirt",
+      cost: 10,
+      claimed: [0, 1],
+      stock: 10,
+      art: "/img/store/tartan-tshirt.png",
+    },
   },
   {
     title: "Claim Rewards",
@@ -55,7 +70,7 @@ export const STEPS: Step[] = [
         strong: true,
       },
     ],
-    media: { kind: "card", label: "Terrier Scarf" },
+    media: { kind: "claim", name: "Terrier Scarf", progress: [35, 35] },
   },
 ];
 

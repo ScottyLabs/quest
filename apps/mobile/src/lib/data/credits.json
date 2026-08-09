@@ -1,0 +1,83 @@
+{
+  "intro": "Meet the team behind Orientation Quest!",
+  "groups": [
+    {
+      "id": "2026",
+      "title": "2026 Team",
+      "members": [
+        {
+          "name": "Kenechukwu Echezona",
+          "school": "SCS '26, ETC '28",
+          "roles": ["Project Lead", "Technology Coordinator"]
+        },
+        {
+          "name": "Jeffery Wang",
+          "school": "BXA '27",
+          "roles": ["Developer", "Head Art Designer"]
+        },
+        {
+          "name": "Sushrut Pola",
+          "school": "SCS '30",
+          "roles": ["Head Developer"]
+        },
+        {
+          "name": "Anish Pallati",
+          "school": "MCS '28",
+          "roles": ["Developer"]
+        },
+        {
+          "name": "Adrian Zhuang",
+          "school": "SCS '29",
+          "roles": ["Game Designer", "Technology Coordinator"]
+        },
+        {
+          "name": "Anissa Li",
+          "school": "IS '30",
+          "roles": ["Art Designer"]
+        },
+        {
+          "name": "John Cao",
+          "school": "DC '29",
+          "roles": ["Developer", "OC"]
+        }
+      ]
+    },
+    {
+      "id": "previous",
+      "title": "Previous Contributors",
+      "past": true,
+      "members": [
+        {
+          "name": "Kenechukwu Echezona",
+          "school": "SCS '26, ETC '28",
+          "roles": ["Project Lead", "HOC"],
+          "year": "2025"
+        },
+        {
+          "name": "Anish Pallati",
+          "school": "MCS '28",
+          "roles": ["Head Developer"],
+          "year": "2025"
+        },
+        {
+          "name": "Autumn Qiu",
+          "school": "IS '27",
+          "roles": ["Developer"],
+          "year": "2025"
+        },
+        {
+          "name": "Theo Urban",
+          "school": "SCS '26",
+          "roles": ["Developer"],
+          "year": "2025"
+        },
+        {
+          "name": "Jeffery Wang",
+          "school": "BXA '27",
+          "roles": ["Developer", "Art Designer"],
+          "year": "2025"
+        }
+      ]
+    }
+  ]
+}

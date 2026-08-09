@@ -47,11 +47,19 @@ if [ -n "$live" ]; then
     echo "  VITE_QUEST_API_BASE=$api_base deno task dev" >&2
     exit 1
   fi
-  vite_base=$(tr '\0' '\n' < "/proc/$vite_pid/environ" 2>/dev/null | sed -n 's/^VITE_QUEST_API_BASE=//p')
+  if [ -r "/proc/$vite_pid/environ" ]; then
+    vite_base=$(tr '\0' '\n' < "/proc/$vite_pid/environ" | sed -n 's/^VITE_QUEST_API_BASE=//p')
+  else
+    echo "cannot read /proc/$vite_pid/environ - :5173 belongs to another user" >&2
+    exit 1
+  fi
   if [ "$vite_base" != "$api_base" ]; then
-    echo "dev server on :5173 (pid $vite_pid) serves VITE_QUEST_API_BASE='${vite_base:-<unset>}'," >&2
-    echo "but this build targets '$api_base'. In live mode the dev server wins, so" >&2
-    echo "restart it:" >&2
+    echo "dev server on :5173 (pid $vite_pid, up $(ps -o etime= -p "$vite_pid" | tr -d ' ')) serves" >&2
+    echo "VITE_QUEST_API_BASE='${vite_base:-<unset>}', but this build targets '$api_base'." >&2
+    echo "In live mode the dev server wins, so it has to be the one serving $api_base." >&2
+    echo "If you already restarted, that restart lost the port race and is squatting another" >&2
+    echo "port - kill every dev server first:" >&2
+    echo "  pkill -f 'npm:vite dev'" >&2
     echo "  VITE_QUEST_API_BASE=$api_base deno task dev" >&2
     exit 1
   fi

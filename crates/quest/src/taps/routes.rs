@@ -9,12 +9,13 @@ use super::{Fix, Proximity, Taps, proximity};
 use crate::auth::AuthError;
 use crate::auth::extract::CurrentUser;
 use crate::challenges::routes::ChallengeView;
+use crate::tokens::{Scope, Tokens};
 use crate::users::Users;
 
-pub fn router(taps: Taps) -> Router {
+pub fn router(taps: Taps, tokens: Tokens) -> Router {
     Router::new()
         .route("/api/register_tap", post(register))
-        .with_state(taps)
+        .with_state((taps, tokens))
 }
 
 #[derive(Deserialize)]
@@ -28,12 +29,15 @@ struct TapBody {
 #[derive(Serialize)]
 struct Registered {
     challenge: ChallengeView,
-    counter: i64,
+    place: i64,
     first: bool,
+    current_scottycoins: i64,
+    // This is a daily count
+    current_thistlestones: i64,
 }
 
 async fn register(
-    State(taps): State<Taps>,
+    State((taps, tokens)): State<(Taps, Tokens)>,
     Extension(users): Extension<Users>,
     CurrentUser(user): CurrentUser,
     body: Result<Json<TapBody>, JsonRejection>,
@@ -61,13 +65,20 @@ async fn register(
     }
 
     let row = users.row(&user).await?;
-    let first = taps
+    let done = taps
         .record(challenge.id, &read.card_id, read.counter, row.id, fix)
         .await?;
 
+    let (purse, today) = tokio::try_join!(
+        tokens.balances(row.id, Scope::Lifetime),
+        tokens.balances(row.id, Scope::Today),
+    )?;
+
     Ok(Json(Registered {
         challenge: ChallengeView::new(challenge, true),
-        counter: read.counter,
-        first,
+        place: done.place,
+        first: done.first,
+        current_scottycoins: purse.scottycoins,
+        current_thistlestones: today.thistlestones,
     }))
 }

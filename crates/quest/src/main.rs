@@ -113,7 +113,7 @@ async fn main() {
                 .merge(devices::routes::router(devices.clone()))
                 .merge(users::routes::router(users.clone()))
                 .merge(challenges::routes::router(challenges))
-                .merge(taps::routes::router(taps))
+                .merge(taps::routes::router(taps, tokens.clone()))
                 .merge(tokens::routes::router(tokens))
                 .merge(items::routes::router(items))
                 .layer(axum::middleware::from_fn_with_state(

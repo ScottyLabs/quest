@@ -8,7 +8,7 @@ use quest::crypto::{VerifyError, verify_tap};
 use sea_orm::prelude::Uuid;
 use sea_orm::{
     ActiveValue, ColumnTrait, ConnectionTrait, DatabaseConnection, DbBackend, DbErr, EntityTrait,
-    QueryFilter, QuerySelect, Statement, TransactionTrait,
+    PaginatorTrait, QueryFilter, QuerySelect, Statement, TransactionTrait,
 };
 
 use crate::auth::AuthError;
@@ -22,6 +22,11 @@ pub struct Taps {
 pub struct Read {
     pub card_id: String,
     pub counter: i64,
+}
+
+pub struct Recorded {
+    pub first: bool,
+    pub place: i64,
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -93,7 +98,7 @@ impl Taps {
         counter: i64,
         user: Uuid,
         fix: Option<Fix>,
-    ) -> Result<bool, AuthError> {
+    ) -> Result<Recorded, AuthError> {
         let txn = self.db.begin().await.map_err(db_down)?;
 
         txn.execute_raw(Statement::from_sql_and_values(
@@ -111,9 +116,19 @@ impl Taps {
             .await
             .map_err(db_down)?;
 
-        if mine.is_some() {
+        if let Some(row) = mine {
+            let before = tap_events::Entity::find()
+                .filter(tap_events::Column::ChallengeId.eq(challenge_id))
+                .filter(tap_events::Column::Time.lt(row.time))
+                .count(&txn)
+                .await
+                .map_err(db_down)?;
+
             txn.rollback().await.ok();
-            return Ok(false);
+            return Ok(Recorded {
+                first: false,
+                place: before as i64 + 1,
+            });
         }
 
         let highest: Option<i64> = tap_events::Entity::find()
@@ -130,6 +145,12 @@ impl Taps {
             txn.rollback().await.ok();
             return Err(AuthError::Conflict("tap_replayed"));
         }
+
+        let before = tap_events::Entity::find()
+            .filter(tap_events::Column::ChallengeId.eq(challenge_id))
+            .count(&txn)
+            .await
+            .map_err(db_down)?;
 
         let fresh = tap_events::ActiveModel {
             challenge_id: ActiveValue::Set(challenge_id),
@@ -148,7 +169,10 @@ impl Taps {
             .map_err(db_down)?;
 
         txn.commit().await.map_err(db_down)?;
-        Ok(true)
+        Ok(Recorded {
+            first: true,
+            place: before as i64 + 1,
+        })
     }
 }
 

@@ -4,17 +4,17 @@
   import ToolbarStat from "./ToolbarStat.svelte";
   import { filters } from "$lib/filters.svelte";
   import { search } from "$lib/search.svelte";
-  import { DAILY_STONES } from "$lib/wallet.svelte";
+  import { DAILY_GEMS } from "$lib/wallet.svelte";
 
   let {
     balance,
-    stones,
+    gems,
     onfilter,
     oninfo,
     infoOn = false,
   }: {
     balance: number;
-    stones: number;
+    gems: number;
     onfilter?: () => void;
     oninfo?: () => void;
     infoOn?: boolean;
@@ -58,8 +58,8 @@
     <div class="stats">
       <ToolbarStat
         icon="/img/quest/stat-cleared.svg"
-        label="Thistlestones"
-        value="{stones}/{DAILY_STONES}"
+        label="Gems"
+        value="{gems}/{DAILY_GEMS}"
         width={30}
         height={30}
       />

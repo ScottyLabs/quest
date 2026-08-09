@@ -15,7 +15,7 @@
     done,
     total,
     balance,
-    stones,
+    gems,
     onfilter,
     oninfo,
     infoOn,
@@ -27,7 +27,7 @@
     done: number;
     total: number;
     balance: number;
-    stones: number;
+    gems: number;
     onfilter?: () => void;
     oninfo?: () => void;
     infoOn?: boolean;
@@ -63,7 +63,7 @@
     <CategoryChips {categories} {current} {onpick} />
   </div>
 
-  <QuestToolbar {balance} {stones} {onfilter} {oninfo} {infoOn} />
+  <QuestToolbar {balance} {gems} {onfilter} {oninfo} {infoOn} />
 
   <span class="veil" class:hidden={search.open}><WaveEdge shape="veil" /></span>
   <span class="crown-fade" aria-hidden="true"></span>

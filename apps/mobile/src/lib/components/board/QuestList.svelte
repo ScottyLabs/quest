@@ -1,6 +1,6 @@
 <script lang="ts">
-  import ListDivider from "./ListDivider.svelte";
-  import QuestCard from "./QuestCard.svelte";
+  import ListDivider from "../ui/ListDivider.svelte";
+  import QuestCard from "../card/QuestCard.svelte";
   import type { Quest } from "$lib/quests.svelte";
 
   let {

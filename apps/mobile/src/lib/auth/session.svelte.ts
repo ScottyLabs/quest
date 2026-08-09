@@ -2,6 +2,7 @@ import { browser } from "$app/environment";
 import { App } from "@capacitor/app";
 import { Browser } from "@capacitor/browser";
 import { Capacitor } from "@capacitor/core";
+import { openExternal } from "$lib/external";
 import {
   apiBase,
   endSession,
@@ -29,11 +30,6 @@ export interface LoginOptions {
 export interface LogoutOptions {
   endSsoSession?: boolean;
   openUrl?: OpenUrl;
-}
-
-async function openInBrowser(url: string): Promise<void> {
-  if (Capacitor.isNativePlatform()) return await Browser.open({ url });
-  window.open(url, "_blank");
 }
 
 type Fragment = { id: string; expiresAt: number } | { error: AuthError };
@@ -156,7 +152,7 @@ class SessionStore {
     this.#phase = "awaitingBrowser";
 
     try {
-      await (options.openUrl ?? openInBrowser)(url);
+      await (options.openUrl ?? openExternal)(url);
       const user = await this.adoptFragment(await promise);
       if (user === null) throw new AuthError("unknown", "empty callback fragment");
       return user;
@@ -177,7 +173,7 @@ class SessionStore {
     if (!current) return;
 
     const url = await endSession(current.id).catch(() => null);
-    if (url && options.endSsoSession) await (options.openUrl ?? openInBrowser)(url);
+    if (url && options.endSsoSession) await (options.openUrl ?? openExternal)(url);
   }
 
   get id(): string {

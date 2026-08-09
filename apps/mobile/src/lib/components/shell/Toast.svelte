@@ -12,8 +12,6 @@
 {/if}
 
 <style>
-  /* Fixed, so a message never participates in any screen's layout. The mascot
-     rail and Confirm sit on measured marks and must not move for an error. */
   .wrap {
     position: fixed;
     inset: auto 0 max(24px, var(--safe-bottom));

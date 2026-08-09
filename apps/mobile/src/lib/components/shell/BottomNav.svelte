@@ -5,13 +5,18 @@
   const active = $derived(currentTab(page.url.pathname));
 </script>
 
-<div class="dock">
+<div class="dock" class:scrim={active?.scrim}>
   <nav aria-label="Main">
     <div class="marks">
       {#each TABS as tab (tab.href)}
         {@const on = tab === active}
         {@const [w, h] = on ? tab.activeBox : tab.box}
-        <a href={tab.href} aria-current={on ? "page" : undefined} aria-label={tab.label}>
+        <a
+          href={tab.href}
+          aria-current={on ? "page" : undefined}
+          aria-label={tab.label}
+          style:--slot="{tab.box[0]}px"
+        >
           <img src={on ? tab.activeIcon : tab.icon} alt="" width={w} height={h} />
         </a>
       {/each}
@@ -29,8 +34,11 @@
     justify-content: center;
     padding: 126px calc(16px + var(--safe-right)) var(--dock-gap)
       calc(16px + var(--safe-left));
-    background: linear-gradient(180deg, transparent 1.56%, var(--shade) 123%);
     pointer-events: none;
+  }
+
+  .dock.scrim {
+    background: linear-gradient(180deg, transparent 1.56%, var(--shade) 123%);
   }
 
   nav {
@@ -46,21 +54,34 @@
 
   .marks {
     position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 33.35px;
+    inset: 0;
     display: flex;
     align-items: center;
-    gap: 40px;
+    justify-content: center;
+    gap: 26px;
     padding: 0 20px;
   }
 
+  /* pinned to the resting width so growth on selection can't shove neighbours */
   a {
-    display: grid;
-    place-items: center;
+    position: relative;
+    flex: none;
+    width: var(--slot);
+    height: 40px;
+  }
+
+  /* overlay only, so a 44px target never feeds back into layout */
+  a::after {
+    content: "";
+    position: absolute;
+    inset: -2px -12px;
   }
 
   img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
     object-fit: contain;
+    translate: -50% -50%;
   }
 </style>

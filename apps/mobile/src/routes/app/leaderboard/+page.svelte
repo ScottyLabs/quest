@@ -1,5 +1,5 @@
 <script lang="ts">
-  import TabStub from "$lib/components/quest/TabStub.svelte";
+  import TabStub from "$lib/components/shell/TabStub.svelte";
 </script>
 
 <svelte:head><title>Leaderboard - Orientation Quest</title></svelte:head>

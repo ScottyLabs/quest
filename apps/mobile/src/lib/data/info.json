@@ -1,0 +1,35 @@
+{
+  "updated": "August 10th 2026",
+  "tiles": [
+    {
+      "id": "privacy",
+      "label": "Privacy Policy",
+      "icon": "/img/info/privacy-policy.svg",
+      "url": "https://cmu.quest/privacy-policy"
+    },
+    {
+      "id": "how-to-play",
+      "label": "How to Play",
+      "icon": "/img/info/how-to-play.svg",
+      "url": "/how-to-play"
+    },
+    {
+      "id": "terms",
+      "label": "Terms of Service",
+      "icon": "/img/info/terms-of-service.svg",
+      "url": "https://cmu.quest/terms-of-service"
+    },
+    {
+      "id": "report",
+      "label": "Report Issues",
+      "icon": "/img/info/report-issues.svg",
+      "url": "https://cmu.lol/quest-report"
+    },
+    {
+      "id": "credits",
+      "label": "Credits",
+      "icon": "/img/info/credits.svg",
+      "url": "/app/info/credits"
+    }
+  ]
+}

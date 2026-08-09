@@ -1,6 +1,6 @@
 <script lang="ts">
   import Commemorate from "./Commemorate.svelte";
-  import WaveEdge from "./WaveEdge.svelte";
+  import WaveEdge from "../ui/WaveEdge.svelte";
   import type { Cleared } from "$lib/celebrate.svelte";
 
   let { cleared, onclose }: { cleared: Cleared; onclose: () => void } = $props();

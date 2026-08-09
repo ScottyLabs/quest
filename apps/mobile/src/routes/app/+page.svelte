@@ -1,10 +1,10 @@
 <script lang="ts">
-  import FilterMenu from "$lib/components/quest/FilterMenu.svelte";
-  import HintBar from "$lib/components/quest/HintBar.svelte";
-  import NfcSheet from "$lib/components/quest/NfcSheet.svelte";
-  import QuestHeader from "$lib/components/quest/QuestHeader.svelte";
-  import QuestList from "$lib/components/quest/QuestList.svelte";
-  import WaveEdge from "$lib/components/quest/WaveEdge.svelte";
+  import FilterMenu from "$lib/components/board/FilterMenu.svelte";
+  import HintBar from "$lib/components/board/HintBar.svelte";
+  import NfcSheet from "$lib/components/tap/NfcSheet.svelte";
+  import QuestHeader from "$lib/components/board/QuestHeader.svelte";
+  import QuestList from "$lib/components/board/QuestList.svelte";
+  import WaveEdge from "$lib/components/ui/WaveEdge.svelte";
   import { NEEDS_LOCATION, raise } from "$lib/caution.svelte";
   import { bucket, filters } from "$lib/filters.svelte";
   import { permitted } from "$lib/geo";

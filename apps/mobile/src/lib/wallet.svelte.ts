@@ -31,7 +31,7 @@ export function gemDay(at: Date = new Date()): string {
   return day.toISOString().slice(0, 10);
 }
 
-export const wallet = $state({ scottycoins: 0, gems: 0 });
+export const wallet = $state({ scottycoins: 0, gems: 0, lifetimeGems: 0 });
 
 export function bank(scottycoins: number, gems: number): void {
   wallet.scottycoins = scottycoins;
@@ -48,8 +48,9 @@ async function read(scope: string): Promise<Balances | null> {
 export async function refresh(): Promise<void> {
   const [lifetime, today] = await Promise.all([read(""), read("?day=today")]);
 
-  if (lifetime !== null && Number.isFinite(lifetime.scottycoins)) {
-    wallet.scottycoins = lifetime.scottycoins;
+  if (lifetime !== null) {
+    if (Number.isFinite(lifetime.scottycoins)) wallet.scottycoins = lifetime.scottycoins;
+    if (Number.isFinite(lifetime.thistlestones)) wallet.lifetimeGems = lifetime.thistlestones;
   }
 
   if (today !== null && Number.isFinite(today.thistlestones)) {

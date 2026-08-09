@@ -20,6 +20,7 @@
     TapError,
     type Quest,
   } from "$lib/quests.svelte";
+  import { matches, search } from "$lib/search.svelte";
   import { handleTap } from "$lib/tap";
   import { theme } from "$lib/theme";
   import { active } from "$lib/theme.svelte";
@@ -70,8 +71,12 @@
 
   const all = $derived(quests.data ?? []);
   const shown = $derived(inCategory(all, active.id));
-  const visible = $derived(shown.filter((quest) => filters[bucket(quest, Date.now())]));
-  const daily = $derived(filters[bucket(DAILY, Date.now())] ? DAILY : null);
+  const visible = $derived(
+    shown.filter((quest) => filters[bucket(quest, Date.now())] && matches(quest, search.query)),
+  );
+  const daily = $derived(
+    filters[bucket(DAILY, Date.now())] && matches(DAILY, search.query) ? DAILY : null,
+  );
   const completed = $derived(done(shown));
   const cold = $derived(quests.data === null);
 
@@ -212,6 +217,7 @@
     height: calc(57 * var(--u));
     overflow: hidden;
     color: var(--sink);
+    pointer-events: none;
   }
 
   .band > :global(svg) {

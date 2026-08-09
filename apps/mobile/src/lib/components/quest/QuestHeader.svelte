@@ -4,6 +4,7 @@
   import QuestTally from "./QuestTally.svelte";
   import QuestToolbar from "./QuestToolbar.svelte";
   import WaveEdge from "./WaveEdge.svelte";
+  import { search } from "$lib/search.svelte";
   import type { Theme } from "$lib/theme";
 
   let {
@@ -64,7 +65,7 @@
 
   <QuestToolbar {balance} {stones} {onfilter} {oninfo} {infoOn} />
 
-  <span class="veil"><WaveEdge shape="veil" /></span>
+  <span class="veil" class:hidden={search.open}><WaveEdge shape="veil" /></span>
   <span class="crown-fade" aria-hidden="true"></span>
 </header>
 
@@ -80,13 +81,17 @@
   .veil {
     position: absolute;
     right: 0;
-    /* Box grows downward while the top stays pinned at 304, so the wave keeps
-       its position and only gains room for the deeper trough. */
     bottom: calc(8 * var(--u));
     left: 0;
     z-index: 2;
     height: calc(296 * var(--u));
     color: var(--veil);
+    pointer-events: none;
+    transition: opacity 220ms ease;
+  }
+
+  .veil.hidden {
+    opacity: 0;
   }
 
   .crown-fade {
@@ -100,6 +105,7 @@
       linear-gradient(180deg, var(--crown), var(--sink)) bottom / 100% calc(187 * var(--u))
         no-repeat,
       var(--crown);
+    pointer-events: none;
   }
 
   .crown {

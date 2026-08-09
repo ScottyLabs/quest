@@ -16,6 +16,8 @@
     balance,
     stones,
     onfilter,
+    oninfo,
+    infoOn,
   }: {
     theme: Theme;
     categories: string[];
@@ -26,6 +28,8 @@
     balance: number;
     stones: number;
     onfilter?: () => void;
+    oninfo?: () => void;
+    infoOn?: boolean;
   } = $props();
 
   const lines = $derived((theme.title ?? theme.label).split("\n"));
@@ -58,7 +62,7 @@
     <CategoryChips {categories} {current} {onpick} />
   </div>
 
-  <QuestToolbar {balance} {stones} {onfilter} />
+  <QuestToolbar {balance} {stones} {onfilter} {oninfo} {infoOn} />
 
   <span class="veil"><WaveEdge shape="veil" /></span>
   <span class="crown-fade" aria-hidden="true"></span>
@@ -76,10 +80,12 @@
   .veil {
     position: absolute;
     right: 0;
-    bottom: calc(30 * var(--u));
+    /* Box grows downward while the top stays pinned at 304, so the wave keeps
+       its position and only gains room for the deeper trough. */
+    bottom: calc(8 * var(--u));
     left: 0;
     z-index: 2;
-    height: calc(274 * var(--u));
+    height: calc(296 * var(--u));
     color: var(--veil);
   }
 

@@ -11,6 +11,7 @@
     "all": {
       "label": "All",
       "title": "Orientation Challenges",
+      "hint": "Visit a specific <hi>category</hi> to view specific challenges!",
       "mark": null,
       "accent": "#c41230",
       "crown": "#c41230",
@@ -26,6 +27,7 @@
     "essentials": {
       "label": "The Essentials",
       "title": null,
+      "hint": "Get to know some <hi>useful services and utilities</hi> on campus!",
       "mark": null,
       "accent": "#ef3e56",
       "crown": "#ef3e56",
@@ -41,6 +43,7 @@
     "bridges": {
       "label": "Campus of Bridges",
       "title": null,
+      "hint": "If Pittsburgh is the City of Bridges, then CMU is the <hi>Campus of Bridges!</hi> Discover <hi>notable building connections and shortcuts.</hi>",
       "mark": null,
       "accent": "#008bc1",
       "crown": "#44a2c7",
@@ -56,6 +59,7 @@
     "lets_eat": {
       "label": "Let's Eat",
       "title": null,
+      "hint": "You read the category: <hi>let's eat!</hi> Learn about the many <hi>dining locations</hi> on campus!",
       "mark": null,
       "accent": "#fdb813",
       "crown": "#fdb813",
@@ -71,6 +75,7 @@
     "cool_corners": {
       "label": "Cool Corners of Carnegie",
       "title": null,
+      "hint": "Find some popular (and some hidden!) <hi>hangout spots, study spaces, landmarks, and more!</hi>",
       "mark": null,
       "accent": "#008b52",
       "crown": "#008b52",
@@ -86,6 +91,7 @@
     "minor_major_general": {
       "label": "Minor\u2011Major General",
       "title": null,
+      "hint": "Take some time to learn about CMU's <hi>academic departments!</hi>",
       "mark": null,
       "accent": "#008b9a",
       "crown": "#008b9a",
@@ -101,6 +107,7 @@
     "residence_relaxation": {
       "label": "Residence & Relaxation",
       "title": "Residence\nRelaxation",
+      "hint": "Visit the <hi>first-year housing communities</hi> (and make some friends)!",
       "mark": {
         "src": "/img/quest/theme/residence_relaxation-mark.svg",
         "x": 69,

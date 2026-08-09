@@ -10,12 +10,14 @@
     onsearch,
     onfilter,
     oninfo,
+    infoOn = false,
   }: {
     balance: number;
     stones: number;
     onsearch?: () => void;
     onfilter?: () => void;
     oninfo?: () => void;
+    infoOn?: boolean;
   } = $props();
 
   const narrowed = $derived(!(filters.challenges && filters.completed && filters.locked));
@@ -64,6 +66,7 @@
     width={32}
     height={32}
     disc
+    on={infoOn}
     onclick={oninfo}
   />
 </div>

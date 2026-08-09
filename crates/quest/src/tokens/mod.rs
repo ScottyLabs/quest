@@ -12,20 +12,25 @@ const DAILY_BONUS: i64 = 5;
 
 const BALANCES: &str = r#"
 WITH target AS (
-    SELECT CASE WHEN $5 THEN (now() AT TIME ZONE 'America/New_York')::DATE ELSE $4 END AS "day"
+    SELECT CASE
+        WHEN $5 THEN ((now() AT TIME ZONE 'America/New_York') - INTERVAL '12 hours')::DATE
+        ELSE $4
+    END AS "day"
 ),
 earned AS (
-    SELECT
-        "tap_events"."challenge_id" AS "challenge_id",
-        "challenge"."coin_value" AS "coin_value",
-        (to_timestamp("tap_events"."time") AT TIME ZONE 'America/New_York')::DATE AS "day"
-    FROM "tap_events"
-    JOIN "challenge" ON "challenge"."id" = "tap_events"."challenge_id"
+    SELECT tap."challenge_id", tap."coin_value", tap."day"
+    FROM (
+        SELECT
+            "tap_events"."challenge_id" AS "challenge_id",
+            "challenge"."coin_value" AS "coin_value",
+            ((to_timestamp("tap_events"."time") AT TIME ZONE 'America/New_York')
+                - INTERVAL '12 hours')::DATE AS "day"
+        FROM "tap_events"
+        JOIN "challenge" ON "challenge"."id" = "tap_events"."challenge_id"
+        WHERE "tap_events"."user_id" = $1
+    ) tap
     CROSS JOIN target
-    WHERE "tap_events"."user_id" = $1
-      AND (target."day" IS NULL
-           OR target."day" = (to_timestamp("tap_events"."time")
-                              AT TIME ZONE 'America/New_York')::DATE)
+    WHERE target."day" IS NULL OR target."day" = tap."day"
 ),
 spent AS (
     SELECT COALESCE(SUM("purchases"."quantity" * "items"."cost"), 0)::BIGINT AS "total"

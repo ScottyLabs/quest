@@ -2,13 +2,18 @@ import { goto } from "$app/navigation";
 import { NEEDS_LOCATION, raise } from "$lib/caution.svelte";
 import { celebrate } from "$lib/celebrate.svelte";
 import { permitted } from "$lib/geo";
+import { NfcError, openSettings, readiness, scan } from "$lib/nfc";
 import { warn } from "$lib/notice.svelte";
-import { CATEGORIES, quests, registerTap } from "$lib/quests.svelte";
+import { CATEGORIES, quests, type Registered, registerTap, TapError } from "$lib/quests.svelte";
+import { closeScan, openScan, scanning } from "$lib/scanning.svelte";
+import { showTapFail } from "$lib/tapfail.svelte";
 import { FALLBACK } from "$lib/theme";
 import { active } from "$lib/theme.svelte";
 import { bank } from "$lib/wallet.svelte";
 
 const BOARD = "/app";
+
+let starting = false;
 
 export async function handleTap(url: string): Promise<void> {
   if (!(await permitted())) {
@@ -16,7 +21,15 @@ export async function handleTap(url: string): Promise<void> {
     return;
   }
 
-  const result = await registerTap(url);
+  let result: Registered;
+  try {
+    result = await registerTap(url);
+  } catch (error) {
+    if (!(error instanceof TapError)) throw error;
+    showTapFail(error.code, url);
+    return;
+  }
+
   const landed = result.challenge;
 
   bank(result.current_scottycoins, result.current_thistlestones);
@@ -44,4 +57,44 @@ export async function handleTap(url: string): Promise<void> {
   }
 
   await quests.reload();
+}
+
+export async function tapScan(label: string, previous: string | null = null): Promise<void> {
+  if (starting || scanning.label !== null) return;
+  starting = true;
+
+  try {
+    const state = await readiness();
+
+    if (state !== "ready") {
+      if (previous !== null) {
+        await handleTap(previous);
+      } else if (state === "disabled") {
+        warn("Turn on NFC to scan this challenge.");
+        await openSettings();
+      } else {
+        warn("This phone can't scan NFC tags.");
+      }
+      return;
+    }
+
+    if (!(await permitted())) {
+      raise(NEEDS_LOCATION);
+      return;
+    }
+
+    const signal = openScan(label);
+
+    try {
+      const url = await scan(`Hold your phone near the ${label} tag`, signal);
+      if (url !== null) await handleTap(url);
+    } catch (error) {
+      if (error instanceof NfcError) warn(error.message);
+      else warn("Couldn't register that tap.");
+    } finally {
+      closeScan();
+    }
+  } finally {
+    starting = false;
+  }
 }

@@ -101,6 +101,10 @@ impl AuthError {
             AuthError::Upstream(e) => (StatusCode::BAD_GATEWAY, *e),
         }
     }
+
+    pub fn code(&self) -> &'static str {
+        self.parts().1
+    }
 }
 
 impl IntoResponse for AuthError {

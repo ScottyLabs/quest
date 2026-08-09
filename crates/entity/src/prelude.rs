@@ -3,6 +3,7 @@ pub use super::challenge_card::Entity as ChallengeCard;
 pub use super::daily_challenge::Entity as DailyChallenge;
 pub use super::devices::Entity as Devices;
 pub use super::enums::{ChallengeCategory, Dorm};
+pub use super::failed_taps::Entity as FailedTaps;
 pub use super::geography::Point;
 pub use super::items::Entity as Items;
 pub use super::purchases::Entity as Purchases;

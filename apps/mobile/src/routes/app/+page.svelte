@@ -1,15 +1,10 @@
 <script lang="ts">
   import FilterMenu from "$lib/components/board/FilterMenu.svelte";
   import HintBar from "$lib/components/board/HintBar.svelte";
-  import NfcSheet from "$lib/components/tap/NfcSheet.svelte";
   import QuestHeader from "$lib/components/board/QuestHeader.svelte";
   import QuestList from "$lib/components/board/QuestList.svelte";
   import WaveEdge from "$lib/components/ui/WaveEdge.svelte";
-  import { NEEDS_LOCATION, raise } from "$lib/caution.svelte";
   import { bucket, filters } from "$lib/filters.svelte";
-  import { permitted } from "$lib/geo";
-  import { NfcError, openSettings, readiness, scan, showsSystemSheet } from "$lib/nfc";
-  import { warn } from "$lib/notice.svelte";
   import {
     CATEGORIES,
     DAILY,
@@ -17,56 +12,16 @@
     inCategory,
     nextUnlock,
     quests,
-    TapError,
     type Quest,
   } from "$lib/quests.svelte";
   import { matches, search } from "$lib/search.svelte";
-  import { handleTap } from "$lib/tap";
+  import { tapScan } from "$lib/tap";
   import { theme } from "$lib/theme";
   import { active } from "$lib/theme.svelte";
   import { refresh, wallet } from "$lib/wallet.svelte";
 
-  let scanning = $state<Quest | null>(null);
-  let abort: AbortController | null = null;
-  let starting = false;
-
   async function beginScan(quest: Quest) {
-    if (starting || scanning !== null) return;
-    starting = true;
-
-    try {
-      const state = await readiness();
-      if (state === "unsupported") {
-        warn("This phone can't scan NFC tags.");
-        return;
-      }
-      if (state === "disabled") {
-        warn("Turn on NFC to scan this challenge.");
-        await openSettings();
-        return;
-      }
-
-      if (!(await permitted())) {
-        raise(NEEDS_LOCATION);
-        return;
-      }
-
-      scanning = quest;
-      abort = new AbortController();
-
-      try {
-        const url = await scan(`Hold your phone near the ${quest.title} tag`, abort.signal);
-        if (url !== null) await handleTap(url);
-      } catch (error) {
-        if (error instanceof NfcError || error instanceof TapError) warn(error.message);
-        else warn("Couldn't register that tap.");
-      } finally {
-        scanning = null;
-        abort = null;
-      }
-    } finally {
-      starting = false;
-    }
+    await tapScan(quest.title);
   }
 
   const all = $derived(quests.data ?? []);
@@ -177,9 +132,6 @@
   {/if}
 </div>
 
-{#if scanning && !showsSystemSheet}
-  <NfcSheet title={scanning.title} oncancel={() => abort?.abort()} />
-{/if}
 
 <style>
   .board {

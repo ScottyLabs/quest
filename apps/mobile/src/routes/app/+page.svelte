@@ -1,5 +1,6 @@
 <script lang="ts">
   import FilterMenu from "$lib/components/quest/FilterMenu.svelte";
+  import HintBar from "$lib/components/quest/HintBar.svelte";
   import NfcSheet from "$lib/components/quest/NfcSheet.svelte";
   import QuestHeader from "$lib/components/quest/QuestHeader.svelte";
   import QuestList from "$lib/components/quest/QuestList.svelte";
@@ -75,7 +76,9 @@
   const cold = $derived(quests.data === null);
 
   let filtering = $state(false);
+  let hinting = $state(false);
   let scroller = $state<HTMLElement | null>(null);
+  let hintClosedAt = 0;
 
   $effect(() => {
     const category = active.id;
@@ -126,6 +129,10 @@
   balance={wallet.scottycoins}
   stones={wallet.thistlestones}
   onfilter={() => (filtering = !filtering)}
+  oninfo={() => {
+    if (Date.now() - hintClosedAt > 300) hinting = true;
+  }}
+  infoOn={hinting}
 />
 
 <div class="board">
@@ -152,6 +159,16 @@
 
   {#if filtering}
     <FilterMenu onclose={() => (filtering = false)} />
+  {/if}
+
+  {#if hinting}
+    <HintBar
+      text={theme(active.id).hint}
+      onclose={() => {
+        hinting = false;
+        hintClosedAt = Date.now();
+      }}
+    />
   {/if}
 </div>
 

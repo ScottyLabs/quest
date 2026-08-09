@@ -10,6 +10,7 @@ export interface Mark {
 export interface Theme {
   label: string;
   title: string | null;
+  hint: string;
   mark: Mark | null;
   accent: string;
   crown: string;

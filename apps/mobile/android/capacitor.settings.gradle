@@ -8,6 +8,12 @@ project(':capacitor-app').projectDir = new File('../../../node_modules/.deno/@ca
 include ':capacitor-browser'
 project(':capacitor-browser').projectDir = new File('../../../node_modules/.deno/@capacitor+browser@8.0.4/node_modules/@capacitor/browser/android')
 
+include ':capacitor-camera'
+project(':capacitor-camera').projectDir = new File('../../../node_modules/.deno/@capacitor+camera@8.2.2/node_modules/@capacitor/camera/android')
+
+include ':capacitor-filesystem'
+project(':capacitor-filesystem').projectDir = new File('../../../node_modules/.deno/@capacitor+filesystem@8.1.2/node_modules/@capacitor/filesystem/android')
+
 include ':capacitor-geolocation'
 project(':capacitor-geolocation').projectDir = new File('../../../node_modules/.deno/@capacitor+geolocation@8.2.0/node_modules/@capacitor/geolocation/android')
 

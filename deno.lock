@@ -4,8 +4,10 @@
     "npm:@capacitor/android@^8.4.2": "8.4.2_@capacitor+core@8.4.2",
     "npm:@capacitor/app@^8.1.1": "8.1.1_@capacitor+core@8.4.2",
     "npm:@capacitor/browser@^8.0.4": "8.0.4_@capacitor+core@8.4.2",
+    "npm:@capacitor/camera@8": "8.2.2_@capacitor+core@8.4.2",
     "npm:@capacitor/cli@^8.4.2": "8.4.2",
     "npm:@capacitor/core@^8.4.2": "8.4.2",
+    "npm:@capacitor/filesystem@8": "8.1.2_@capacitor+core@8.4.2",
     "npm:@capacitor/geolocation@^8.2.0": "8.2.0_@capacitor+core@8.4.2",
     "npm:@capacitor/ios@^8.4.2": "8.4.2_@capacitor+core@8.4.2",
     "npm:@capgo/capacitor-nfc@^8.2.2": "8.2.2_@capacitor+core@8.4.2",
@@ -41,6 +43,12 @@
         "@capacitor/core"
       ]
     },
+    "@capacitor/camera@8.2.2_@capacitor+core@8.4.2": {
+      "integrity": "sha512-WfaOsqrjPzvXGvrIBFqFtOZHBrc3hwGKssZje4ioJDNfTjIq2zrUNDXP+q6XmLyzifCYOu2YFC6k1+leb/BqSg==",
+      "dependencies": [
+        "@capacitor/core"
+      ]
+    },
     "@capacitor/cli@8.4.2": {
       "integrity": "sha512-hE4HmpMdr5T8eQ++kGa1BKkdG2JLEvo1y1cj1kmFK78VB9dBp538oe1EZvzwupNGOl0ZueALotzL5wcXRD9w1Q==",
       "dependencies": [
@@ -68,6 +76,13 @@
       "integrity": "sha512-fQPRb3JXRaU2pnufDUvqOjhsrYxDQeFRZyaj/sHydIUxD2NxOGHKMpmKUdI+U4OOmKuGZyvRpi7TSJU+7Bjbmg==",
       "dependencies": [
         "tslib"
+      ]
+    },
+    "@capacitor/filesystem@8.1.2_@capacitor+core@8.4.2": {
+      "integrity": "sha512-doaaMfGoFR2hWU6aV6u83I+5ZsGyJVq+Gz4r9lMpJzUKMm1eMu0hLnFdV1aXZlU9FlK/RndFrVD8oRZfNOqWgQ==",
+      "dependencies": [
+        "@capacitor/core",
+        "@capacitor/synapse"
       ]
     },
     "@capacitor/geolocation@8.2.0_@capacitor+core@8.4.2": {
@@ -1191,8 +1206,10 @@
             "npm:@capacitor/android@^8.4.2",
             "npm:@capacitor/app@^8.1.1",
             "npm:@capacitor/browser@^8.0.4",
+            "npm:@capacitor/camera@8",
             "npm:@capacitor/cli@^8.4.2",
             "npm:@capacitor/core@^8.4.2",
+            "npm:@capacitor/filesystem@8",
             "npm:@capacitor/geolocation@^8.2.0",
             "npm:@capacitor/ios@^8.4.2",
             "npm:@capgo/capacitor-nfc@^8.2.2",

@@ -58,9 +58,10 @@
 
   button.face {
     cursor: pointer;
+    touch-action: manipulation;
   }
 
   button.face:active {
-    filter: brightness(0.96);
+    background: color-mix(in srgb, var(--surface) 86.3%, #000000);
   }
 </style>

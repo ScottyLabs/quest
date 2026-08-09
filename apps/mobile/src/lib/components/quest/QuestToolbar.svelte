@@ -1,21 +1,24 @@
 <script lang="ts">
   import ToolbarButton from "./ToolbarButton.svelte";
   import ToolbarStat from "./ToolbarStat.svelte";
+  import { filters } from "$lib/filters.svelte";
+  import { DAILY_STONES } from "$lib/wallet.svelte";
 
   let {
     balance,
+    stones,
     onsearch,
     onfilter,
     oninfo,
   }: {
     balance: number;
+    stones: number;
     onsearch?: () => void;
     onfilter?: () => void;
     oninfo?: () => void;
   } = $props();
 
-  // TODO: thistlestones have no endpoint yet
-  const THISTLESTONES = "10/15";
+  const narrowed = $derived(!(filters.challenges && filters.completed && filters.locked));
 </script>
 
 <div class="bar">
@@ -28,7 +31,7 @@
   />
 
   <ToolbarButton
-    icon="/img/quest/funnel.svg"
+    icon={narrowed ? "/img/quest/funnel-on.svg" : "/img/quest/funnel.svg"}
     label="Filter challenges"
     width={29}
     height={28}
@@ -39,7 +42,7 @@
     <ToolbarStat
       icon="/img/quest/stat-cleared.svg"
       label="Thistlestones"
-      value={THISTLESTONES}
+      value="{stones}/{DAILY_STONES}"
       width={30}
       height={30}
     />

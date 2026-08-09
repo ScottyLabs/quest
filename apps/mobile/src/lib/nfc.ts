@@ -63,6 +63,8 @@ let ambient: ((url: string) => void) | null = null;
 let waiter: Waiter | null = null;
 let armed = false;
 let mounted: Promise<void> | null = null;
+let sessionOpen = false;
+let closed: (() => void) | null = null;
 
 function deliver(url: string | null): void {
   const pending = waiter;
@@ -78,12 +80,35 @@ function deliver(url: string | null): void {
 }
 
 function ended(reason: NfcSessionEndEvent["reason"]): void {
+  sessionOpen = false;
+  closed?.();
+  closed = null;
+
   const pending = waiter;
   waiter = null;
   if (pending === null) return;
 
   if (reason === "sessionTimeout") pending.reject(new NfcError("Scan timed out."));
   else pending.resolve(null);
+}
+
+async function settle(): Promise<void> {
+  if (!showsSystemSheet) return;
+
+  if (sessionOpen) {
+    const { promise, resolve } = Promise.withResolvers<void>();
+    closed = resolve;
+    const timer = setTimeout(resolve, 2500);
+
+    try {
+      await promise;
+    } finally {
+      clearTimeout(timer);
+      closed = null;
+    }
+  }
+
+  await new Promise<void>((done) => setTimeout(done, 350));
 }
 
 function listen(): Promise<void> {
@@ -131,7 +156,20 @@ export async function scan(prompt: string, signal?: AbortSignal): Promise<string
 
   try {
     if (!armed) {
-      await CapacitorNfc.startScanning({ alertMessage: prompt, invalidateAfterFirstRead: true });
+      try {
+        await CapacitorNfc.startScanning({ alertMessage: prompt, invalidateAfterFirstRead: true });
+      } catch {
+        await new Promise<void>((done) => setTimeout(done, 400));
+        try {
+          await CapacitorNfc.startScanning({
+            alertMessage: prompt,
+            invalidateAfterFirstRead: true,
+          });
+        } catch {
+          throw new NfcError("The scanner is still closing. Try that again.");
+        }
+      }
+      sessionOpen = true;
     }
 
     waiter = mine;
@@ -140,7 +178,12 @@ export async function scan(prompt: string, signal?: AbortSignal): Promise<string
   } finally {
     signal?.removeEventListener("abort", cancel);
     if (waiter === mine) waiter = null;
-    if (!armed) await CapacitorNfc.stopScanning().catch(() => undefined);
+    if (!armed) {
+      await CapacitorNfc.stopScanning().catch(() => undefined);
+      await settle();
+      sessionOpen = false;
+      closed = null;
+    }
   }
 }
 

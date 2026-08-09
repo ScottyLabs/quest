@@ -1,11 +1,26 @@
 <script lang="ts">
   import CardShell from "./CardShell.svelte";
+  import { celebrate } from "$lib/celebrate.svelte";
   import type { Quest } from "$lib/quests.svelte";
 
   let { quest }: { quest: Quest } = $props();
+
+  const reopen = () =>
+    celebrate({
+      id: quest.id,
+      name: quest.title,
+      description: quest.description || quest.detail,
+      reward: quest.reward,
+      place: null,
+    });
 </script>
 
-<CardShell surface="var(--quest-done)" edge="var(--quest-done-ink)">
+<CardShell
+  surface="var(--quest-done)"
+  edge="var(--quest-done-ink)"
+  label="{quest.title}, cleared"
+  onclick={reopen}
+>
   <img src="/img/quest/badge-done.svg" alt="Completed" />
   <h2>{quest.title}</h2>
 </CardShell>

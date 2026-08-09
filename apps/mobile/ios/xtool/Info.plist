@@ -16,6 +16,12 @@
 	</dict>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Connects to your computer's dev server for live reload.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Take a photo to commemorate a challenge you just cleared.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Pick a photo to commemorate a challenge you just cleared.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Save your commemoration photo back to your library.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

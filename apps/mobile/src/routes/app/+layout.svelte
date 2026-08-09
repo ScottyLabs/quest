@@ -1,7 +1,12 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import BottomNav from "$lib/components/BottomNav.svelte";
+  import TapResultSheet from "$lib/components/quest/TapResultSheet.svelte";
+  import WarningDialog from "$lib/components/WarningDialog.svelte";
   import { session } from "$lib/auth";
+  import { caution, hush } from "$lib/caution.svelte";
+  import { celebration, closeCelebration } from "$lib/celebrate.svelte";
+  import { permitted } from "$lib/geo";
   import { watchTaps } from "$lib/deeplink";
   import { arm, NfcError } from "$lib/nfc";
   import { warn } from "$lib/notice.svelte";
@@ -13,6 +18,10 @@
   let { children } = $props();
 
   const style = $derived(vars(theme(active.id)));
+
+  async function retryLocation(): Promise<void> {
+    if (await permitted()) hush();
+  }
 
   $effect(() => {
     if (session.phase === "signedOut") void goto("/", { replaceState: true });
@@ -42,6 +51,19 @@
 <div class="shell" {style}>
   {@render children()}
   <BottomNav />
+
+  {#if celebration.current}
+    <TapResultSheet cleared={celebration.current} onclose={closeCelebration} />
+  {/if}
+
+  {#if caution.current}
+    <WarningDialog
+      title={caution.current.title}
+      body={caution.current.body}
+      onconfirm={retryLocation}
+      ondismiss={hush}
+    />
+  {/if}
 </div>
 
 <style>

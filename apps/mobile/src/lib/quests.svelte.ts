@@ -16,7 +16,7 @@ export interface Quest {
   opensAt: string;
 }
 
-interface ChallengeView {
+export interface ChallengeView {
   id: string;
   name: string;
   tagline: string;
@@ -33,8 +33,10 @@ interface BoardBody {
 
 export interface Registered {
   challenge: ChallengeView;
-  counter: number;
+  place: number;
   first: boolean;
+  current_scottycoins: number;
+  current_thistlestones: number;
 }
 
 interface TapFailure {
@@ -72,8 +74,6 @@ export async function registerTap(url: string): Promise<Registered> {
 }
 
 export const CATEGORIES: string[] = Object.keys(THEMES);
-
-export const BALANCE = 260;
 
 //TODO: temporary placeholder
 export const DAILY: Quest = {
@@ -136,4 +136,16 @@ export function nextUnlock(list: Quest[], now: number): number | null {
   }
 
   return soonest;
+}
+
+export function unlockedAt(quest: Quest): string {
+  const opens = new Date(quest.opensAt);
+  const day = opens.toLocaleDateString("en-US", {
+    month: "2-digit",
+    day: "2-digit",
+    year: "2-digit",
+  });
+  const hour = opens.toLocaleTimeString("en-US", { hour: "numeric", hour12: true }).toLowerCase();
+
+  return `Unlocks on ${day} at ${hour}`;
 }

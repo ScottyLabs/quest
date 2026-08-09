@@ -132,7 +132,7 @@
   done={completed}
   total={shown.length}
   balance={wallet.scottycoins}
-  stones={wallet.thistlestones}
+  gems={wallet.gems}
   onfilter={() => (filtering = !filtering)}
   oninfo={() => {
     if (Date.now() - hintClosedAt > 300) hinting = true;

@@ -1,11 +1,13 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import BottomNav from "$lib/components/BottomNav.svelte";
+  import DailyBriefing from "$lib/components/quest/DailyBriefing.svelte";
   import TapResultSheet from "$lib/components/quest/TapResultSheet.svelte";
   import WarningDialog from "$lib/components/WarningDialog.svelte";
   import { session } from "$lib/auth";
   import { caution, hush } from "$lib/caution.svelte";
   import { celebration, closeCelebration } from "$lib/celebrate.svelte";
+  import { briefing, greet } from "$lib/daily.svelte";
   import { permitted } from "$lib/geo";
   import { watchTaps } from "$lib/deeplink";
   import { arm, NfcError } from "$lib/nfc";
@@ -25,6 +27,10 @@
 
   $effect(() => {
     if (session.phase === "signedOut") void goto("/", { replaceState: true });
+  });
+
+  $effect(() => {
+    if (session.phase === "signedIn") greet();
   });
 
   $effect(() => {
@@ -63,6 +69,10 @@
       onconfirm={retryLocation}
       ondismiss={hush}
     />
+  {/if}
+
+  {#if briefing.open}
+    <DailyBriefing />
   {/if}
 </div>
 

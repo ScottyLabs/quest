@@ -5,13 +5,17 @@ interface Balances {
   thistlestones: number;
 }
 
-export const DAILY_STONES = 15;
+export const DAILY_CLEARS = 10;
 
-export const wallet = $state({ scottycoins: 0, thistlestones: 0 });
+export const DAILY_BONUS = 5;
 
-export function bank(scottycoins: number, thistlestones: number): void {
+export const DAILY_GEMS = DAILY_CLEARS + DAILY_BONUS;
+
+export const wallet = $state({ scottycoins: 0, gems: 0 });
+
+export function bank(scottycoins: number, gems: number): void {
   wallet.scottycoins = scottycoins;
-  wallet.thistlestones = thistlestones;
+  wallet.gems = gems;
 }
 
 async function read(scope: string): Promise<Balances | null> {
@@ -29,6 +33,6 @@ export async function refresh(): Promise<void> {
   }
 
   if (today !== null && Number.isFinite(today.thistlestones)) {
-    wallet.thistlestones = today.thistlestones;
+    wallet.gems = today.thistlestones;
   }
 }

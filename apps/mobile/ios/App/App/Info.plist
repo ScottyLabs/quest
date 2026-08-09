@@ -51,6 +51,12 @@
 	<string>Orientation Quest reads challenge tags around campus to mark them complete.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Orientation Quest records where a challenge tag was tapped to confirm you were there.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Take a photo to commemorate a challenge you just cleared.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Pick a photo to commemorate a challenge you just cleared.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Save your commemoration photo back to your library.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UILaunchScreen</key>

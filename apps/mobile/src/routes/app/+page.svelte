@@ -1,13 +1,15 @@
 <script lang="ts">
+  import FilterMenu from "$lib/components/quest/FilterMenu.svelte";
   import NfcSheet from "$lib/components/quest/NfcSheet.svelte";
   import QuestHeader from "$lib/components/quest/QuestHeader.svelte";
   import QuestList from "$lib/components/quest/QuestList.svelte";
   import WaveEdge from "$lib/components/quest/WaveEdge.svelte";
-  import { fix } from "$lib/geo";
+  import { NEEDS_LOCATION, raise } from "$lib/caution.svelte";
+  import { bucket, filters } from "$lib/filters.svelte";
+  import { permitted } from "$lib/geo";
   import { NfcError, openSettings, readiness, scan, showsSystemSheet } from "$lib/nfc";
   import { warn } from "$lib/notice.svelte";
   import {
-    BALANCE,
     CATEGORIES,
     DAILY,
     done,
@@ -20,45 +22,59 @@
   import { handleTap } from "$lib/tap";
   import { theme } from "$lib/theme";
   import { active } from "$lib/theme.svelte";
+  import { refresh, wallet } from "$lib/wallet.svelte";
 
   let scanning = $state<Quest | null>(null);
   let abort: AbortController | null = null;
+  let starting = false;
 
   async function beginScan(quest: Quest) {
-    if (scanning !== null) return;
-
-    const state = await readiness();
-    if (state === "unsupported") {
-      warn("This phone can't scan NFC tags.");
-      return;
-    }
-    if (state === "disabled") {
-      warn("Turn on NFC to scan this challenge.");
-      await openSettings();
-      return;
-    }
-    await fix();
-
-    scanning = quest;
-    abort = new AbortController();
+    if (starting || scanning !== null) return;
+    starting = true;
 
     try {
-      const url = await scan(`Hold your phone near the ${quest.title} tag`, abort.signal);
-      if (url !== null) await handleTap(url, quest.id);
-    } catch (error) {
-      if (error instanceof NfcError || error instanceof TapError) warn(error.message);
-      else warn("Couldn't register that tap.");
+      const state = await readiness();
+      if (state === "unsupported") {
+        warn("This phone can't scan NFC tags.");
+        return;
+      }
+      if (state === "disabled") {
+        warn("Turn on NFC to scan this challenge.");
+        await openSettings();
+        return;
+      }
+
+      if (!(await permitted())) {
+        raise(NEEDS_LOCATION);
+        return;
+      }
+
+      scanning = quest;
+      abort = new AbortController();
+
+      try {
+        const url = await scan(`Hold your phone near the ${quest.title} tag`, abort.signal);
+        if (url !== null) await handleTap(url);
+      } catch (error) {
+        if (error instanceof NfcError || error instanceof TapError) warn(error.message);
+        else warn("Couldn't register that tap.");
+      } finally {
+        scanning = null;
+        abort = null;
+      }
     } finally {
-      scanning = null;
-      abort = null;
+      starting = false;
     }
   }
 
   const all = $derived(quests.data ?? []);
   const shown = $derived(inCategory(all, active.id));
+  const visible = $derived(shown.filter((quest) => filters[bucket(quest, Date.now())]));
+  const daily = $derived(filters[bucket(DAILY, Date.now())] ? DAILY : null);
   const completed = $derived(done(shown));
   const cold = $derived(quests.data === null);
 
+  let filtering = $state(false);
   let scroller = $state<HTMLElement | null>(null);
 
   $effect(() => {
@@ -68,13 +84,19 @@
 
   $effect(() => {
     void quests.reload();
+    void refresh();
 
     const wake = () => {
-      if (document.visibilityState === "visible") void quests.ensure();
+      if (document.visibilityState !== "visible") return;
+      void quests.ensure();
+      void refresh();
     };
 
     document.addEventListener("visibilitychange", wake);
-    const beat = setInterval(() => void quests.ensure(), 60_000);
+    const beat = setInterval(() => {
+      void quests.ensure();
+      void refresh();
+    }, 60_000);
 
     return () => {
       document.removeEventListener("visibilitychange", wake);
@@ -101,7 +123,9 @@
   onpick={(id) => (active.id = id)}
   done={completed}
   total={shown.length}
-  balance={BALANCE}
+  balance={wallet.scottycoins}
+  stones={wallet.thistlestones}
+  onfilter={() => (filtering = !filtering)}
 />
 
 <div class="board">
@@ -115,14 +139,20 @@
     {:else if cold && quests.error !== null}
       <p class="note">Couldn't reach the Orientation Quest server. Pull again in a moment.</p>
     {:else}
-      <QuestList quests={shown} daily={DAILY} onscan={beginScan} />
-      {#if shown.length === 0}
-        <p class="note">No challenges here yet.</p>
+      <QuestList quests={visible} {daily} onscan={beginScan} />
+      {#if visible.length === 0}
+        <p class="note">
+          {shown.length === 0 ? "No challenges here yet." : "Nothing matches those filters."}
+        </p>
       {/if}
     {/if}
   </div>
 
   <span class="scrim" aria-hidden="true"></span>
+
+  {#if filtering}
+    <FilterMenu onclose={() => (filtering = false)} />
+  {/if}
 </div>
 
 {#if scanning && !showsSystemSheet}

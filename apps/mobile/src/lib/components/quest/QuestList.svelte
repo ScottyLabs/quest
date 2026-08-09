@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ListDivider from "./ListDivider.svelte";
   import QuestCard from "./QuestCard.svelte";
   import type { Quest } from "$lib/quests.svelte";
 
@@ -7,6 +8,10 @@
     daily,
     onscan,
   }: { quests: Quest[]; daily?: Quest | null; onscan?: (quest: Quest) => void } = $props();
+
+  const now = Date.now();
+  const open = $derived(quests.filter((quest) => Date.parse(quest.opensAt) <= now));
+  const upcoming = $derived(quests.filter((quest) => Date.parse(quest.opensAt) > now));
 </script>
 
 <div class="list">
@@ -16,9 +21,19 @@
     <QuestCard quest={daily} daily {onscan} />
   {/if}
 
-  {#each quests as quest (quest.id)}
+  {#each open as quest (quest.id)}
     <QuestCard {quest} {onscan} />
   {/each}
+
+  {#if upcoming.length > 0}
+    {#if daily || open.length > 0}
+      <ListDivider label="Upcoming Challenges" />
+    {/if}
+
+    {#each upcoming as quest (quest.id)}
+      <QuestCard {quest} {onscan} />
+    {/each}
+  {/if}
 </div>
 
 <style>

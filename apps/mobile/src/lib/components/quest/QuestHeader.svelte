@@ -14,15 +14,18 @@
     done,
     total,
     balance,
+    stones,
+    onfilter,
   }: {
     theme: Theme;
     categories: string[];
     current: string;
     onpick: (id: string) => void;
-    // cleared and shown in the picked category
     done: number;
     total: number;
     balance: number;
+    stones: number;
+    onfilter?: () => void;
   } = $props();
 
   const lines = $derived((theme.title ?? theme.label).split("\n"));
@@ -55,7 +58,7 @@
     <CategoryChips {categories} {current} {onpick} />
   </div>
 
-  <QuestToolbar {balance} />
+  <QuestToolbar {balance} {stones} {onfilter} />
 
   <span class="veil"><WaveEdge shape="veil" /></span>
   <span class="crown-fade" aria-hidden="true"></span>

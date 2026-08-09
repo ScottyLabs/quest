@@ -10,7 +10,7 @@ export interface Fix {
 const TIMEOUT = 4000;
 const MAX_AGE = 5_000;
 
-async function permitted(): Promise<boolean> {
+export async function permitted(): Promise<boolean> {
   try {
     const held = await Geolocation.checkPermissions();
     if (held.location === "granted" || held.coarseLocation === "granted") return true;

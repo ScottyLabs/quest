@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import { page } from "$app/state";
   import BottomNav from "$lib/components/shell/BottomNav.svelte";
   import DailyBriefing from "$lib/components/daily/DailyBriefing.svelte";
   import NfcSheet from "$lib/components/tap/NfcSheet.svelte";
@@ -10,6 +11,7 @@
   import { caution, hush } from "$lib/caution.svelte";
   import { celebration, closeCelebration } from "$lib/celebrate.svelte";
   import { briefing, greet } from "$lib/daily.svelte";
+  import { currentTab } from "$lib/nav";
   import { permitted } from "$lib/geo";
   import { watchTaps } from "$lib/deeplink";
   import { arm, NfcError, showsSystemSheet } from "$lib/nfc";
@@ -17,12 +19,13 @@
   import { cancelScan, scanning } from "$lib/scanning.svelte";
   import { handleTap, tapScan } from "$lib/tap";
   import { closeTapFail, tapfail } from "$lib/tapfail.svelte";
-  import { theme, vars } from "$lib/theme";
+  import { FALLBACK, theme, vars } from "$lib/theme";
   import { active } from "$lib/theme.svelte";
 
   let { children } = $props();
 
-  const style = $derived(vars(theme(active.id)));
+  const board = $derived(currentTab(page.url.pathname)?.href === "/app");
+  const style = $derived(vars(theme(board ? active.id : FALLBACK)));
 
   function report(error: unknown): void {
     if (error instanceof NfcError) warn(error.message);

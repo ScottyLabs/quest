@@ -5,9 +5,9 @@ use axum::{Extension, Json, Router};
 use entity::geography::Point;
 use serde::{Deserialize, Serialize};
 
-use super::{Fix, Proximity, Taps, proximity};
+use super::{Attempt, Fix, Proximity, Taps, locked, proximity};
 use crate::auth::AuthError;
-use crate::auth::extract::CurrentUser;
+use crate::auth::extract::{CurrentDevice, CurrentUser};
 use crate::challenges::routes::ChallengeView;
 use crate::tokens::{Scope, Tokens};
 use crate::users::Users;
@@ -40,12 +40,25 @@ async fn register(
     State((taps, tokens)): State<(Taps, Tokens)>,
     Extension(users): Extension<Users>,
     CurrentUser(user): CurrentUser,
+    CurrentDevice(device): CurrentDevice,
     body: Result<Json<TapBody>, JsonRejection>,
 ) -> Result<Json<Registered>, AuthError> {
-    let Json(body) = body.map_err(|_| AuthError::BadRequest("tap_body_invalid"))?;
+    let row = users.row(&user).await?;
 
-    let read = taps.read(&body.url)?;
-    let challenge = taps.challenge_for(&read.card_id).await?;
+    let mut attempt = Attempt {
+        user_id: Some(row.id),
+        device_key: Some(device),
+        ..Default::default()
+    };
+
+    let Json(body) = taps
+        .audited(
+            &attempt,
+            body.map_err(|_| AuthError::BadRequest("tap_body_invalid")),
+        )
+        .await?;
+
+    attempt.url = Some(body.url.clone());
 
     let fix = match (body.lat, body.lon) {
         (Some(lat), Some(lon)) if lat.is_finite() && lon.is_finite() => Some(Fix {
@@ -57,16 +70,38 @@ async fn register(
         _ => None,
     };
 
+    attempt.fix = fix;
+
+    let read = taps.audited(&attempt, taps.read(&body.url)).await?;
+
+    attempt.card_id = Some(read.card_id.clone());
+    attempt.counter = Some(read.counter);
+
+    let challenge = taps
+        .audited(&attempt, taps.challenge_for(&read.card_id).await)
+        .await?;
+
+    attempt.challenge_id = Some(challenge.id);
+
+    if locked(&challenge) {
+        let shut = AuthError::Conflict("card_locked");
+        return Err(taps.rejected(&attempt, shut).await);
+    }
+
     match proximity(challenge.location, fix.map(|fix| fix.at)) {
         Proximity::Accept => {}
         Proximity::Reject(reason) => {
-            return Err(AuthError::BadRequest(reason.unwrap_or("tap_out_of_range")));
+            let out = AuthError::BadRequest(reason.unwrap_or("tap_out_of_range"));
+            return Err(taps.rejected(&attempt, out).await);
         }
     }
 
-    let row = users.row(&user).await?;
     let done = taps
-        .record(challenge.id, &read.card_id, read.counter, row.id, fix)
+        .audited(
+            &attempt,
+            taps.record(challenge.id, &read.card_id, read.counter, row.id, fix)
+                .await,
+        )
         .await?;
 
     let (purse, today) = tokio::try_join!(

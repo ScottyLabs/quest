@@ -3,7 +3,7 @@ pub mod routes;
 use std::sync::Arc;
 
 use entity::geography::Point;
-use entity::{challenge, challenge_card, tap_events};
+use entity::{challenge, challenge_card, failed_taps, tap_events};
 use quest::crypto::{VerifyError, verify_tap};
 use sea_orm::prelude::Uuid;
 use sea_orm::{
@@ -44,6 +44,36 @@ pub enum Proximity {
 pub fn proximity(_challenge: Option<Point>, _tapped: Option<Point>) -> Proximity {
     //TODO: IMPLEMENT PROXIMIMITY CHECKING
     Proximity::Accept
+}
+
+// The board hides locked quests, but a poster tag still reads in the background.
+pub fn locked(challenge: &challenge::Model) -> bool {
+    challenge.open_from > chrono::Utc::now()
+}
+
+const REASONS: [&str; 9] = [
+    "tap_body_invalid",
+    "tap_url_malformed",
+    "tap_signature",
+    "card_unassigned",
+    "card_retired",
+    "card_locked",
+    "challenge_row_missing",
+    "tap_out_of_range",
+    "tap_replayed",
+];
+
+const URL_LIMIT: usize = 512;
+
+#[derive(Default)]
+pub struct Attempt {
+    pub user_id: Option<Uuid>,
+    pub device_key: Option<String>,
+    pub url: Option<String>,
+    pub card_id: Option<String>,
+    pub challenge_id: Option<Uuid>,
+    pub counter: Option<i64>,
+    pub fix: Option<Fix>,
 }
 
 impl Taps {
@@ -174,6 +204,50 @@ impl Taps {
             place: before as i64 + 1,
         })
     }
+
+    /// Records a rejected stage and passes the result through unchanged.
+    pub async fn audited<T>(
+        &self,
+        attempt: &Attempt,
+        result: Result<T, AuthError>,
+    ) -> Result<T, AuthError> {
+        match result {
+            Ok(value) => Ok(value),
+            Err(error) => Err(self.rejected(attempt, error).await),
+        }
+    }
+
+    /// Deliberately on the pool, not a caller transaction: the replay branch
+    /// rolls back, which would take the audit row with it. Insert failures are
+    /// logged and swallowed so a lost row can't turn a 4xx into a 502.
+    pub async fn rejected(&self, attempt: &Attempt, error: AuthError) -> AuthError {
+        let reason = error.code();
+        if !REASONS.contains(&reason) {
+            return error;
+        }
+
+        let row = failed_taps::ActiveModel {
+            reason: ActiveValue::Set(reason.to_owned()),
+            user_id: ActiveValue::Set(attempt.user_id),
+            device_key: ActiveValue::Set(attempt.device_key.clone()),
+            card_id: ActiveValue::Set(attempt.card_id.clone()),
+            challenge_id: ActiveValue::Set(attempt.challenge_id),
+            counter: ActiveValue::Set(attempt.counter),
+            url: ActiveValue::Set(attempt.url.as_deref().map(clamp)),
+            location: ActiveValue::Set(attempt.fix.map(|fix| fix.at)),
+            accuracy: ActiveValue::Set(attempt.fix.and_then(|fix| fix.accuracy)),
+            ..Default::default()
+        };
+
+        if let Err(err) = failed_taps::Entity::insert(row)
+            .exec_without_returning(&self.db)
+            .await
+        {
+            eprintln!("taps: failed_taps insert ({reason}): {err}");
+        }
+
+        error
+    }
 }
 
 fn param<'q>(query: &'q str, key: &str) -> Option<&'q str> {
@@ -181,6 +255,14 @@ fn param<'q>(query: &'q str, key: &str) -> Option<&'q str> {
         .split('&')
         .filter_map(|pair| pair.split_once('='))
         .find_map(|(name, value)| (name == key).then_some(value))
+}
+
+// Characters, not bytes: the CHECK uses char_length.
+fn clamp(url: &str) -> String {
+    match url.char_indices().nth(URL_LIMIT) {
+        Some((end, _)) => url[..end].to_owned(),
+        None => url.to_owned(),
+    }
 }
 
 fn now() -> i64 {

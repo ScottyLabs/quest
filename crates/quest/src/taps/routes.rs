@@ -1,24 +1,26 @@
 use axum::extract::State;
 use axum::extract::rejection::JsonRejection;
-use axum::routing::post;
-use axum::{Extension, Json, Router};
+use axum::{Extension, Json};
 use entity::geography::Point;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
+use utoipa_axum::router::OpenApiRouter;
+use utoipa_axum::routes;
 
 use super::{Attempt, Fix, Proximity, Taps, locked, proximity};
-use crate::auth::AuthError;
 use crate::auth::extract::{CurrentDevice, CurrentUser};
+use crate::auth::{AuthErrBody, AuthError};
 use crate::challenges::routes::ChallengeView;
 use crate::tokens::{Scope, Tokens};
 use crate::users::Users;
 
-pub fn router(taps: Taps, tokens: Tokens) -> Router {
-    Router::new()
-        .route("/register_tap", post(register))
+pub fn router(taps: Taps, tokens: Tokens) -> OpenApiRouter {
+    OpenApiRouter::new()
+        .routes(routes!(register))
         .with_state((taps, tokens))
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 struct TapBody {
     url: String,
     lat: Option<f64>,
@@ -26,7 +28,7 @@ struct TapBody {
     accuracy: Option<f32>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 struct Registered {
     challenge: ChallengeView,
     place: i64,
@@ -36,6 +38,20 @@ struct Registered {
     current_thistlestones: i64,
 }
 
+#[utoipa::path(
+    post,
+    path = "/register_tap",
+    tag = "taps",
+    request_body = TapBody,
+    responses(
+        (status = OK, body = Registered),
+        (status = BAD_REQUEST, body = AuthErrBody),
+        (status = UNAUTHORIZED, body = AuthErrBody),
+        (status = NOT_FOUND, body = AuthErrBody),
+        (status = CONFLICT, body = AuthErrBody),
+        (status = BAD_GATEWAY, body = AuthErrBody),
+    ),
+)]
 async fn register(
     State((taps, tokens)): State<(Taps, Tokens)>,
     Extension(users): Extension<Users>,

@@ -6,7 +6,12 @@
     "build": "deno task --cwd apps/mobile build",
     "dev": "deno task --cwd apps/mobile dev",
     "mobile": "deno task --cwd apps/mobile",
-    "ios": "scripts/ios-remote"
+    "ios": "scripts/ios-remote",
+    "api": "cargo run -q -p quest --bin quest -- openapi > crates/quest/openapi.json && deno run -A --node-modules-dir npm:openapi-typescript crates/quest/openapi.json -o apps/mobile/src/lib/api/schema.d.ts && treefmt crates/quest/openapi.json apps/mobile/src/lib/api/schema.d.ts",
+    "api:check": "deno task api && test -z \"$(git status --porcelain -- crates/quest/openapi.json apps/mobile/src/lib/api/schema.d.ts)\""
+  },
+  "imports": {
+    "openapi-typescript": "npm:openapi-typescript@^7.13.0"
   },
   "exclude": [
     ".devenv",

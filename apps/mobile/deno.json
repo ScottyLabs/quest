@@ -12,6 +12,7 @@
     "@sveltejs/adapter-static": "npm:@sveltejs/adapter-static@^3.0.10",
     "@sveltejs/kit": "npm:@sveltejs/kit@^2.70.1",
     "@sveltejs/vite-plugin-svelte": "npm:@sveltejs/vite-plugin-svelte@^7.2.0",
+    "openapi-fetch": "npm:openapi-fetch@^0.17.0",
     "svelte": "npm:svelte@^5.56.8",
     "svelte-check": "npm:svelte-check@^4.4.4",
     "typescript": "npm:typescript@^5.9.3",

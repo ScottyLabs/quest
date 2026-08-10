@@ -1,25 +1,27 @@
 use axum::extract::rejection::JsonRejection;
 use axum::extract::{Path, State};
-use axum::routing::{get, post};
-use axum::{Extension, Json, Router};
+use axum::{Extension, Json};
 use sea_orm::prelude::Uuid;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
+use utoipa_axum::router::OpenApiRouter;
+use utoipa_axum::routes;
 
 use super::{Items, Ledger, Receipt, Stocked};
-use crate::auth::AuthError;
 use crate::auth::extract::CurrentUser;
+use crate::auth::{AuthErrBody, AuthError};
 use crate::users::Users;
 
-pub fn router(items: Items) -> Router {
-    Router::new()
-        .route("/items", get(list))
-        .route("/items/{id}/purchase", post(buy))
-        .route("/users/me/purchases", get(mine))
-        .route("/purchases/{id}/refund", post(give_back))
+pub fn router(items: Items) -> OpenApiRouter {
+    OpenApiRouter::new()
+        .routes(routes!(list))
+        .routes(routes!(buy))
+        .routes(routes!(mine))
+        .routes(routes!(give_back))
         .with_state(items)
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 pub struct ItemView {
     id: String,
     name: String,
@@ -42,15 +44,26 @@ impl From<Stocked> for ItemView {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 struct Shelf {
     items: Vec<ItemView>,
     total: usize,
 }
 
+#[utoipa::path(
+    get,
+    path = "/items",
+    operation_id = "list_items",
+    tag = "items",
+    responses(
+        (status = OK, body = Shelf),
+        (status = UNAUTHORIZED, body = AuthErrBody),
+        (status = BAD_GATEWAY, body = AuthErrBody),
+    ),
+)]
 async fn list(
     State(items): State<Items>,
-    CurrentUser(_): CurrentUser,
+    CurrentUser(_user): CurrentUser,
 ) -> Result<Json<Shelf>, AuthError> {
     let views: Vec<ItemView> = items
         .list()
@@ -65,7 +78,7 @@ async fn list(
     }))
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 struct BuyBody {
     #[serde(default = "one")]
     quantity: i64,
@@ -75,7 +88,7 @@ fn one() -> i64 {
     1
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 struct Purchased {
     purchase_id: i64,
     item_id: String,
@@ -102,6 +115,21 @@ impl From<Receipt> for Purchased {
     }
 }
 
+#[utoipa::path(
+    post,
+    path = "/items/{id}/purchase",
+    tag = "items",
+    params(("id" = String, Path, description = "Item id")),
+    request_body = BuyBody,
+    responses(
+        (status = OK, body = Purchased),
+        (status = BAD_REQUEST, body = AuthErrBody),
+        (status = NOT_FOUND, body = AuthErrBody),
+        (status = CONFLICT, body = AuthErrBody),
+        (status = UNAUTHORIZED, body = AuthErrBody),
+        (status = BAD_GATEWAY, body = AuthErrBody),
+    ),
+)]
 async fn buy(
     State(items): State<Items>,
     Extension(users): Extension<Users>,
@@ -121,7 +149,7 @@ async fn buy(
     Ok(Json(items.purchase(row.id, id, quantity).await?.into()))
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 struct PurchaseView {
     purchase_id: i64,
     item_id: String,
@@ -144,11 +172,21 @@ impl From<Ledger> for PurchaseView {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 struct Wallet {
     purchases: Vec<PurchaseView>,
 }
 
+#[utoipa::path(
+    get,
+    path = "/users/me/purchases",
+    tag = "items",
+    responses(
+        (status = OK, body = Wallet),
+        (status = UNAUTHORIZED, body = AuthErrBody),
+        (status = BAD_GATEWAY, body = AuthErrBody),
+    ),
+)]
 async fn mine(
     State(items): State<Items>,
     Extension(users): Extension<Users>,
@@ -166,18 +204,33 @@ async fn mine(
     }))
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 struct RefundBody {
     #[serde(default = "one")]
     quantity: i64,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 struct RefundView {
     refunded: i64,
     scottycoins: i64,
 }
 
+#[utoipa::path(
+    post,
+    path = "/purchases/{id}/refund",
+    tag = "items",
+    params(("id" = i64, Path, description = "Purchase id")),
+    request_body = RefundBody,
+    responses(
+        (status = OK, body = RefundView),
+        (status = BAD_REQUEST, body = AuthErrBody),
+        (status = NOT_FOUND, body = AuthErrBody),
+        (status = CONFLICT, body = AuthErrBody),
+        (status = UNAUTHORIZED, body = AuthErrBody),
+        (status = BAD_GATEWAY, body = AuthErrBody),
+    ),
+)]
 async fn give_back(
     State(items): State<Items>,
     Extension(users): Extension<Users>,

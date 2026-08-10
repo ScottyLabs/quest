@@ -11,7 +11,7 @@ import {
   fetchStatus,
   loginTicket,
   responseError,
-  send,
+  signed,
 } from "./api";
 import { localSessionStorage } from "./storage";
 import type { SessionStorage } from "./storage";
@@ -214,12 +214,13 @@ class SessionStore {
 
 export const session = new SessionStore();
 
-export async function authFetch(path: string, init: RequestInit = {}): Promise<Response> {
-  const response = await send(path, session.id, init);
+export async function authRequest(request: Request): Promise<Response> {
+  const retryable = request.clone();
+  const response = await signed(request, session.id);
   if (response.status !== 401) return response;
 
   if (await enrollDevice(session.id).catch(() => false)) {
-    const retried = await send(path, session.id, init);
+    const retried = await signed(retryable, session.id);
     if (retried.status !== 401) return retried;
   }
 

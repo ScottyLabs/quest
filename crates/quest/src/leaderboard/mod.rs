@@ -6,6 +6,7 @@ use std::sync::LazyLock;
 use sea_orm::prelude::Uuid;
 use sea_orm::{DatabaseConnection, DbBackend, DbErr, FromQueryResult, Statement};
 use serde::Serialize;
+use utoipa::ToSchema;
 
 use crate::auth::AuthError;
 use crate::day::GEM_DAY;
@@ -137,7 +138,7 @@ struct Standing {
     you: bool,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct Row {
     pub rank: i64,
     pub name: String,
@@ -146,7 +147,7 @@ pub struct Row {
     pub you: bool,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct Cup {
     pub community: String,
     pub earned: i64,
@@ -154,14 +155,14 @@ pub struct Cup {
     pub percent: f64,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct You {
     pub rank: i64,
     pub score: i64,
     pub community: Option<String>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct Standings {
     pub metric: &'static str,
     pub cup: Option<Cup>,

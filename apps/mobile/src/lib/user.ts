@@ -1,18 +1,15 @@
-import { authFetch } from "$lib/auth";
+import { api } from "$lib/api/client";
+import type { components } from "$lib/api/schema";
 import type { Dorm } from "$lib/mascots";
 
-export interface Profile {
-  andrew_id: string;
+export type Profile = Omit<components["schemas"]["Profile"], "dorm"> & {
   dorm: Dorm | null;
-  staff: boolean;
-  created_at: string;
-}
+};
 
 export async function profile(): Promise<Profile | null> {
   try {
-    const response = await authFetch("/api/users/me");
-    if (!response.ok) return null;
-    return (await response.json()) as Profile;
+    const { data } = await api.GET("/api/users/me");
+    return (data as Profile | undefined) ?? null;
   } catch {
     return null;
   }
@@ -20,12 +17,7 @@ export async function profile(): Promise<Profile | null> {
 
 export async function setDorm(dorm: Dorm): Promise<boolean> {
   try {
-    const response = await authFetch("/api/users/me/dorm", {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ dorm }),
-    });
-
+    const { response } = await api.PUT("/api/users/me/dorm", { body: { dorm } });
     return response.ok;
   } catch {
     return false;

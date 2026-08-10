@@ -1,40 +1,52 @@
 use axum::extract::{Path, State};
 use axum::http::HeaderMap;
-use axum::routing::{delete, get, post};
-use axum::{Extension, Json, Router};
+use axum::{Extension, Json};
 use serde::{Deserialize, Serialize};
 use tower_sessions::Session;
+use utoipa::ToSchema;
+use utoipa_axum::router::OpenApiRouter;
+use utoipa_axum::routes;
 
 use super::key::{DeviceKey, decode};
 use super::{DeviceView, Devices, NONCE_TTL_SECS, TICKET_TTL_SECS, label};
-use crate::auth::AuthError;
 use crate::auth::extract::{CurrentDevice, CurrentUser, SignedIn};
 use crate::auth::session::DEVICE_KEY;
+use crate::auth::{AuthErrBody, AuthError};
 use crate::users::Users;
 
 const LOGIN_CONTEXT: &str = "quest-device-login:";
 
-pub fn router(devices: Devices) -> Router {
-    Router::new()
-        .route("/auth/challenge", get(challenge))
-        .route("/auth/device", post(verify))
-        .route("/auth/device/enroll", post(enroll))
+pub fn router(devices: Devices) -> OpenApiRouter {
+    OpenApiRouter::new()
+        .routes(routes!(challenge))
+        .routes(routes!(verify))
+        .routes(routes!(enroll))
         .with_state(devices)
 }
 
-pub fn manage(devices: Devices) -> Router {
-    Router::new()
-        .route("/devices", get(list))
-        .route("/devices/{public_key}", delete(revoke))
+pub fn manage(devices: Devices) -> OpenApiRouter {
+    OpenApiRouter::new()
+        .routes(routes!(list))
+        .routes(routes!(revoke))
         .with_state(devices)
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 struct Challenge {
     nonce: String,
     expires_in: i64,
 }
 
+#[utoipa::path(
+    get,
+    path = "/auth/challenge",
+    security(()),
+    tag = "devices",
+    responses(
+        (status = OK, body = Challenge),
+        (status = BAD_GATEWAY, body = AuthErrBody),
+    ),
+)]
 async fn challenge(State(devices): State<Devices>) -> Result<Json<Challenge>, AuthError> {
     Ok(Json(Challenge {
         nonce: devices.issue_nonce().await?,
@@ -42,7 +54,7 @@ async fn challenge(State(devices): State<Devices>) -> Result<Json<Challenge>, Au
     }))
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 struct Verify {
     public_key: String,
     nonce: String,
@@ -51,12 +63,25 @@ struct Verify {
     label: Option<String>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 struct Ticket {
     ticket: String,
     expires_in: i64,
 }
 
+#[utoipa::path(
+    post,
+    path = "/auth/device",
+    security(()),
+    tag = "devices",
+    request_body = Verify,
+    responses(
+        (status = OK, body = Ticket),
+        (status = BAD_REQUEST, body = AuthErrBody),
+        (status = UNAUTHORIZED, body = AuthErrBody),
+        (status = BAD_GATEWAY, body = AuthErrBody),
+    ),
+)]
 async fn verify(
     State(devices): State<Devices>,
     headers: HeaderMap,
@@ -79,17 +104,30 @@ async fn verify(
     }))
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 struct Enroll {
     ticket: String,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 struct Enrolled {
     enrolled: bool,
     public_key: String,
 }
 
+#[utoipa::path(
+    post,
+    path = "/auth/device/enroll",
+    security(("session" = [])),
+    tag = "devices",
+    request_body = Enroll,
+    responses(
+        (status = OK, body = Enrolled),
+        (status = UNAUTHORIZED, body = AuthErrBody),
+        (status = CONFLICT, body = AuthErrBody),
+        (status = BAD_GATEWAY, body = AuthErrBody),
+    ),
+)]
 async fn enroll(
     State(devices): State<Devices>,
     Extension(users): Extension<Users>,
@@ -129,6 +167,17 @@ async fn enroll(
     }))
 }
 
+#[utoipa::path(
+    get,
+    path = "/devices",
+    operation_id = "list_devices",
+    tag = "devices",
+    responses(
+        (status = OK, body = Vec<DeviceView>),
+        (status = UNAUTHORIZED, body = AuthErrBody),
+        (status = BAD_GATEWAY, body = AuthErrBody),
+    ),
+)]
 async fn list(
     State(devices): State<Devices>,
     CurrentUser(user): CurrentUser,
@@ -138,11 +187,23 @@ async fn list(
     Ok(Json(registered.into_iter().map(DeviceView::from).collect()))
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 struct Revoked {
     revoked: bool,
 }
 
+#[utoipa::path(
+    delete,
+    path = "/devices/{public_key}",
+    tag = "devices",
+    params(("public_key" = String, Path, description = "Device public key")),
+    responses(
+        (status = OK, body = Revoked),
+        (status = NOT_FOUND, body = AuthErrBody),
+        (status = UNAUTHORIZED, body = AuthErrBody),
+        (status = BAD_GATEWAY, body = AuthErrBody),
+    ),
+)]
 async fn revoke(
     State(devices): State<Devices>,
     CurrentUser(user): CurrentUser,

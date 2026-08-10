@@ -1,9 +1,7 @@
-import { authFetch } from "$lib/auth";
+import { api } from "$lib/api/client";
+import type { components } from "$lib/api/schema";
 
-interface Balances {
-  scottycoins: number;
-  thistlestones: number;
-}
+type Balances = components["schemas"]["Balances"];
 
 export const DAILY_CLEARS = 10;
 
@@ -38,15 +36,17 @@ export function bank(scottycoins: number, gems: number): void {
   wallet.gems = gems;
 }
 
-async function read(scope: string): Promise<Balances | null> {
-  const response = await authFetch(`/api/users/me/tokens${scope}`).catch(() => null);
-  if (response === null || !response.ok) return null;
-
-  return (await response.json().catch(() => null)) as Balances | null;
+async function read(day?: string): Promise<Balances | null> {
+  try {
+    const { data } = await api.GET("/api/users/me/tokens", { params: { query: { day } } });
+    return data ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export async function refresh(): Promise<void> {
-  const [lifetime, today] = await Promise.all([read(""), read("?day=today")]);
+  const [lifetime, today] = await Promise.all([read(), read("today")]);
 
   if (lifetime !== null) {
     if (Number.isFinite(lifetime.scottycoins)) wallet.scottycoins = lifetime.scottycoins;

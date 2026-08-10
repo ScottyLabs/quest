@@ -1,4 +1,5 @@
-import { authFetch } from "$lib/auth";
+import { api } from "$lib/api/client";
+import type { components } from "$lib/api/schema";
 import { Resource } from "$lib/cache.svelte";
 
 export const PICKUP = "Community Life Office in Morewood Gardens";
@@ -26,34 +27,25 @@ export interface Offer {
   art: string | null;
 }
 
-interface ItemView {
-  id: string;
-  name: string;
-  description: string;
-  cost: number;
-  image_url: string | null;
-  stock: number;
-}
+type ItemView = components["schemas"]["ItemView"];
 
-interface Shelf {
-  items: ItemView[];
-}
+type Shelf = components["schemas"]["Shelf"];
 
 const TTL = 5 * 60 * 1000;
 
 async function load(): Promise<Offer[]> {
-  const response = await authFetch("/api/items");
-  if (!response.ok) throw new Error(`items responded ${response.status}`);
+  const { data, response } = await api.GET("/api/items");
+  if (!response.ok || !data) throw new Error(`items responded ${response.status}`);
 
-  const body = (await response.json()) as Shelf;
+  const body: Shelf = data;
 
-  return body.items.map((row) => ({
+  return body.items.map((row: ItemView) => ({
     id: row.id,
     name: row.name,
     description: row.description,
     cost: row.cost,
     stock: row.stock,
-    art: row.image_url,
+    art: row.image_url ?? null,
   }));
 }
 
@@ -77,26 +69,17 @@ export interface Purchase {
   delivered: boolean;
 }
 
-interface PurchaseView {
-  purchase_id: number;
-  item_id: string;
-  name: string;
-  quantity: number;
-  cost: number;
-  delivered: boolean;
-}
+type PurchaseView = components["schemas"]["PurchaseView"];
 
-interface Ledger {
-  purchases: PurchaseView[];
-}
+type Ledger = components["schemas"]["Wallet"];
 
 async function loadPurchases(): Promise<Purchase[]> {
-  const response = await authFetch("/api/users/me/purchases");
-  if (!response.ok) throw new Error(`purchases responded ${response.status}`);
+  const { data, response } = await api.GET("/api/users/me/purchases");
+  if (!response.ok || !data) throw new Error(`purchases responded ${response.status}`);
 
-  const body = (await response.json()) as Ledger;
+  const body: Ledger = data;
 
-  return body.purchases.map((row) => ({
+  return body.purchases.map((row: PurchaseView) => ({
     id: row.purchase_id,
     itemId: row.item_id,
     name: row.name,
@@ -117,12 +100,7 @@ export const purchases = new Resource<Purchase[]>({
   revive: revivePurchases,
 });
 
-export interface Bought {
-  name: string;
-  quantity: number;
-  spent: number;
-  scottycoins: number;
-}
+export type Bought = components["schemas"]["Purchased"];
 
 export class TradeError extends Error {
   readonly code: string;
@@ -134,33 +112,23 @@ export class TradeError extends Error {
 }
 
 export async function purchase(id: string, quantity: number): Promise<Bought> {
-  const response = await authFetch(`/api/items/${id}/purchase`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ quantity }),
+  const { data, error, response } = await api.POST("/api/items/{id}/purchase", {
+    params: { path: { id } },
+    body: { quantity },
   });
-  if (!response.ok) {
-    const failed = (await response.json().catch(() => ({}))) as { error?: string };
-    throw new TradeError(failed.error ?? "unknown");
-  }
-
-  const body = (await response.json()) as Bought;
+  if (!response.ok || !data) throw new TradeError(error?.error ?? "unknown");
 
   await Promise.all([offers.reload(), purchases.reload()]);
 
-  return body;
+  return data;
 }
 
 export async function refund(id: number, quantity: number): Promise<void> {
-  const response = await authFetch(`/api/purchases/${id}/refund`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ quantity }),
+  const { error, response } = await api.POST("/api/purchases/{id}/refund", {
+    params: { path: { id } },
+    body: { quantity },
   });
-  if (!response.ok) {
-    const failed = (await response.json().catch(() => ({}))) as { error?: string };
-    throw new TradeError(failed.error ?? "unknown");
-  }
+  if (!response.ok) throw new TradeError(error?.error ?? "unknown");
 
   await Promise.all([offers.reload(), purchases.reload()]);
 }

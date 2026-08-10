@@ -1,4 +1,5 @@
-import { authFetch } from "$lib/auth";
+import { api } from "$lib/api/client";
+import type { components } from "$lib/api/schema";
 import { Resource } from "$lib/cache.svelte";
 import { fix } from "$lib/geo";
 import { FALLBACK, THEMES } from "$lib/theme";
@@ -16,32 +17,11 @@ export interface Quest {
   opensAt: string;
 }
 
-export interface ChallengeView {
-  id: string;
-  name: string;
-  tagline: string;
-  description: string;
-  category: string;
-  coin_value: number;
-  open_from: string;
-  cleared: boolean;
-}
+export type ChallengeView = components["schemas"]["ChallengeView"];
 
-interface BoardBody {
-  challenges: ChallengeView[];
-}
+type BoardBody = components["schemas"]["Board"];
 
-export interface Registered {
-  challenge: ChallengeView;
-  place: number;
-  first: boolean;
-  current_scottycoins: number;
-  current_thistlestones: number;
-}
-
-interface TapFailure {
-  error?: string;
-}
+export type Registered = components["schemas"]["Registered"];
 
 export class TapError extends Error {
   readonly code: string;
@@ -54,15 +34,10 @@ export class TapError extends Error {
 
 export async function registerTap(url: string): Promise<Registered> {
   const where = await fix();
-  const response = await authFetch("/api/register_tap", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ url, ...where }),
-  });
-  if (response.ok) return (await response.json()) as Registered;
+  const { data, error } = await api.POST("/api/register_tap", { body: { url, ...where } });
+  if (data !== undefined) return data;
 
-  const code = ((await response.json().catch(() => ({}))) as TapFailure).error ?? "unknown";
-  throw new TapError(code);
+  throw new TapError(error?.error ?? "unknown");
 }
 
 export const CATEGORIES: string[] = Object.keys(THEMES);
@@ -82,10 +57,7 @@ export function toQuest(row: ChallengeView): Quest {
 
 const TTL = 15 * 60 * 1000;
 
-interface DailyBody {
-  day: string;
-  challenge: ChallengeView | null;
-}
+type DailyBody = components["schemas"]["DailyView"];
 
 export const assignment = $state<{ day: string | null; quest: Quest | null }>({
   day: null,
@@ -93,21 +65,25 @@ export const assignment = $state<{ day: string | null; quest: Quest | null }>({
 });
 
 async function refreshDaily(): Promise<void> {
-  const response = await authFetch("/api/users/me/daily").catch(() => null);
-  if (response === null || !response.ok) return;
+  try {
+    const { data, response } = await api.GET("/api/users/me/daily");
+    if (!response.ok) return;
 
-  const body = (await response.json().catch(() => null)) as DailyBody | null;
-  if (body === null) return;
+    const body = (data ?? null) as DailyBody | null;
+    if (body === null) return;
 
-  assignment.day = body.day;
-  assignment.quest = body.challenge === null ? null : toQuest(body.challenge);
+    assignment.day = body.day;
+    assignment.quest = body.challenge ? toQuest(body.challenge) : null;
+  } catch {
+    return;
+  }
 }
 
 async function board(): Promise<Quest[]> {
-  const response = await authFetch("/api/challenges");
+  const { data, response } = await api.GET("/api/challenges");
   if (!response.ok) throw new Error(`challenges responded ${response.status}`);
 
-  const body = (await response.json()) as BoardBody;
+  const body = data as BoardBody;
 
   return body.challenges.map(toQuest);
 }

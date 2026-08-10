@@ -75,7 +75,7 @@ pub fn env_opt(name: &str) -> Option<String> {
         .filter(|v| !v.is_empty())
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, utoipa::ToSchema)]
 pub struct AuthErrBody {
     pub error: &'static str,
 }

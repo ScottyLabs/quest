@@ -12,7 +12,7 @@
     class="sheet"
     role="dialog"
     aria-modal="true"
-    aria-label="Challenge cleared"
+    aria-label={cleared.repeat ? "Challenge already cleared" : "Challenge cleared"}
     tabindex="-1"
     onclick={(event) => event.stopPropagation()}
   >
@@ -21,17 +21,19 @@
       <img class="badge" src="/img/quest/badge-done.svg" alt="" />
     </div>
 
-    <p class="eyebrow">Challenge cleared</p>
+    <p class="eyebrow">{cleared.repeat ? "Already cleared" : "Challenge cleared"}</p>
     <h2>{cleared.name}</h2>
     <p class="detail">{cleared.description}</p>
 
-    <div class="earned">
-      <img src="/img/quest/stat-coin.svg" alt="" />
-      <span>+{cleared.reward}</span>
-      {#if cleared.place !== null}
-        <span class="place">#{cleared.place} to clear it</span>
-      {/if}
-    </div>
+    {#if !cleared.repeat}
+      <div class="earned">
+        <img src="/img/quest/stat-coin.svg" alt="" />
+        <span>+{cleared.reward}</span>
+        {#if cleared.place !== null}
+          <span class="place">#{cleared.place} to clear it</span>
+        {/if}
+      </div>
+    {/if}
 
     <Commemorate challengeId={cleared.id} title={cleared.name} reward={cleared.reward} />
 

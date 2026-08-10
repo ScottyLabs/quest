@@ -12,6 +12,7 @@
       description: quest.description || quest.detail,
       reward: quest.reward,
       place: null,
+      repeat: true,
     });
 </script>
 

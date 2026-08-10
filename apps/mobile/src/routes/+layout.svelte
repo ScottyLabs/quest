@@ -4,12 +4,36 @@
   import { session } from "$lib/auth";
   import DeviceBlocked from "$lib/components/shell/DeviceBlocked.svelte";
   import Toast from "$lib/components/shell/Toast.svelte";
+  import { watchTaps } from "$lib/deeplink";
+  import { NfcError } from "$lib/nfc";
+  import { warn } from "$lib/notice.svelte";
+  import { handleTap } from "$lib/tap";
 
   document.documentElement.dataset.platform = Capacitor.getPlatform();
 
   let { children } = $props();
 
   session.restore();
+
+  function report(error: unknown): void {
+    if (error instanceof NfcError) warn(error.message);
+    else warn("Couldn't register that tap.");
+  }
+
+  $effect(() => {
+    let unwatch: (() => void) | null = null;
+    let dropped = false;
+
+    watchTaps((url) => void handleTap(url).catch(report)).then(
+      (off) => (dropped ? off() : (unwatch = off)),
+      report,
+    );
+
+    return () => {
+      dropped = true;
+      unwatch?.();
+    };
+  });
 </script>
 
 {#if session.phase === "restoring"}

@@ -51,6 +51,7 @@ impl Modify for Credentials {
         (name = "tokens", description = "Scottycoin and thistlestone balances"),
         (name = "items", description = "The shop and a user's purchases"),
         (name = "leaderboard", description = "Standings and the Carnegie Cup"),
+        (name = "passes", description = "Apple Wallet passes"),
     )
 )]
 pub struct ApiDoc;
@@ -64,6 +65,7 @@ pub struct Services {
     pub leaderboard: crate::leaderboard::Leaderboard,
     pub tokens: crate::tokens::Tokens,
     pub taps: crate::taps::Taps,
+    pub passes: crate::passes::Passes,
 }
 
 impl Services {
@@ -71,6 +73,7 @@ impl Services {
         db: sea_orm::DatabaseConnection,
         valkey: fred::clients::Pool,
         master: [u8; 32],
+        passes: crate::passes::Passes,
     ) -> Self {
         Self {
             users: crate::users::Users::new(db.clone()),
@@ -80,6 +83,7 @@ impl Services {
             items: crate::items::Items::new(db.clone()),
             leaderboard: crate::leaderboard::Leaderboard::new(db.clone()),
             tokens: crate::tokens::Tokens::new(db.clone()),
+            passes,
             taps: crate::taps::Taps::new(db, std::sync::Arc::new(master)),
         }
     }
@@ -89,7 +93,12 @@ impl Services {
         let valkey =
             fred::clients::Pool::new(fred::types::config::Config::default(), None, None, None, 1)
                 .expect("a default Valkey pool is always constructible");
-        Self::new(sea_orm::DatabaseConnection::default(), valkey, [0u8; 32])
+        Self::new(
+            sea_orm::DatabaseConnection::default(),
+            valkey,
+            [0u8; 32],
+            crate::passes::Passes::unconfigured(sea_orm::DatabaseConnection::default()),
+        )
     }
 }
 
@@ -115,6 +124,7 @@ pub fn api_router(services: &Services) -> utoipa_axum::router::OpenApiRouter {
         .merge(crate::leaderboard::routes::router(
             services.leaderboard.clone(),
         ))
+        .merge(crate::passes::routes::router(services.passes.clone()))
 }
 
 pub fn split(services: &Services) -> (axum::Router, utoipa::openapi::OpenApi) {

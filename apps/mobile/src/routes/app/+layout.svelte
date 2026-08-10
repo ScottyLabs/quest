@@ -13,7 +13,6 @@
   import { briefing, greet } from "$lib/daily.svelte";
   import { currentTab } from "$lib/nav";
   import { permitted } from "$lib/geo";
-  import { watchTaps } from "$lib/deeplink";
   import { arm, NfcError, showsSystemSheet } from "$lib/nfc";
   import { warn } from "$lib/notice.svelte";
   import { cancelScan, scanning } from "$lib/scanning.svelte";
@@ -54,14 +53,15 @@
     if (session.phase !== "signedIn") return;
 
     let disarm: (() => void) | null = null;
-    let unwatch: (() => void) | null = null;
+    let dropped = false;
 
-    void arm((url) => void handleTap(url).catch(report)).then((off) => (disarm = off));
-    watchTaps((url) => void handleTap(url).catch(report)).then((off) => (unwatch = off), report);
+    void arm((url) => void handleTap(url).catch(report)).then(
+      (off) => (dropped ? off() : (disarm = off)),
+    );
 
     return () => {
+      dropped = true;
       disarm?.();
-      unwatch?.();
     };
   });
 </script>

@@ -24,18 +24,12 @@ function decodeBase64(value: string): Uint8Array {
   return bytes;
 }
 
-/** Android returns wrapped base64; iOS does not. */
 const unwrap = (value: string | undefined): string => value?.replace(/\s/gu, "") ?? "";
 
 async function load(): Promise<string> {
-  // `generateKey` returns the existing key for a known tag, so it doubles as a
-  // load and keeps us off `loadKey`, which nothing else exercises.
   const { publicKey } = await CryptoApi.generateKey({ tag: KEY_TAG, algorithm: "ecdsa" });
   const spki = decodeBase64(unwrap(publicKey));
 
-  // The uncompressed point is the trailing 65 bytes. The DER header ahead of
-  // it varies by encoder — 26 bytes here, 28 elsewhere — so find the 0x04
-  // marker instead of assuming a fixed offset.
   const start = spki.length - 65;
   if (start < 0 || spki[start] !== 0x04) {
     throw new AuthError("device_unverified", `keystore returned ${spki.length} spki bytes`);
@@ -66,9 +60,12 @@ async function sign(message: string): Promise<Uint8Array> {
   return decodeBase64(encoded);
 }
 
-/** Proves possession of the device key to `/auth/device`, before any session. */
 export async function signChallenge(nonce: string): Promise<string> {
   return base64url(await sign(`quest-device-login:${nonce}`));
+}
+
+export async function signMessage(message: string): Promise<string> {
+  return base64url(await sign(message));
 }
 
 /** Per-request proof: an ES256 JWT the middleware matches to the session. */

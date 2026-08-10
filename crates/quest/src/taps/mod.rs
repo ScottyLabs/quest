@@ -156,7 +156,8 @@ impl Taps {
 
             txn.rollback().await.ok();
             return Ok(Recorded {
-                first: false,
+                // same counter = this exact tap delivered twice, not a re-tap
+                first: row.counter == counter,
                 place: before as i64 + 1,
             });
         }

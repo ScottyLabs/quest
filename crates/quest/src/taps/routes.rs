@@ -14,7 +14,7 @@ use crate::users::Users;
 
 pub fn router(taps: Taps, tokens: Tokens) -> Router {
     Router::new()
-        .route("/api/register_tap", post(register))
+        .route("/register_tap", post(register))
         .with_state((taps, tokens))
 }
 

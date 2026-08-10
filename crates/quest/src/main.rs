@@ -114,15 +114,19 @@ async fn main() {
             let tokens = tokens::Tokens::new(db.clone());
             let taps = taps::Taps::new(db, master);
 
-            app.merge(auth::routes::router(auth))
-                .merge(devices::routes::router(devices.clone()))
+            let api = Router::new()
+                .merge(devices::routes::manage(devices.clone()))
                 .merge(users::routes::router(users.clone()))
                 .merge(challenges::routes::router(challenges.clone()))
                 .merge(daily::routes::router(daily, challenges))
                 .merge(taps::routes::router(taps, tokens.clone()))
                 .merge(tokens::routes::router(tokens))
                 .merge(items::routes::router(items))
-                .merge(leaderboard::routes::router(leaderboard))
+                .merge(leaderboard::routes::router(leaderboard));
+
+            app.merge(auth::routes::router(auth))
+                .merge(devices::routes::router(devices.clone()))
+                .nest("/api", api)
                 .layer(axum::middleware::from_fn_with_state(
                     devices.clone(),
                     devices::enforce,

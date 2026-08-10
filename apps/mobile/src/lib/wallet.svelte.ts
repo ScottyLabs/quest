@@ -39,7 +39,7 @@ export function bank(scottycoins: number, gems: number): void {
 }
 
 async function read(scope: string): Promise<Balances | null> {
-  const response = await authFetch(`/users/me/tokens${scope}`).catch(() => null);
+  const response = await authFetch(`/api/users/me/tokens${scope}`).catch(() => null);
   if (response === null || !response.ok) return null;
 
   return (await response.json().catch(() => null)) as Balances | null;

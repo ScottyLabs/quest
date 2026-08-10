@@ -49,7 +49,7 @@ function board(id: Metric): Resource<Board> {
     key: `quest.cache.leaderboard.${id}`,
     ttl: TTL,
     load: async () => {
-      const response = await authFetch(`/leaderboard?metric=${id}`);
+      const response = await authFetch(`/api/leaderboard?metric=${id}`);
       if (!response.ok) throw new Error(`leaderboard responded ${response.status}`);
 
       const body = (await response.json()) as Board;

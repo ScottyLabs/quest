@@ -10,7 +10,7 @@ export interface Profile {
 
 export async function profile(): Promise<Profile | null> {
   try {
-    const response = await authFetch("/users/me");
+    const response = await authFetch("/api/users/me");
     if (!response.ok) return null;
     return (await response.json()) as Profile;
   } catch {
@@ -20,7 +20,7 @@ export async function profile(): Promise<Profile | null> {
 
 export async function setDorm(dorm: Dorm): Promise<boolean> {
   try {
-    const response = await authFetch("/users/me/dorm", {
+    const response = await authFetch("/api/users/me/dorm", {
       method: "PUT",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ dorm }),

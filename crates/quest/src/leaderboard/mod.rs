@@ -1,6 +1,5 @@
 pub mod routes;
 
-use std::collections::HashMap;
 use std::sync::LazyLock;
 
 use sea_orm::prelude::Uuid;
@@ -15,10 +14,17 @@ const DAILY_CAP: i64 = 10;
 
 const DAILY_BONUS: i64 = 5;
 
-static TARGETS: LazyLock<HashMap<String, i64>> = LazyLock::new(|| {
-    serde_json::from_str(include_str!("../../data/carnegie-cup-targets.json"))
-        .expect("carnegie-cup-targets.json must be a flat object of slug to integer")
-});
+const TARGETS: [(&str, i64); 9] = [
+    ("donner", 18900),
+    ("etower", 15225),
+    ("hammershlag", 11325),
+    ("mcgillboss", 18150),
+    ("morewood", 14250),
+    ("mudge", 21450),
+    ("res", 10875),
+    ("stever", 18300),
+    ("whesco", 14325),
+];
 
 static TAP_DAY: LazyLock<String> = LazyLock::new(|| {
     let (head, tail) = GEM_DAY
@@ -242,7 +248,9 @@ impl Leaderboard {
 }
 
 fn cup_for(community: &str, earned: i64) -> Option<Cup> {
-    let target = TARGETS.get(community).copied()?;
+    let target = TARGETS
+        .iter()
+        .find_map(|&(slug, target)| (slug == community).then_some(target))?;
 
     let percent = if target > 0 {
         (earned as f64 / target as f64 * 10_000.0).round() / 100.0

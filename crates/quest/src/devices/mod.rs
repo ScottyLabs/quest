@@ -261,7 +261,7 @@ pub async fn enforce(State(devices): State<Devices>, request: Request, next: Nex
     }
 }
 
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, utoipa::ToSchema)]
 pub struct DeviceView {
     pub public_key: String,
     pub created_at: String,

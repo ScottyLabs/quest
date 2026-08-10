@@ -1,5 +1,6 @@
 /// <reference types="vite/client" />
 
+import type { components } from "$lib/api/schema";
 import { deviceProof, devicePublicKey, signChallenge } from "./device";
 import { AuthError } from "./types";
 import type { AuthErrorCode, QuestUser } from "./types";
@@ -14,33 +15,17 @@ export const apiBase =
 export const apiUrl = (path: string): string =>
   `${apiBase}${path.startsWith("/") ? path : `/${path}`}`;
 
-interface UserBody {
-  email: string | null;
-  name: string;
-  andrew_id: string;
-  groups: string[];
-  admin: boolean;
-}
+type UserBody = components["schemas"]["UserView"];
 
-interface LogoutBody {
-  end_session_url: string | null;
-}
+type LogoutBody = components["schemas"]["LogoutResponse"];
 
-interface ErrorBody {
-  error: string;
-}
+type ErrorBody = components["schemas"]["AuthErrBody"];
 
-interface ChallengeBody {
-  nonce: string;
-}
+type ChallengeBody = components["schemas"]["Challenge"];
 
-interface TicketBody {
-  ticket: string;
-}
+type TicketBody = components["schemas"]["Ticket"];
 
-interface EnrolledBody {
-  enrolled: boolean;
-}
+type EnrolledBody = components["schemas"]["Enrolled"];
 
 const KNOWN_CODES: readonly AuthErrorCode[] = [
   "auth_not_configured",
@@ -65,6 +50,7 @@ const KNOWN_CODES: readonly AuthErrorCode[] = [
 ];
 
 const UNPROOFED: readonly string[] = [
+  "/api/health",
   "/auth/challenge",
   "/auth/device",
   "/auth/device/enroll",
@@ -87,25 +73,27 @@ export async function responseError(response: Response): Promise<AuthErrorCode> 
   return errorCode((await readJson<ErrorBody>(response))?.error);
 }
 
+export async function signed(request: Request, id: string | null): Promise<Response> {
+  const headers = new Headers(request.headers);
+
+  if (id !== null) headers.set("authorization", `Bearer ${id}`);
+  if (!UNPROOFED.includes(new URL(request.url).pathname)) {
+    headers.set("x-device-proof", await deviceProof(request.method, request.url));
+  }
+
+  try {
+    return await fetch(new Request(request, { credentials: "include", headers }));
+  } catch {
+    throw new AuthError("network", `could not reach ${apiBase}`);
+  }
+}
+
 export async function send(
   path: string,
   id: string | null,
   init: RequestInit = {},
 ): Promise<Response> {
-  const url = apiUrl(path);
-  const method = init.method ?? "GET";
-  const headers = new Headers(init.headers);
-
-  if (id !== null) headers.set("authorization", `Bearer ${id}`);
-  if (!UNPROOFED.includes(path.replace(/[?#].*$/u, ""))) {
-    headers.set("x-device-proof", await deviceProof(method, url));
-  }
-
-  try {
-    return await fetch(url, { ...init, credentials: "include", headers });
-  } catch {
-    throw new AuthError("network", `could not reach ${apiBase}`);
-  }
+  return signed(new Request(apiUrl(path), init), id);
 }
 
 function parseUser(raw: UserBody | undefined): QuestUser {

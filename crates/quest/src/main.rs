@@ -8,6 +8,7 @@ mod db;
 mod devices;
 mod items;
 mod leaderboard;
+mod openapi;
 mod taps;
 mod tokens;
 mod users;
@@ -40,11 +41,18 @@ async fn tap(uri: axum::http::Uri) -> Response {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, utoipa::ToSchema)]
 struct Health {
     status: &'static str,
 }
 
+#[utoipa::path(
+    get,
+    path = "/api/health",
+    tag = "health",
+    security(()),
+    responses((status = OK, body = Health)),
+)]
 async fn health() -> Json<Health> {
     Json(Health { status: "ok" })
 }
@@ -86,6 +94,14 @@ async fn log_request(
 
 #[tokio::main]
 async fn main() {
+    if std::env::args().nth(1).as_deref() == Some("openapi") {
+        let spec = openapi::document()
+            .to_pretty_json()
+            .expect("the spec always serializes");
+        println!("{spec}");
+        return;
+    }
+
     dotenvy::dotenv().ok();
 
     let host: std::net::IpAddr = std::env::var("HOST")
@@ -116,28 +132,14 @@ async fn main() {
             undiscovered = auth.undiscovered();
 
             let sessions = auth.sessions.layer();
-            let users = users::Users::new(db.clone());
-            let challenges = challenges::Challenges::new(db.clone());
-            let daily = daily::Daily::new(db.clone());
-            let devices = devices::Devices::new(db.clone(), auth.sessions.pool());
-            let items = items::Items::new(db.clone());
-            let leaderboard = leaderboard::Leaderboard::new(db.clone());
-            let tokens = tokens::Tokens::new(db.clone());
-            let taps = taps::Taps::new(db, master);
+            let services = openapi::Services::new(db, auth.sessions.pool(), *master);
+            let devices = services.devices.clone();
+            let users = services.users.clone();
 
-            let api = Router::new()
-                .merge(devices::routes::manage(devices.clone()))
-                .merge(users::routes::router(users.clone()))
-                .merge(challenges::routes::router(challenges.clone()))
-                .merge(daily::routes::router(daily, challenges))
-                .merge(taps::routes::router(taps, tokens.clone()))
-                .merge(tokens::routes::router(tokens))
-                .merge(items::routes::router(items))
-                .merge(leaderboard::routes::router(leaderboard));
+            let (routed, _) = openapi::split(&services);
 
             app.merge(auth::routes::router(auth))
-                .merge(devices::routes::router(devices.clone()))
-                .nest("/api", api)
+                .merge(routed)
                 .layer(axum::middleware::from_fn_with_state(
                     devices.clone(),
                     devices::enforce,
@@ -157,6 +159,7 @@ async fn main() {
     };
 
     let app = app
+        .merge(openapi::docs())
         .layer(cors::layer())
         .layer(axum::middleware::from_fn(log_request));
 

@@ -1,23 +1,25 @@
+use axum::Json;
 use axum::extract::State;
 use axum::extract::rejection::JsonRejection;
-use axum::routing::{get, put};
-use axum::{Json, Router};
 use entity::enums::Dorm;
 use sea_orm::ActiveEnum;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
+use utoipa_axum::router::OpenApiRouter;
+use utoipa_axum::routes;
 
 use super::Users;
-use crate::auth::AuthError;
 use crate::auth::extract::CurrentUser;
+use crate::auth::{AuthErrBody, AuthError};
 
-pub fn router(users: Users) -> Router {
-    Router::new()
-        .route("/users/me", get(me))
-        .route("/users/me/dorm", put(dorm))
+pub fn router(users: Users) -> OpenApiRouter {
+    OpenApiRouter::new()
+        .routes(routes!(me))
+        .routes(routes!(dorm))
         .with_state(users)
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 struct Profile {
     andrew_id: String,
     dorm: Option<String>,
@@ -25,6 +27,16 @@ struct Profile {
     created_at: String,
 }
 
+#[utoipa::path(
+    get,
+    path = "/users/me",
+    tag = "users",
+    responses(
+        (status = OK, body = Profile),
+        (status = UNAUTHORIZED, body = AuthErrBody),
+        (status = BAD_GATEWAY, body = AuthErrBody),
+    ),
+)]
 async fn me(
     State(users): State<Users>,
     CurrentUser(user): CurrentUser,
@@ -39,11 +51,23 @@ async fn me(
     }))
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, ToSchema)]
 struct DormBody {
     dorm: String,
 }
 
+#[utoipa::path(
+    put,
+    path = "/users/me/dorm",
+    tag = "users",
+    request_body = DormBody,
+    responses(
+        (status = OK, body = DormBody),
+        (status = BAD_REQUEST, body = AuthErrBody),
+        (status = UNAUTHORIZED, body = AuthErrBody),
+        (status = BAD_GATEWAY, body = AuthErrBody),
+    ),
+)]
 async fn dorm(
     State(users): State<Users>,
     CurrentUser(user): CurrentUser,

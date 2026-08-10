@@ -1,24 +1,38 @@
 use axum::extract::{Query, State};
-use axum::routing::get;
-use axum::{Extension, Json, Router};
+use axum::{Extension, Json};
 use serde::Deserialize;
+use utoipa::IntoParams;
+use utoipa_axum::router::OpenApiRouter;
+use utoipa_axum::routes;
 
 use super::{Leaderboard, Metric, Standings};
-use crate::auth::AuthError;
 use crate::auth::extract::CurrentUser;
+use crate::auth::{AuthErrBody, AuthError};
 use crate::users::Users;
 
-pub fn router(leaderboard: Leaderboard) -> Router {
-    Router::new()
-        .route("/leaderboard", get(standings))
+pub fn router(leaderboard: Leaderboard) -> OpenApiRouter {
+    OpenApiRouter::new()
+        .routes(routes!(standings))
         .with_state(leaderboard)
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, IntoParams)]
+#[into_params(parameter_in = Query)]
 struct Board {
     metric: Option<String>,
 }
 
+#[utoipa::path(
+    get,
+    path = "/leaderboard",
+    tag = "leaderboard",
+    params(Board),
+    responses(
+        (status = OK, body = Standings),
+        (status = UNAUTHORIZED, body = AuthErrBody),
+        (status = BAD_GATEWAY, body = AuthErrBody),
+    ),
+)]
 async fn standings(
     State(leaderboard): State<Leaderboard>,
     Extension(users): Extension<Users>,

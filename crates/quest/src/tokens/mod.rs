@@ -5,6 +5,7 @@ use std::sync::LazyLock;
 use sea_orm::prelude::{Date, Uuid};
 use sea_orm::{ConnectionTrait, DatabaseConnection, DbBackend, DbErr, FromQueryResult, Statement};
 use serde::Serialize;
+use utoipa::ToSchema;
 
 use crate::auth::AuthError;
 use crate::day::GEM_DAY;
@@ -89,7 +90,7 @@ pub struct Tokens {
     db: DatabaseConnection,
 }
 
-#[derive(Debug, FromQueryResult, Serialize)]
+#[derive(Debug, FromQueryResult, Serialize, ToSchema)]
 pub struct Balances {
     pub day: Option<String>,
     pub scottycoins: i64,

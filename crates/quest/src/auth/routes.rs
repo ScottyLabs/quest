@@ -68,10 +68,18 @@ fn unreachable_idp_router(auth: Arc<Auth>) -> Router {
         .with_state(auth)
 }
 
+fn session_paths() -> utoipa_axum::router::OpenApiRouter<Arc<Auth>> {
+    utoipa_axum::router::OpenApiRouter::new()
+        .routes(utoipa_axum::routes!(status))
+        .routes(utoipa_axum::routes!(logout))
+}
+
 fn session_router() -> Router<Arc<Auth>> {
-    Router::new()
-        .route("/auth/status", get(status))
-        .route("/auth/logout", post(logout))
+    session_paths().split_for_parts().0
+}
+
+pub fn session_spec() -> utoipa::openapi::OpenApi {
+    session_paths().split_for_parts().1
 }
 
 pub fn unconfigured_router() -> Router {
@@ -91,7 +99,7 @@ async fn oidc_failed(err: MiddlewareError) -> AuthError {
     AuthError::Upstream("oidc_failed")
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, utoipa::ToSchema)]
 pub struct UserView {
     pub email: Option<String>,
     pub name: String,
@@ -303,15 +311,35 @@ fn error_page(detail: &str) -> Response {
     (StatusCode::BAD_REQUEST, body).into_response()
 }
 
+#[utoipa::path(
+    get,
+    path = "/auth/status",
+    tag = "auth",
+    responses(
+        (status = OK, body = UserView),
+        (status = UNAUTHORIZED, body = crate::auth::AuthErrBody),
+        (status = BAD_GATEWAY, body = crate::auth::AuthErrBody),
+    ),
+)]
 async fn status(CurrentUser(user): CurrentUser) -> Json<UserView> {
     Json(user.into())
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, utoipa::ToSchema)]
 struct LogoutResponse {
     end_session_url: Option<String>,
 }
 
+#[utoipa::path(
+    post,
+    path = "/auth/logout",
+    tag = "auth",
+    responses(
+        (status = OK, body = LogoutResponse),
+        (status = UNAUTHORIZED, body = crate::auth::AuthErrBody),
+        (status = BAD_GATEWAY, body = crate::auth::AuthErrBody),
+    ),
+)]
 async fn logout(
     State(auth): State<Arc<Auth>>,
     session: Session,

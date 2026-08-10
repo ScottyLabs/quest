@@ -1,36 +1,26 @@
-import { authFetch } from "$lib/auth";
+import { api } from "$lib/api/client";
+import type { components } from "$lib/api/schema";
 import { Resource } from "$lib/cache.svelte";
 import { MASCOTS, type Mascot } from "$lib/mascots";
 
 export type Metric = "gems" | "coins";
 
-export interface Cup {
-  community: string;
-  earned: number;
-  target: number;
-  percent: number;
-}
+export type Cup = components["schemas"]["Cup"];
 
-export interface You {
-  rank: number;
-  score: number;
+export type You = Omit<components["schemas"]["You"], "community"> & {
   community: string | null;
-}
+};
 
-export interface Standing {
-  rank: number;
-  name: string;
+export type Standing = Omit<components["schemas"]["Row"], "community"> & {
   community: string | null;
-  score: number;
-  you: boolean;
-}
+};
 
-export interface Board {
+export type Board = Omit<components["schemas"]["Standings"], "metric" | "cup" | "you" | "rows"> & {
   metric: Metric;
   cup: Cup | null;
   you: You | null;
   rows: Standing[];
-}
+};
 
 export function mascotFor(community: string | null): Mascot | null {
   if (community === null) return null;
@@ -49,16 +39,18 @@ function board(id: Metric): Resource<Board> {
     key: `quest.cache.leaderboard.${id}`,
     ttl: TTL,
     load: async () => {
-      const response = await authFetch(`/api/leaderboard?metric=${id}`);
+      const { data, response } = await api.GET("/api/leaderboard", {
+        params: { query: { metric: id } },
+      });
       if (!response.ok) throw new Error(`leaderboard responded ${response.status}`);
 
-      const body = (await response.json()) as Board;
+      const body = data as Board | undefined;
 
       return {
-        metric: body.metric ?? id,
-        cup: body.cup ?? null,
-        you: body.you ?? null,
-        rows: body.rows ?? [],
+        metric: body?.metric ?? id,
+        cup: body?.cup ?? null,
+        you: body?.you ?? null,
+        rows: body?.rows ?? [],
       };
     },
     revive: (raw: unknown) => {

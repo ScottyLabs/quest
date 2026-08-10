@@ -1,27 +1,39 @@
 use axum::extract::State;
-use axum::routing::get;
-use axum::{Extension, Json, Router};
+use axum::{Extension, Json};
 use serde::Serialize;
+use utoipa::ToSchema;
+use utoipa_axum::router::OpenApiRouter;
+use utoipa_axum::routes;
 
 use super::Daily;
-use crate::auth::AuthError;
 use crate::auth::extract::CurrentUser;
+use crate::auth::{AuthErrBody, AuthError};
 use crate::challenges::Challenges;
 use crate::challenges::routes::ChallengeView;
 use crate::users::Users;
 
-pub fn router(daily: Daily, challenges: Challenges) -> Router {
-    Router::new()
-        .route("/users/me/daily", get(today))
+pub fn router(daily: Daily, challenges: Challenges) -> OpenApiRouter {
+    OpenApiRouter::new()
+        .routes(routes!(today))
         .with_state((daily, challenges))
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 struct DailyView {
     day: String,
     challenge: Option<ChallengeView>,
 }
 
+#[utoipa::path(
+    get,
+    path = "/users/me/daily",
+    tag = "daily",
+    responses(
+        (status = OK, body = DailyView),
+        (status = UNAUTHORIZED, body = AuthErrBody),
+        (status = BAD_GATEWAY, body = AuthErrBody),
+    ),
+)]
 async fn today(
     State((daily, challenges)): State<(Daily, Challenges)>,
     Extension(users): Extension<Users>,

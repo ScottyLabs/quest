@@ -1,33 +1,35 @@
 use std::collections::HashSet;
 
 use axum::extract::{Path, Query, State};
-use axum::routing::get;
-use axum::{Extension, Json, Router};
+use axum::{Extension, Json};
 use entity::challenge;
 use entity::enums::ChallengeCategory;
 use sea_orm::ActiveEnum;
 use sea_orm::prelude::Uuid;
 use serde::{Deserialize, Serialize};
+use utoipa::{IntoParams, ToSchema};
+use utoipa_axum::router::OpenApiRouter;
+use utoipa_axum::routes;
 
 use super::Challenges;
-use crate::auth::AuthError;
 use crate::auth::extract::CurrentUser;
+use crate::auth::{AuthErrBody, AuthError};
 use crate::users::Users;
 
-pub fn router(challenges: Challenges) -> Router {
-    Router::new()
-        .route("/challenges", get(list))
-        .route("/challenges/{id}", get(one))
+pub fn router(challenges: Challenges) -> OpenApiRouter {
+    OpenApiRouter::new()
+        .routes(routes!(list))
+        .routes(routes!(one))
         .with_state(challenges)
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 pub struct Location {
     lat: f64,
     lon: f64,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 pub struct ChallengeView {
     id: String,
     name: String,
@@ -64,18 +66,31 @@ impl ChallengeView {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, IntoParams)]
+#[into_params(parameter_in = Query)]
 struct ListQuery {
     category: Option<String>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 struct Board {
     challenges: Vec<ChallengeView>,
     cleared: usize,
     total: usize,
 }
 
+#[utoipa::path(
+    get,
+    path = "/challenges",
+    operation_id = "list_challenges",
+    tag = "challenges",
+    params(ListQuery),
+    responses(
+        (status = OK, body = Board),
+        (status = UNAUTHORIZED, body = AuthErrBody),
+        (status = BAD_GATEWAY, body = AuthErrBody),
+    ),
+)]
 async fn list(
     State(challenges): State<Challenges>,
     Extension(users): Extension<Users>,
@@ -107,6 +122,18 @@ async fn list(
     }))
 }
 
+#[utoipa::path(
+    get,
+    path = "/challenges/{id}",
+    tag = "challenges",
+    params(("id" = String, Path, description = "Challenge id")),
+    responses(
+        (status = OK, body = ChallengeView),
+        (status = NOT_FOUND, body = AuthErrBody),
+        (status = UNAUTHORIZED, body = AuthErrBody),
+        (status = BAD_GATEWAY, body = AuthErrBody),
+    ),
+)]
 async fn one(
     State(challenges): State<Challenges>,
     Extension(users): Extension<Users>,

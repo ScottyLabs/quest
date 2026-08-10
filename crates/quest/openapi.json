@@ -1,0 +1,1690 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "CMU Orientation Quest",
+    "description": "Backend for the Orientation Quest app.",
+    "license": {
+      "name": "MIT OR Apache-2.0",
+      "identifier": "MIT OR Apache-2.0"
+    },
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/challenges": {
+      "get": {
+        "tags": ["challenges"],
+        "operationId": "list_challenges",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Board"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/challenges/{id}": {
+      "get": {
+        "tags": ["challenges"],
+        "operationId": "one",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Challenge id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChallengeView"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/devices": {
+      "get": {
+        "tags": ["devices"],
+        "operationId": "list_devices",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeviceView"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/devices/{public_key}": {
+      "delete": {
+        "tags": ["devices"],
+        "operationId": "revoke",
+        "parameters": [
+          {
+            "name": "public_key",
+            "in": "path",
+            "description": "Device public key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Revoked"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health": {
+      "get": {
+        "tags": ["health"],
+        "operationId": "health",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        },
+        "security": [{}]
+      }
+    },
+    "/api/items": {
+      "get": {
+        "tags": ["items"],
+        "operationId": "list_items",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Shelf"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/items/{id}/purchase": {
+      "post": {
+        "tags": ["items"],
+        "operationId": "buy",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Item id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuyBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Purchased"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/leaderboard": {
+      "get": {
+        "tags": ["leaderboard"],
+        "operationId": "standings",
+        "parameters": [
+          {
+            "name": "metric",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Standings"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/purchases/{id}/refund": {
+      "post": {
+        "tags": ["items"],
+        "operationId": "give_back",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Purchase id",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefundBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/register_tap": {
+      "post": {
+        "tags": ["taps"],
+        "operationId": "register",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TapBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Registered"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/me": {
+      "get": {
+        "tags": ["users"],
+        "operationId": "me",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Profile"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/me/daily": {
+      "get": {
+        "tags": ["daily"],
+        "operationId": "today",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailyView"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/me/dorm": {
+      "put": {
+        "tags": ["users"],
+        "operationId": "dorm",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DormBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DormBody"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/me/purchases": {
+      "get": {
+        "tags": ["items"],
+        "operationId": "mine",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Wallet"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/me/tokens": {
+      "get": {
+        "tags": ["tokens"],
+        "operationId": "balances",
+        "parameters": [
+          {
+            "name": "day",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Balances"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/challenge": {
+      "get": {
+        "tags": ["devices"],
+        "operationId": "challenge",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Challenge"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [{}]
+      }
+    },
+    "/auth/device": {
+      "post": {
+        "tags": ["devices"],
+        "operationId": "verify",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Verify"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ticket"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [{}]
+      }
+    },
+    "/auth/device/enroll": {
+      "post": {
+        "tags": ["devices"],
+        "operationId": "enroll",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Enroll"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Enrolled"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": ["auth"],
+        "operationId": "logout",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogoutResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/status": {
+      "get": {
+        "tags": ["auth"],
+        "operationId": "status",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserView"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AuthErrBody": {
+        "type": "object",
+        "required": ["error"],
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        }
+      },
+      "Balances": {
+        "type": "object",
+        "required": ["scottycoins", "thistlestones"],
+        "properties": {
+          "day": {
+            "type": ["string", "null"]
+          },
+          "scottycoins": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "thistlestones": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "Board": {
+        "type": "object",
+        "required": ["challenges", "cleared", "total"],
+        "properties": {
+          "challenges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChallengeView"
+            }
+          },
+          "cleared": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "BuyBody": {
+        "type": "object",
+        "properties": {
+          "quantity": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "Challenge": {
+        "type": "object",
+        "required": ["nonce", "expires_in"],
+        "properties": {
+          "expires_in": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "nonce": {
+            "type": "string"
+          }
+        }
+      },
+      "ChallengeView": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "tagline",
+          "description",
+          "category",
+          "coin_value",
+          "open_from",
+          "cleared"
+        ],
+        "properties": {
+          "category": {
+            "type": "string"
+          },
+          "cleared": {
+            "type": "boolean"
+          },
+          "coin_value": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "location": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/Location"
+              }
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "open_from": {
+            "type": "string"
+          },
+          "tagline": {
+            "type": "string"
+          }
+        }
+      },
+      "Cup": {
+        "type": "object",
+        "required": ["community", "earned", "target", "percent"],
+        "properties": {
+          "community": {
+            "type": "string"
+          },
+          "earned": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "percent": {
+            "type": "number",
+            "format": "double"
+          },
+          "target": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "DailyView": {
+        "type": "object",
+        "required": ["day"],
+        "properties": {
+          "challenge": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ChallengeView"
+              }
+            ]
+          },
+          "day": {
+            "type": "string"
+          }
+        }
+      },
+      "DeviceView": {
+        "type": "object",
+        "required": ["public_key", "created_at"],
+        "properties": {
+          "created_at": {
+            "type": "string"
+          },
+          "label": {
+            "type": ["string", "null"]
+          },
+          "public_key": {
+            "type": "string"
+          }
+        }
+      },
+      "DormBody": {
+        "type": "object",
+        "required": ["dorm"],
+        "properties": {
+          "dorm": {
+            "type": "string"
+          }
+        }
+      },
+      "Enroll": {
+        "type": "object",
+        "required": ["ticket"],
+        "properties": {
+          "ticket": {
+            "type": "string"
+          }
+        }
+      },
+      "Enrolled": {
+        "type": "object",
+        "required": ["enrolled", "public_key"],
+        "properties": {
+          "enrolled": {
+            "type": "boolean"
+          },
+          "public_key": {
+            "type": "string"
+          }
+        }
+      },
+      "Health": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "ItemView": {
+        "type": "object",
+        "required": ["id", "name", "description", "cost", "stock"],
+        "properties": {
+          "cost": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "image_url": {
+            "type": ["string", "null"]
+          },
+          "name": {
+            "type": "string"
+          },
+          "stock": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "Location": {
+        "type": "object",
+        "required": ["lat", "lon"],
+        "properties": {
+          "lat": {
+            "type": "number",
+            "format": "double"
+          },
+          "lon": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "LogoutResponse": {
+        "type": "object",
+        "properties": {
+          "end_session_url": {
+            "type": ["string", "null"]
+          }
+        }
+      },
+      "Profile": {
+        "type": "object",
+        "required": ["andrew_id", "staff", "created_at"],
+        "properties": {
+          "andrew_id": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "dorm": {
+            "type": ["string", "null"]
+          },
+          "staff": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PurchaseView": {
+        "type": "object",
+        "required": ["purchase_id", "item_id", "name", "quantity", "cost", "delivered"],
+        "properties": {
+          "cost": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "delivered": {
+            "type": "boolean"
+          },
+          "item_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "purchase_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "Purchased": {
+        "type": "object",
+        "required": [
+          "purchase_id",
+          "item_id",
+          "name",
+          "cost",
+          "quantity",
+          "spent",
+          "stock",
+          "scottycoins"
+        ],
+        "properties": {
+          "cost": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "item_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "purchase_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "scottycoins": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "spent": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "stock": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "RefundBody": {
+        "type": "object",
+        "properties": {
+          "quantity": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "RefundView": {
+        "type": "object",
+        "required": ["refunded", "scottycoins"],
+        "properties": {
+          "refunded": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "scottycoins": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "Registered": {
+        "type": "object",
+        "required": ["challenge", "place", "first", "current_scottycoins", "current_thistlestones"],
+        "properties": {
+          "challenge": {
+            "$ref": "#/components/schemas/ChallengeView"
+          },
+          "current_scottycoins": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "current_thistlestones": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "place": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "Revoked": {
+        "type": "object",
+        "required": ["revoked"],
+        "properties": {
+          "revoked": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Row": {
+        "type": "object",
+        "required": ["rank", "name", "score", "you"],
+        "properties": {
+          "community": {
+            "type": ["string", "null"]
+          },
+          "name": {
+            "type": "string"
+          },
+          "rank": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "score": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "you": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Shelf": {
+        "type": "object",
+        "required": ["items", "total"],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemView"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "Standings": {
+        "type": "object",
+        "required": ["metric", "rows"],
+        "properties": {
+          "cup": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/Cup"
+              }
+            ]
+          },
+          "metric": {
+            "type": "string"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Row"
+            }
+          },
+          "you": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/You"
+              }
+            ]
+          }
+        }
+      },
+      "TapBody": {
+        "type": "object",
+        "required": ["url"],
+        "properties": {
+          "accuracy": {
+            "type": ["number", "null"],
+            "format": "float"
+          },
+          "lat": {
+            "type": ["number", "null"],
+            "format": "double"
+          },
+          "lon": {
+            "type": ["number", "null"],
+            "format": "double"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "Ticket": {
+        "type": "object",
+        "required": ["ticket", "expires_in"],
+        "properties": {
+          "expires_in": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "ticket": {
+            "type": "string"
+          }
+        }
+      },
+      "UserView": {
+        "type": "object",
+        "required": ["name", "andrew_id", "groups", "admin"],
+        "properties": {
+          "admin": {
+            "type": "boolean"
+          },
+          "andrew_id": {
+            "type": "string"
+          },
+          "email": {
+            "type": ["string", "null"]
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "Verify": {
+        "type": "object",
+        "required": ["public_key", "nonce", "signature"],
+        "properties": {
+          "label": {
+            "type": ["string", "null"]
+          },
+          "nonce": {
+            "type": "string"
+          },
+          "public_key": {
+            "type": "string"
+          },
+          "signature": {
+            "type": "string"
+          }
+        }
+      },
+      "Wallet": {
+        "type": "object",
+        "required": ["purchases"],
+        "properties": {
+          "purchases": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PurchaseView"
+            }
+          }
+        }
+      },
+      "You": {
+        "type": "object",
+        "required": ["rank", "score"],
+        "properties": {
+          "community": {
+            "type": ["string", "null"]
+          },
+          "rank": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "score": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "device_proof": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-device-proof",
+        "description": "Signature over the request method and URL by an enrolled device key"
+      },
+      "session": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Session id issued by /auth/login"
+      }
+    }
+  },
+  "security": [
+    {
+      "device_proof": [],
+      "session": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "health",
+      "description": "Liveness"
+    },
+    {
+      "name": "auth",
+      "description": "Sign-in and session state"
+    },
+    {
+      "name": "devices",
+      "description": "Device enrolment and revocation"
+    },
+    {
+      "name": "users",
+      "description": "The signed-in user's profile"
+    },
+    {
+      "name": "challenges",
+      "description": "The quest board"
+    },
+    {
+      "name": "daily",
+      "description": "The daily challenge"
+    },
+    {
+      "name": "taps",
+      "description": "Registering NFC taps"
+    },
+    {
+      "name": "tokens",
+      "description": "Scottycoin and thistlestone balances"
+    },
+    {
+      "name": "items",
+      "description": "The shop and a user's purchases"
+    },
+    {
+      "name": "leaderboard",
+      "description": "Standings and the Carnegie Cup"
+    }
+  ]
+}

@@ -1,21 +1,24 @@
 use axum::extract::{Query, State};
-use axum::routing::get;
-use axum::{Extension, Json, Router};
+use axum::{Extension, Json};
 use sea_orm::prelude::Date;
 use serde::Deserialize;
+use utoipa::IntoParams;
+use utoipa_axum::router::OpenApiRouter;
+use utoipa_axum::routes;
 
 use super::{Balances, Scope, Tokens};
-use crate::auth::AuthError;
 use crate::auth::extract::CurrentUser;
+use crate::auth::{AuthErrBody, AuthError};
 use crate::users::Users;
 
-pub fn router(tokens: Tokens) -> Router {
-    Router::new()
-        .route("/users/me/tokens", get(balances))
+pub fn router(tokens: Tokens) -> OpenApiRouter {
+    OpenApiRouter::new()
+        .routes(routes!(balances))
         .with_state(tokens)
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, IntoParams)]
+#[into_params(parameter_in = Query)]
 struct DayQuery {
     day: Option<String>,
 }
@@ -32,6 +35,18 @@ impl DayQuery {
     }
 }
 
+#[utoipa::path(
+    get,
+    path = "/users/me/tokens",
+    tag = "tokens",
+    params(DayQuery),
+    responses(
+        (status = OK, body = Balances),
+        (status = BAD_REQUEST, body = AuthErrBody),
+        (status = UNAUTHORIZED, body = AuthErrBody),
+        (status = BAD_GATEWAY, body = AuthErrBody),
+    ),
+)]
 async fn balances(
     State(tokens): State<Tokens>,
     Extension(users): Extension<Users>,

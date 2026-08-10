@@ -235,6 +235,7 @@ fn store_down(err: fred::error::Error) -> AuthError {
 fn bootstrap(method: &Method, path: &str) -> bool {
     match path {
         _ if method == Method::OPTIONS => true,
+        "/api/health" => method == Method::GET,
         "/tap" => method == Method::GET,
         "/.well-known/apple-app-site-association" => method == Method::GET,
         "/.well-known/assetlinks.json" => method == Method::GET,

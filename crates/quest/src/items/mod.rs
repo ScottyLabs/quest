@@ -33,6 +33,20 @@ FROM "purchases"
 WHERE "item_id" = $1
 "#;
 
+const LEDGER: &str = r#"
+SELECT
+    "purchases"."purchase_id"                    AS "purchase_id",
+    "purchases"."item_id"                        AS "item_id",
+    "items"."name"                               AS "name",
+    "purchases"."quantity"                       AS "quantity",
+    "items"."cost"                               AS "cost",
+    "purchases"."received_item_date" IS NOT NULL AS "delivered"
+FROM "purchases"
+JOIN "items" ON "items"."id" = "purchases"."item_id"
+WHERE "purchases"."user_id" = $1
+ORDER BY "purchases"."purchase_id" DESC
+"#;
+
 #[derive(Clone)]
 pub struct Items {
     db: DatabaseConnection,
@@ -61,6 +75,21 @@ pub struct Receipt {
     pub quantity: i64,
     pub spent: i64,
     pub stock: i64,
+    pub scottycoins: i64,
+}
+
+#[derive(Debug, FromQueryResult)]
+pub struct Ledger {
+    pub purchase_id: i64,
+    pub item_id: Uuid,
+    pub name: String,
+    pub quantity: i64,
+    pub cost: i64,
+    pub delivered: bool,
+}
+
+pub struct Refunded {
+    pub refunded: i64,
     pub scottycoins: i64,
 }
 
@@ -141,6 +170,93 @@ impl Items {
             spent,
             stock: stock - quantity,
             scottycoins: balance.scottycoins - spent,
+        })
+    }
+
+    pub async fn purchases(&self, user: Uuid) -> Result<Vec<Ledger>, AuthError> {
+        Ledger::find_by_statement(Statement::from_sql_and_values(
+            DbBackend::Postgres,
+            LEDGER,
+            [user.into()],
+        ))
+        .all(&self.db)
+        .await
+        .map_err(db_down)
+    }
+
+    pub async fn refund(
+        &self,
+        user: Uuid,
+        purchase: i64,
+        quantity: i64,
+    ) -> Result<Refunded, AuthError> {
+        if quantity < 1 {
+            return Err(AuthError::BadRequest("refund_quantity_invalid"));
+        }
+
+        let txn = self.db.begin().await.map_err(db_down)?;
+
+        let found = purchases::Entity::find_by_id(purchase)
+            .lock_exclusive()
+            .one(&txn)
+            .await
+            .map_err(db_down)?;
+
+        let Some(row) = found.filter(|row| row.user_id == user) else {
+            txn.rollback().await.ok();
+            return Err(AuthError::NotFound("purchase_unknown"));
+        };
+
+        if row.received_item_date.is_some() {
+            txn.rollback().await.ok();
+            return Err(AuthError::Conflict("purchase_delivered"));
+        }
+
+        if quantity > row.quantity {
+            txn.rollback().await.ok();
+            return Err(AuthError::Conflict("refund_too_large"));
+        }
+
+        let item = items::Entity::find_by_id(row.item_id)
+            .lock_exclusive()
+            .one(&txn)
+            .await
+            .map_err(db_down)?;
+
+        let Some(item) = item else {
+            txn.rollback().await.ok();
+            return Err(AuthError::NotFound("item_unknown"));
+        };
+
+        let refunded = item
+            .cost
+            .checked_mul(quantity)
+            .ok_or(AuthError::BadRequest("refund_quantity_invalid"))?;
+
+        let remaining = row.quantity - quantity;
+        if remaining == 0 {
+            purchases::Entity::delete_by_id(row.purchase_id)
+                .exec(&txn)
+                .await
+                .map_err(db_down)?;
+        } else {
+            purchases::ActiveModel {
+                purchase_id: ActiveValue::Unchanged(row.purchase_id),
+                quantity: ActiveValue::Set(remaining),
+                ..Default::default()
+            }
+            .update(&txn)
+            .await
+            .map_err(db_down)?;
+        }
+
+        let balance = balances_of(&txn, user, Scope::Lifetime).await?;
+
+        txn.commit().await.map_err(db_down)?;
+
+        Ok(Refunded {
+            refunded,
+            scottycoins: balance.scottycoins,
         })
     }
 }

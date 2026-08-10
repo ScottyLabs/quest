@@ -47,7 +47,7 @@ export const TABS: Tab[] = [
     activeIcon: "/img/nav/store-active.svg",
     box: [36, 36],
     activeBox: ACTIVE,
-    scrim: false,
+    scrim: true,
   },
   {
     href: "/app/info",

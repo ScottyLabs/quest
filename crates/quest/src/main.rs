@@ -14,10 +14,11 @@ mod users;
 
 use std::sync::Arc;
 
-use axum::Router;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::routing::get;
+use axum::{Json, Router};
+use serde::Serialize;
 
 const NATIVE_TAP: &str = "org.scottylabs.quest://tap";
 
@@ -37,6 +38,15 @@ async fn tap(uri: axum::http::Uri) -> Response {
             .into_response(),
         Err(_) => StatusCode::BAD_REQUEST.into_response(),
     }
+}
+
+#[derive(Serialize)]
+struct Health {
+    status: &'static str,
+}
+
+async fn health() -> Json<Health> {
+    Json(Health { status: "ok" })
 }
 
 fn load_master_key() -> [u8; 32] {
@@ -96,6 +106,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/tap", get(tap))
+        .route("/api/health", get(health))
         .merge(applinks::router());
 
     let mut undiscovered = None;

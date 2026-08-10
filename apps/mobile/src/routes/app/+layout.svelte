@@ -100,7 +100,10 @@
   .shell {
     display: flex;
     flex-direction: column;
+    width: 100%;
+    max-width: calc(439px + var(--safe-left) + var(--safe-right));
     height: 100dvh;
+    margin-inline: auto;
     padding-right: var(--safe-right);
     padding-left: var(--safe-left);
     overflow: hidden;

@@ -9,6 +9,7 @@ mod devices;
 mod items;
 mod leaderboard;
 mod openapi;
+mod passes;
 mod taps;
 mod tokens;
 mod users;
@@ -126,13 +127,18 @@ async fn main() {
         .merge(applinks::router());
 
     let mut undiscovered = None;
-
     let app = match auth::Auth::from_env().await {
         Ok(auth) => {
             undiscovered = auth.undiscovered();
 
             let sessions = auth.sessions.layer();
-            let services = openapi::Services::new(db, auth.sessions.pool(), *master);
+            let services = openapi::Services::new(
+                db.clone(),
+                auth.sessions.pool(),
+                *master,
+                passes::Passes::from_env(db)
+                    .unwrap_or_else(|err| panic!("wallet passes misconfigured: {err}")),
+            );
             let devices = services.devices.clone();
             let users = services.users.clone();
 

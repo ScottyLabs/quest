@@ -7,6 +7,7 @@ mod m20260806_000300_card_id_format;
 mod m20260807_000100_tap_accuracy;
 mod m20260809_000100_failed_taps;
 mod m20260809_000200_card_locked_reason;
+mod m20260810_000100_wallet_pass;
 
 pub struct Migrator;
 
@@ -21,6 +22,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260807_000100_tap_accuracy::Migration),
             Box::new(m20260809_000100_failed_taps::Migration),
             Box::new(m20260809_000200_card_locked_reason::Migration),
+            Box::new(m20260810_000100_wallet_pass::Migration),
         ]
     }
 }

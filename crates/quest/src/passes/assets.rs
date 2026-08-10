@@ -1,0 +1,9 @@
+pub const ICON: &[u8] = include_bytes!("assets/icon.png");
+pub const ICON_2X: &[u8] = include_bytes!("assets/icon@2x.png");
+pub const ICON_3X: &[u8] = include_bytes!("assets/icon@3x.png");
+pub const LOGO: &[u8] = include_bytes!("assets/logo.png");
+pub const LOGO_2X: &[u8] = include_bytes!("assets/logo@2x.png");
+pub const LOGO_3X: &[u8] = include_bytes!("assets/logo@3x.png");
+pub const STRIP: &[u8] = include_bytes!("assets/strip.png");
+pub const STRIP_2X: &[u8] = include_bytes!("assets/strip@2x.png");
+pub const STRIP_3X: &[u8] = include_bytes!("assets/strip@3x.png");

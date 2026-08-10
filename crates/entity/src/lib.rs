@@ -11,3 +11,4 @@ pub mod items;
 pub mod purchases;
 pub mod tap_events;
 pub mod users;
+pub mod wallet_pass;

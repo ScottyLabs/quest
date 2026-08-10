@@ -4,6 +4,7 @@ export interface Cleared {
   description: string;
   reward: number;
   place: number | null;
+  repeat: boolean;
 }
 
 export const celebration = $state<{ current: Cleared | null }>({ current: null });

@@ -9,3 +9,4 @@ pub use super::items::Entity as Items;
 pub use super::purchases::Entity as Purchases;
 pub use super::tap_events::Entity as TapEvents;
 pub use super::users::Entity as Users;
+pub use super::wallet_pass::Entity as WalletPass;

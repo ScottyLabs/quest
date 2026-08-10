@@ -1,7 +1,35 @@
-<script lang="ts"></script>
+<script lang="ts">
+  import { Capacitor } from "@capacitor/core";
+  import { warn } from "$lib/notice.svelte";
+  import { addAppleToWallet } from "$lib/pass";
+
+  let { onreveal }: { onreveal: () => void } = $props();
+
+  let busy = $state(false);
+
+  async function show(): Promise<void> {
+    if (busy) return;
+    busy = true;
+
+    try {
+      if (Capacitor.getPlatform() === "ios") {
+        await addAppleToWallet();
+        return;
+      }
+      onreveal();
+    } catch (error) {
+      console.error("pass", error);
+      warn(`Couldn't open your pass (${error instanceof Error ? error.message : "unknown"}).`);
+    } finally {
+      busy = false;
+    }
+  }
+</script>
 
 <div class="gate">
-  <button class="reveal" type="button">Click to Show Pass</button>
+  <button class="reveal" type="button" onclick={show} disabled={busy}>
+    {busy ? "Preparing pass..." : "Click to Show Pass"}
+  </button>
   <img class="placeholder" src="/img/trade/ticket-pass-placeholder.svg" alt="" />
 </div>
 

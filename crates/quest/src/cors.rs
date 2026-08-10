@@ -1,4 +1,4 @@
-use axum::http::{HeaderValue, Method};
+use axum::http::{HeaderName, HeaderValue, Method};
 use tower_http::cors::{AllowOrigin, CorsLayer};
 
 pub fn layer() -> CorsLayer {
@@ -15,6 +15,12 @@ pub fn layer() -> CorsLayer {
             Method::OPTIONS,
         ])
         .allow_headers(crate::auth::routes::ALLOWED_HEADERS)
+        .expose_headers([
+            HeaderName::from_static("x-pass-serial"),
+            HeaderName::from_static("x-pass-issued"),
+            HeaderName::from_static("x-pass-token"),
+            HeaderName::from_static("x-pass-sha256"),
+        ])
         .allow_credentials(true)
 }
 

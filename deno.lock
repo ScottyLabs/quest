@@ -1,6 +1,7 @@
 {
   "version": "5",
   "specifiers": {
+    "npm:@belongnet/capacitor-pass-to-wallet@^8.0.4": "8.0.4_@capacitor+core@8.4.2",
     "npm:@capacitor/android@^8.4.2": "8.4.2_@capacitor+core@8.4.2",
     "npm:@capacitor/app@^8.1.1": "8.1.1_@capacitor+core@8.4.2",
     "npm:@capacitor/browser@^8.0.4": "8.0.4_@capacitor+core@8.4.2",
@@ -40,6 +41,12 @@
     },
     "@babel/helper-validator-identifier@7.29.7": {
       "integrity": "sha512-qehxGkRj55h/ff8EMaJ+cYhyaKlHIxqYDn682wQD7RNp9UujOQsHog2uS0r2vzr4pW+sXf90NeeayjcNaX3fFg=="
+    },
+    "@belongnet/capacitor-pass-to-wallet@8.0.4_@capacitor+core@8.4.2": {
+      "integrity": "sha512-SdnDI3P38wcAbIqa4Df2bTSJxtj8mE6GnRInrmUAAKhWI1iGo8lY7O/yVqGcwCm3ijQZNciIE9v2BBqK7nkKTg==",
+      "dependencies": [
+        "@capacitor/core"
+      ]
     },
     "@capacitor/android@8.4.2_@capacitor+core@8.4.2": {
       "integrity": "sha512-bzf8XZ9C+ePgOQ+e+T0fnhHGH4aCNY494vvSQIF5w4AY07RwEmkFqZs1678DDSMH0hLSQpxEwXGFNUVcXO6bBA==",
@@ -1359,6 +1366,7 @@
         ],
         "packageJson": {
           "dependencies": [
+            "npm:@belongnet/capacitor-pass-to-wallet@^8.0.4",
             "npm:@capacitor/android@^8.4.2",
             "npm:@capacitor/app@^8.1.1",
             "npm:@capacitor/browser@^8.0.4",

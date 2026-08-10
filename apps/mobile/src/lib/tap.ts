@@ -14,8 +14,20 @@ import { bank } from "$lib/wallet.svelte";
 const BOARD = "/app";
 
 let starting = false;
+let pending: string | null = null;
 
 export async function handleTap(url: string): Promise<void> {
+  if (pending === url) return;
+  pending = url;
+
+  try {
+    await register(url);
+  } finally {
+    pending = null;
+  }
+}
+
+async function register(url: string): Promise<void> {
   if (!(await permitted())) {
     raise(NEEDS_LOCATION);
     return;
@@ -44,17 +56,14 @@ export async function handleTap(url: string): Promise<void> {
 
   if (location.pathname !== BOARD) await goto(BOARD);
 
-  if (!result.first) {
-    warn(`That tag was "${landed.name}", already completed.`);
-  } else {
-    celebrate({
-      id: landed.id,
-      name: landed.name,
-      description: landed.description || landed.tagline,
-      reward: landed.coin_value,
-      place: result.place,
-    });
-  }
+  celebrate({
+    id: landed.id,
+    name: landed.name,
+    description: landed.description || landed.tagline,
+    reward: landed.coin_value,
+    place: result.place,
+    repeat: !result.first,
+  });
 
   await quests.reload();
 }

@@ -411,6 +411,186 @@
         }
       }
     },
+    "/api/passes/apple": {
+      "post": {
+        "tags": ["passes"],
+        "operationId": "issue",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IssueBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "An Apple Wallet pass",
+            "content": {
+              "application/vnd.apple.pkpass": {}
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/passes/apple/challenge": {
+      "get": {
+        "tags": ["passes"],
+        "operationId": "challenge",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PassChallenge"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/passes/verify": {
+      "post": {
+        "tags": ["passes"],
+        "operationId": "verify",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Verified"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/purchases/{id}/refund": {
       "post": {
         "tags": ["items"],
@@ -1251,6 +1431,18 @@
           }
         }
       },
+      "IssueBody": {
+        "type": "object",
+        "properties": {
+          "issued_at": {
+            "type": ["integer", "null"],
+            "format": "int64"
+          },
+          "signature": {
+            "type": ["string", "null"]
+          }
+        }
+      },
       "ItemView": {
         "type": "object",
         "required": ["id", "name", "description", "cost", "stock"],
@@ -1296,6 +1488,22 @@
         "properties": {
           "end_session_url": {
             "type": ["string", "null"]
+          }
+        }
+      },
+      "PassChallenge": {
+        "type": "object",
+        "required": ["andrew_id", "issued_at", "message"],
+        "properties": {
+          "andrew_id": {
+            "type": "string"
+          },
+          "issued_at": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "message": {
+            "type": "string"
           }
         }
       },
@@ -1577,6 +1785,22 @@
           }
         }
       },
+      "Verified": {
+        "type": "object",
+        "required": ["andrew_id", "name", "issued_at"],
+        "properties": {
+          "andrew_id": {
+            "type": "string"
+          },
+          "issued_at": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
       "Verify": {
         "type": "object",
         "required": ["public_key", "nonce", "signature"],
@@ -1591,6 +1815,15 @@
             "type": "string"
           },
           "signature": {
+            "type": "string"
+          }
+        }
+      },
+      "VerifyBody": {
+        "type": "object",
+        "required": ["token"],
+        "properties": {
+          "token": {
             "type": "string"
           }
         }
@@ -1685,6 +1918,10 @@
     {
       "name": "leaderboard",
       "description": "Standings and the Carnegie Cup"
+    },
+    {
+      "name": "passes",
+      "description": "Apple Wallet passes"
     }
   ]
 }

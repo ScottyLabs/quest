@@ -36,6 +36,17 @@
           pkgs = nixpkgs.legacyPackages.${system};
           helpers = scottylabs.mkLib pkgs;
 
+          questSrc = pkgs.lib.fileset.toSource {
+            root = ./.;
+            fileset = pkgs.lib.fileset.unions [
+              ./Cargo.toml
+              ./Cargo.lock
+              ./crates/quest
+              ./crates/entity
+              ./crates/migration
+            ];
+          };
+
           quest = helpers.buildRustService {
             src = ./.;
             pname = "quest";
@@ -49,7 +60,10 @@
               pkgs.pkg-config
             ];
             buildInputs = [ ];
-            buildArgs.cargoExtraArgs = "-p quest";
+            buildArgs = {
+              cargoExtraArgs = "-p quest";
+              src = questSrc;
+            };
           };
 
           mobile = helpers.buildDenoTask {

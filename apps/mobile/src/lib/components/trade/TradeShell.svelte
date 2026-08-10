@@ -44,8 +44,8 @@
     position: absolute;
     z-index: 0;
     top: calc(-101 * var(--u) + var(--notch));
-    left: calc(-15 * var(--u));
-    width: calc(492.5 * var(--u));
+    left: -3.417%;
+    width: 112.187%;
     height: calc(401.505 * var(--u));
   }
 
@@ -53,8 +53,8 @@
     position: absolute;
     z-index: 1;
     top: 0;
-    left: calc(-3 * var(--u));
-    width: calc(467 * var(--u));
+    left: -0.683%;
+    width: 106.378%;
     height: calc(190 * var(--u) + var(--notch));
     background: linear-gradient(180deg, var(--accent) 0%, var(--sink) 100%);
   }

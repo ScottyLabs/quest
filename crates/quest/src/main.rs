@@ -7,6 +7,7 @@ mod day;
 mod db;
 mod devices;
 mod items;
+mod leaderboard;
 mod taps;
 mod tokens;
 mod users;
@@ -109,6 +110,7 @@ async fn main() {
             let daily = daily::Daily::new(db.clone());
             let devices = devices::Devices::new(db.clone(), auth.sessions.pool());
             let items = items::Items::new(db.clone());
+            let leaderboard = leaderboard::Leaderboard::new(db.clone());
             let tokens = tokens::Tokens::new(db.clone());
             let taps = taps::Taps::new(db, master);
 
@@ -120,6 +122,7 @@ async fn main() {
                 .merge(taps::routes::router(taps, tokens.clone()))
                 .merge(tokens::routes::router(tokens))
                 .merge(items::routes::router(items))
+                .merge(leaderboard::routes::router(leaderboard))
                 .layer(axum::middleware::from_fn_with_state(
                     devices.clone(),
                     devices::enforce,

@@ -93,7 +93,7 @@ export const assignment = $state<{ day: string | null; quest: Quest | null }>({
 });
 
 async function refreshDaily(): Promise<void> {
-  const response = await authFetch("/users/me/daily").catch(() => null);
+  const response = await authFetch("/api/users/me/daily").catch(() => null);
   if (response === null || !response.ok) return;
 
   const body = (await response.json().catch(() => null)) as DailyBody | null;
@@ -104,7 +104,7 @@ async function refreshDaily(): Promise<void> {
 }
 
 async function board(): Promise<Quest[]> {
-  const response = await authFetch("/challenges");
+  const response = await authFetch("/api/challenges");
   if (!response.ok) throw new Error(`challenges responded ${response.status}`);
 
   const body = (await response.json()) as BoardBody;

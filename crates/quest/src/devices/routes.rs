@@ -19,6 +19,11 @@ pub fn router(devices: Devices) -> Router {
         .route("/auth/challenge", get(challenge))
         .route("/auth/device", post(verify))
         .route("/auth/device/enroll", post(enroll))
+        .with_state(devices)
+}
+
+pub fn manage(devices: Devices) -> Router {
+    Router::new()
         .route("/devices", get(list))
         .route("/devices/{public_key}", delete(revoke))
         .with_state(devices)

@@ -42,7 +42,7 @@ interface Shelf {
 const TTL = 5 * 60 * 1000;
 
 async function load(): Promise<Offer[]> {
-  const response = await authFetch("/items");
+  const response = await authFetch("/api/items");
   if (!response.ok) throw new Error(`items responded ${response.status}`);
 
   const body = (await response.json()) as Shelf;
@@ -91,7 +91,7 @@ interface Ledger {
 }
 
 async function loadPurchases(): Promise<Purchase[]> {
-  const response = await authFetch("/users/me/purchases");
+  const response = await authFetch("/api/users/me/purchases");
   if (!response.ok) throw new Error(`purchases responded ${response.status}`);
 
   const body = (await response.json()) as Ledger;
@@ -134,7 +134,7 @@ export class TradeError extends Error {
 }
 
 export async function purchase(id: string, quantity: number): Promise<Bought> {
-  const response = await authFetch(`/items/${id}/purchase`, {
+  const response = await authFetch(`/api/items/${id}/purchase`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ quantity }),
@@ -152,7 +152,7 @@ export async function purchase(id: string, quantity: number): Promise<Bought> {
 }
 
 export async function refund(id: number, quantity: number): Promise<void> {
-  const response = await authFetch(`/purchases/${id}/refund`, {
+  const response = await authFetch(`/api/purchases/${id}/refund`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ quantity }),

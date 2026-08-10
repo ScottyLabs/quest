@@ -2,6 +2,8 @@ mod applinks;
 mod auth;
 mod challenges;
 mod cors;
+mod daily;
+mod day;
 mod db;
 mod devices;
 mod items;
@@ -104,6 +106,7 @@ async fn main() {
             let sessions = auth.sessions.layer();
             let users = users::Users::new(db.clone());
             let challenges = challenges::Challenges::new(db.clone());
+            let daily = daily::Daily::new(db.clone());
             let devices = devices::Devices::new(db.clone(), auth.sessions.pool());
             let items = items::Items::new(db.clone());
             let tokens = tokens::Tokens::new(db.clone());
@@ -112,7 +115,8 @@ async fn main() {
             app.merge(auth::routes::router(auth))
                 .merge(devices::routes::router(devices.clone()))
                 .merge(users::routes::router(users.clone()))
-                .merge(challenges::routes::router(challenges))
+                .merge(challenges::routes::router(challenges.clone()))
+                .merge(daily::routes::router(daily, challenges))
                 .merge(taps::routes::router(taps, tokens.clone()))
                 .merge(tokens::routes::router(tokens))
                 .merge(items::routes::router(items))

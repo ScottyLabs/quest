@@ -5,7 +5,7 @@ use axum::{Extension, Json, Router};
 use sea_orm::prelude::Uuid;
 use serde::{Deserialize, Serialize};
 
-use super::{Items, Receipt, Stocked};
+use super::{Items, Ledger, Receipt, Stocked};
 use crate::auth::AuthError;
 use crate::auth::extract::CurrentUser;
 use crate::users::Users;
@@ -14,6 +14,8 @@ pub fn router(items: Items) -> Router {
     Router::new()
         .route("/items", get(list))
         .route("/items/{id}/purchase", post(buy))
+        .route("/users/me/purchases", get(mine))
+        .route("/purchases/{id}/refund", post(give_back))
         .with_state(items)
 }
 
@@ -117,4 +119,86 @@ async fn buy(
     let row = users.row(&user).await?;
 
     Ok(Json(items.purchase(row.id, id, quantity).await?.into()))
+}
+
+#[derive(Serialize)]
+struct PurchaseView {
+    purchase_id: i64,
+    item_id: String,
+    name: String,
+    quantity: i64,
+    cost: i64,
+    delivered: bool,
+}
+
+impl From<Ledger> for PurchaseView {
+    fn from(row: Ledger) -> Self {
+        Self {
+            purchase_id: row.purchase_id,
+            item_id: row.item_id.to_string(),
+            name: row.name,
+            quantity: row.quantity,
+            cost: row.cost,
+            delivered: row.delivered,
+        }
+    }
+}
+
+#[derive(Serialize)]
+struct Wallet {
+    purchases: Vec<PurchaseView>,
+}
+
+async fn mine(
+    State(items): State<Items>,
+    Extension(users): Extension<Users>,
+    CurrentUser(user): CurrentUser,
+) -> Result<Json<Wallet>, AuthError> {
+    let row = users.row(&user).await?;
+
+    Ok(Json(Wallet {
+        purchases: items
+            .purchases(row.id)
+            .await?
+            .into_iter()
+            .map(PurchaseView::from)
+            .collect(),
+    }))
+}
+
+#[derive(Deserialize)]
+struct RefundBody {
+    #[serde(default = "one")]
+    quantity: i64,
+}
+
+#[derive(Serialize)]
+struct RefundView {
+    refunded: i64,
+    scottycoins: i64,
+}
+
+async fn give_back(
+    State(items): State<Items>,
+    Extension(users): Extension<Users>,
+    CurrentUser(user): CurrentUser,
+    Path(id): Path<String>,
+    body: Result<Json<RefundBody>, JsonRejection>,
+) -> Result<Json<RefundView>, AuthError> {
+    let id = id
+        .parse::<i64>()
+        .map_err(|_| AuthError::BadRequest("purchase_id_invalid"))?;
+    let quantity = match body {
+        Ok(Json(body)) => body.quantity,
+        Err(JsonRejection::MissingJsonContentType(_)) => 1,
+        Err(_) => return Err(AuthError::BadRequest("refund_body_invalid")),
+    };
+
+    let row = users.row(&user).await?;
+    let done = items.refund(row.id, id, quantity).await?;
+
+    Ok(Json(RefundView {
+        refunded: done.refunded,
+        scottycoins: done.scottycoins,
+    }))
 }

@@ -1,19 +1,24 @@
 pub mod routes;
 
+use std::sync::LazyLock;
+
 use sea_orm::prelude::{Date, Uuid};
 use sea_orm::{ConnectionTrait, DatabaseConnection, DbBackend, DbErr, FromQueryResult, Statement};
 use serde::Serialize;
 
 use crate::auth::AuthError;
+use crate::day::GEM_DAY;
 
 const DAILY_CAP: i64 = 10;
 
 const DAILY_BONUS: i64 = 5;
 
-const BALANCES: &str = r#"
+static BALANCES: LazyLock<String> = LazyLock::new(|| {
+    format!(
+        r#"
 WITH target AS (
     SELECT CASE
-        WHEN $5 THEN ((now() AT TIME ZONE 'America/New_York') - INTERVAL '12 hours')::DATE
+        WHEN $5 THEN {GEM_DAY}
         ELSE $4
     END AS "day"
 ),
@@ -59,7 +64,9 @@ SELECT
     (COALESCE((SELECT SUM("stones") FROM capped), 0) + bonus."stones")::BIGINT
         AS "thistlestones"
 FROM target, spent, bonus
-"#;
+"#
+    )
+});
 
 pub enum Scope {
     Lifetime,
@@ -108,7 +115,7 @@ pub async fn balances_of<C: ConnectionTrait>(
 
     Balances::find_by_statement(Statement::from_sql_and_values(
         DbBackend::Postgres,
-        BALANCES,
+        BALANCES.as_str(),
         [
             user.into(),
             DAILY_CAP.into(),

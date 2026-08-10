@@ -6,8 +6,8 @@
   import WaveEdge from "$lib/components/ui/WaveEdge.svelte";
   import { bucket, filters } from "$lib/filters.svelte";
   import {
+    assignment,
     CATEGORIES,
-    DAILY,
     done,
     inCategory,
     nextUnlock,
@@ -16,9 +16,9 @@
   } from "$lib/quests.svelte";
   import { matches, search } from "$lib/search.svelte";
   import { tapScan } from "$lib/tap";
-  import { theme } from "$lib/theme";
+  import { FALLBACK, theme } from "$lib/theme";
   import { active } from "$lib/theme.svelte";
-  import { refresh, wallet } from "$lib/wallet.svelte";
+  import { gemDay, refresh, wallet } from "$lib/wallet.svelte";
 
   async function beginScan(quest: Quest) {
     await tapScan(quest.title);
@@ -26,11 +26,23 @@
 
   const all = $derived(quests.data ?? []);
   const shown = $derived(inCategory(all, active.id));
+  const daily = $derived.by(() => {
+    const quest = assignment.quest;
+    if (quest === null) return null;
+    if (active.id !== FALLBACK && active.id !== quest.category) return null;
+
+    const kept = filters[bucket(quest, Date.now())] && matches(quest, search.query);
+    return kept ? quest : null;
+  });
+  // Drop it from the ordinary list: it is a real challenge, so without this it
+  // renders twice wherever the daily card shows.
   const visible = $derived(
-    shown.filter((quest) => filters[bucket(quest, Date.now())] && matches(quest, search.query)),
-  );
-  const daily = $derived(
-    filters[bucket(DAILY, Date.now())] && matches(DAILY, search.query) ? DAILY : null,
+    shown.filter(
+      (quest) =>
+        quest.id !== daily?.id &&
+        filters[bucket(quest, Date.now())] &&
+        matches(quest, search.query),
+    ),
   );
   const completed = $derived(done(shown));
   const cold = $derived(quests.data === null);
@@ -45,19 +57,24 @@
     if (scroller && category) scroller.scrollTop = 0;
   });
 
+  const settled = () => {
+    if (assignment.day !== null && assignment.day !== gemDay()) return quests.reload();
+    return quests.ensure();
+  };
+
   $effect(() => {
     void quests.reload();
     void refresh();
 
     const wake = () => {
       if (document.visibilityState !== "visible") return;
-      void quests.ensure();
+      void settled();
       void refresh();
     };
 
     document.addEventListener("visibilitychange", wake);
     const beat = setInterval(() => {
-      void quests.ensure();
+      void settled();
       void refresh();
     }, 60_000);
 

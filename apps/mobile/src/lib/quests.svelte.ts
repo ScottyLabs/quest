@@ -67,27 +67,8 @@ export async function registerTap(url: string): Promise<Registered> {
 
 export const CATEGORIES: string[] = Object.keys(THEMES);
 
-//TODO: temporary placeholder
-export const DAILY: Quest = {
-  id: "daily-placeholder",
-  title: "You have got Mail",
-  detail: "Deliver or pick up mail in the University Center",
-  description: "Deliver or pick up mail in the University Center",
-  reward: 5,
-  state: "open",
-  category: FALLBACK,
-  opensAt: new Date(0).toISOString(),
-};
-
-const TTL = 15 * 60 * 1000;
-
-async function load(): Promise<Quest[]> {
-  const response = await authFetch("/challenges");
-  if (!response.ok) throw new Error(`challenges responded ${response.status}`);
-
-  const body = (await response.json()) as BoardBody;
-
-  return body.challenges.map((row) => ({
+export function toQuest(row: ChallengeView): Quest {
+  return {
     id: row.id,
     title: row.name,
     detail: row.tagline,
@@ -96,7 +77,45 @@ async function load(): Promise<Quest[]> {
     state: row.cleared ? "done" : "open",
     category: row.category,
     opensAt: row.open_from,
-  }));
+  };
+}
+
+const TTL = 15 * 60 * 1000;
+
+interface DailyBody {
+  day: string;
+  challenge: ChallengeView | null;
+}
+
+export const assignment = $state<{ day: string | null; quest: Quest | null }>({
+  day: null,
+  quest: null,
+});
+
+async function refreshDaily(): Promise<void> {
+  const response = await authFetch("/users/me/daily").catch(() => null);
+  if (response === null || !response.ok) return;
+
+  const body = (await response.json().catch(() => null)) as DailyBody | null;
+  if (body === null) return;
+
+  assignment.day = body.day;
+  assignment.quest = body.challenge === null ? null : toQuest(body.challenge);
+}
+
+async function board(): Promise<Quest[]> {
+  const response = await authFetch("/challenges");
+  if (!response.ok) throw new Error(`challenges responded ${response.status}`);
+
+  const body = (await response.json()) as BoardBody;
+
+  return body.challenges.map(toQuest);
+}
+
+async function load(): Promise<Quest[]> {
+  const [rows] = await Promise.all([board(), refreshDaily()]);
+
+  return rows;
 }
 
 function revive(raw: unknown): Quest[] | null {

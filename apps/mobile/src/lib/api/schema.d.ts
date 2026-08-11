@@ -164,6 +164,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/passes/token": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["token"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/passes/verify": {
     parameters: {
       query?: never;
@@ -472,6 +488,13 @@ export interface components {
       /** Format: int64 */
       issued_at: number;
       message: string;
+    };
+    PassToken: {
+      andrew_id: string;
+      /** Format: int64 */
+      issued_at: number;
+      name: string;
+      token: string;
     };
     Profile: {
       andrew_id: string;
@@ -1006,6 +1029,61 @@ export interface operations {
         };
       };
       502: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuthErrBody"];
+        };
+      };
+    };
+  };
+  token: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["IssueBody"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PassToken"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuthErrBody"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuthErrBody"];
+        };
+      };
+      502: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuthErrBody"];
+        };
+      };
+      503: {
         headers: {
           [name: string]: unknown;
         };

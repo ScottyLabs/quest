@@ -49,6 +49,24 @@ export async function applePass(): Promise<WalletPass> {
   };
 }
 
+export async function passToken(): Promise<string> {
+  const {
+    data: challenge,
+    error: refused,
+    response: asked,
+  } = await api.GET("/api/passes/apple/challenge");
+  if (!challenge) throw new Error(refused?.error ?? `http_${asked.status}`);
+
+  const signature = await signMessage(challenge.message);
+
+  const { data, error, response } = await api.POST("/api/passes/token", {
+    body: { issued_at: challenge.issued_at, signature },
+  });
+  if (!data) throw new Error(error?.error ?? `http_${response.status}`);
+
+  return data.token;
+}
+
 function base64(bytes: Uint8Array): string {
   let binary = "";
   for (let at = 0; at < bytes.length; at += 8192) {

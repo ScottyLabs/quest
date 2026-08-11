@@ -2,6 +2,9 @@
 include ':capacitor-android'
 project(':capacitor-android').projectDir = new File('../../../node_modules/.deno/@capacitor+android@8.4.2/node_modules/@capacitor/android/capacitor')
 
+include ':belongnet-capacitor-pass-to-wallet'
+project(':belongnet-capacitor-pass-to-wallet').projectDir = new File('../../../node_modules/.deno/@belongnet+capacitor-pass-to-wallet@8.0.4/node_modules/@belongnet/capacitor-pass-to-wallet/android')
+
 include ':capacitor-app'
 project(':capacitor-app').projectDir = new File('../../../node_modules/.deno/@capacitor+app@8.1.1/node_modules/@capacitor/app/android')
 

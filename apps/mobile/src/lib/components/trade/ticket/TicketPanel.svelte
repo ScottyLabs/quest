@@ -1,11 +1,8 @@
 <script lang="ts">
   import TicketGate from "./TicketGate.svelte";
-  import TicketPass from "./TicketPass.svelte";
   import { PICKUP } from "$lib/trade.svelte";
 
   let { name, andrewId }: { name: string; andrewId: string } = $props();
-
-  let shown = $state(false);
 </script>
 
 <section class="ticket">
@@ -15,11 +12,7 @@
     be <b class="mark">DELIVERED</b>
   </p>
 
-  {#if shown}
-    <TicketPass {name} {andrewId} />
-  {:else}
-    <TicketGate onreveal={() => (shown = true)} />
-  {/if}
+  <TicketGate {name} {andrewId} />
 </section>
 
 <style>

@@ -6,6 +6,7 @@
   import NfcSheet from "$lib/components/tap/NfcSheet.svelte";
   import TapFailedSheet from "$lib/components/tap/TapFailedSheet.svelte";
   import TapResultSheet from "$lib/components/tap/TapResultSheet.svelte";
+  import TicketSheet from "$lib/components/trade/ticket/TicketSheet.svelte";
   import WarningDialog from "$lib/components/shell/WarningDialog.svelte";
   import { session } from "$lib/auth";
   import { caution, hush } from "$lib/caution.svelte";
@@ -18,6 +19,7 @@
   import { cancelScan, scanning } from "$lib/scanning.svelte";
   import { handleTap, tapScan } from "$lib/tap";
   import { closeTapFail, tapfail } from "$lib/tapfail.svelte";
+  import { hideTicket, ticket } from "$lib/ticket.svelte";
   import { FALLBACK, theme, vars } from "$lib/theme";
   import { active } from "$lib/theme.svelte";
 
@@ -76,6 +78,14 @@
 
   {#if celebration.current}
     <TapResultSheet cleared={celebration.current} onclose={closeCelebration} />
+  {/if}
+
+  {#if ticket.current}
+    <TicketSheet
+      name={ticket.current.name}
+      andrewId={ticket.current.andrewId}
+      onclose={hideTicket}
+    />
   {/if}
 
   {#if tapfail.current}

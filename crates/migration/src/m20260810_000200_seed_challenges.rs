@@ -1,16 +1,7 @@
-use sea_orm_migration::prelude::*;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
 
-// Content of "O-Quest Content (2026) - All Challenges.csv": name, tagline,
-// description, category, and the published unlock time (Eastern, UTC-4), matching
-// what quest-import reads. The one CSV row without a challenge name is left out.
-//
-// Ids are derived from the name, so a seed lands on the same rows everywhere and
-// `down` can tell what this migration wrote. Coin value follows quest-import's
-// default. Nothing is written if the table already holds challenges -- an
-// environment that imported its own content keeps it.
 const SEED: &str = r#"
             INSERT INTO "challenge"
                 ("id", "name", "tagline", "description", "category", "coin_value", "open_from")
@@ -523,10 +514,6 @@ const SEED: &str = r#"
             WHERE NOT EXISTS (SELECT 1 FROM "challenge");
 "#;
 
-// A challenge stays locked while "open_from" sits in the future (quest::taps::locked).
-// Half the seeded rows, drawn at random, keep their published unlock time -- pushed
-// out a week when that date has already passed -- and the rest open immediately.
-// Only name-derived ids are considered, so this is a no-op when the seed was skipped.
 const LOCK_HALF: &str = r#"
             WITH pick AS (
                 SELECT "id", row_number() OVER (ORDER BY random()) AS "n"
@@ -543,8 +530,6 @@ const LOCK_HALF: &str = r#"
             WHERE "challenge"."id" = pick."id";
 "#;
 
-// Only rows this migration inserted carry a name-derived id, so content imported
-// by hand (and anything tapped against it) survives a rollback.
 const UNSEED: &str = r#"
             CREATE TEMP TABLE "seeded_challenge" AS
             SELECT "id" FROM "challenge"
@@ -568,8 +553,6 @@ const UNSEED: &str = r#"
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        // One batch: the lock draw has to see the rows the seed just wrote, and a
-        // pooled connection is not guaranteed to be the same one twice.
         manager
             .get_connection()
             .execute_unprepared(&[SEED, LOCK_HALF].concat())

@@ -3,16 +3,6 @@ use sea_orm_migration::prelude::*;
 #[derive(DeriveMigrationName)]
 pub struct Migration;
 
-// Terrier Trade stock from "ttrade.csv", read tier section by tier section: name,
-// the description the sheet supplies, the ScottyCoin cost, and the total expected
-// inventory ("TBD" counts as none in stock yet). Rows without a whole-number cost
-// are left out -- the unpriced shirt and dorm-memento variants, plus the two "600+"
-// umbrella rows whose variants are listed with prices of their own. The sheet has
-// no artwork, so "image_url" stays null.
-//
-// Ids are derived from the name, so a seed lands on the same rows everywhere and
-// `down` can tell what this migration wrote. Nothing is written if the table
-// already holds items -- an environment that stocked its own shop keeps it.
 const SEED: &str = r#"
             INSERT INTO "items"
                 ("id", "name", "description", "cost", "image_url", "quantity_available")
@@ -67,8 +57,6 @@ const SEED: &str = r#"
             WHERE NOT EXISTS (SELECT 1 FROM "items");
 "#;
 
-// Only rows this migration inserted carry a name-derived id, so a shop stocked by
-// hand (and anything bought from it) survives a rollback.
 const UNSEED: &str = r#"
             CREATE TEMP TABLE "seeded_item" AS
             SELECT "id" FROM "items"

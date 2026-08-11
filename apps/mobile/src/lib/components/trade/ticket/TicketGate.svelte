@@ -2,8 +2,9 @@
   import { Capacitor } from "@capacitor/core";
   import { warn } from "$lib/notice.svelte";
   import { addAppleToWallet } from "$lib/pass";
+  import { showTicket } from "$lib/ticket.svelte";
 
-  let { onreveal }: { onreveal: () => void } = $props();
+  let { name, andrewId }: { name: string; andrewId: string } = $props();
 
   let busy = $state(false);
 
@@ -16,7 +17,7 @@
         await addAppleToWallet();
         return;
       }
-      onreveal();
+      showTicket({ name, andrewId });
     } catch (error) {
       console.error("pass", error);
       warn(`Couldn't open your pass (${error instanceof Error ? error.message : "unknown"}).`);

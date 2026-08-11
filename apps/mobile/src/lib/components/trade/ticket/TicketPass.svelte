@@ -1,7 +1,39 @@
 <script lang="ts">
+  import QRCode from "qrcode";
+  import { passToken } from "$lib/pass";
   import PassField from "./PassField.svelte";
 
-  let { name, andrewId }: { name: string; andrewId: string } = $props();
+  let {
+    name,
+    andrewId,
+    token,
+  }: { name: string; andrewId: string; token?: string } = $props();
+
+  let drawn = $state("");
+  let failed = $state(false);
+
+  $effect(() => {
+    let live = true;
+
+    void (async () => {
+      try {
+        const payload = token ?? (await passToken());
+        const svg = await QRCode.toString(payload, {
+          type: "svg",
+          errorCorrectionLevel: "M",
+          margin: 0,
+        });
+        if (live) drawn = svg;
+      } catch (error) {
+        console.error("ticket", error);
+        if (live) failed = true;
+      }
+    })();
+
+    return () => {
+      live = false;
+    };
+  });
 </script>
 
 <article class="pass">
@@ -19,7 +51,13 @@
     </div>
   </div>
 
-  <img class="qr" src="/img/trade/ticket-qr.png" alt="Ticket QR code" />
+  <div class="qr" role="img" aria-label="Ticket QR code">
+    {#if drawn}
+      {@html drawn}
+    {:else}
+      <span class="pending">{failed ? "Ticket unavailable" : "Loading..."}</span>
+    {/if}
+  </div>
   <img class="scotty" src="/img/trade/ticket-scotty.png" alt="" />
 </article>
 
@@ -81,10 +119,28 @@
   }
 
   .qr {
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    width: calc(212 * var(--u));
+    height: calc(212 * var(--u));
+    margin: calc(34 * var(--u)) auto calc(17 * var(--u));
+    padding: calc(10 * var(--u));
+    border-radius: calc(6 * var(--u));
+    background: #fff;
+  }
+
+  .qr :global(svg) {
     display: block;
-    width: calc(96 * var(--u));
-    height: calc(96 * var(--u));
-    margin: calc(68 * var(--u)) auto calc(17 * var(--u));
+    width: 100%;
+    height: 100%;
+    shape-rendering: crispEdges;
+  }
+
+  .pending {
+    color: var(--tertiary);
+    font-size: calc(13 * var(--u));
+    font-weight: 600;
   }
 
   .scotty {

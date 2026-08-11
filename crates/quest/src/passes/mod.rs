@@ -44,6 +44,13 @@ pub struct Issued {
     pub pkpass: Vec<u8>,
 }
 
+pub struct Minted {
+    pub token: String,
+    pub andrew_id: String,
+    pub name: String,
+    pub issued_at: i64,
+}
+
 pub struct Holder {
     pub andrew_id: String,
     pub name: String,
@@ -214,15 +221,13 @@ impl Passes {
             .map(|device| device.public_key))
     }
 
-    pub async fn issue(
+    async fn ensure(
         &self,
         user: Uuid,
         andrew_id: &str,
         name: &str,
         offered: Option<Signed>,
-    ) -> Result<Issued, AuthError> {
-        let signing = self.signing.as_ref().ok_or(AuthError::NotConfigured)?;
-
+    ) -> Result<(wallet_pass::Model, bool), AuthError> {
         let held = wallet_pass::Entity::find_by_id(user)
             .one(&self.db)
             .await
@@ -234,7 +239,7 @@ impl Passes {
             let message = signed_message(&row.andrew_id, row.issued_at);
 
             if self.signer(user, &message, &signature).await?.is_some() {
-                return rebuild(signing, row);
+                return Ok((row, false));
             }
         }
 
@@ -253,21 +258,21 @@ impl Passes {
             .await?
             .ok_or(AuthError::Unauthorized("pass_signature"))?;
 
-        let serial = andrew_id.to_owned();
-        let token = encode_token(andrew_id, issued_at, &signature);
-
-        let row = wallet_pass::ActiveModel {
-            user_id: ActiveValue::Set(user),
-            serial: ActiveValue::Set(serial.clone()),
-            andrew_id: ActiveValue::Set(andrew_id.to_owned()),
-            name: ActiveValue::Set(name.to_owned()),
-            issued_at: ActiveValue::Set(issued_at),
-            public_key: ActiveValue::Set(public_key),
-            signature: ActiveValue::Set(URL_SAFE_NO_PAD.encode(&signature)),
-            ..Default::default()
+        let fresh = wallet_pass::Model {
+            user_id: user,
+            serial: andrew_id.to_owned(),
+            andrew_id: andrew_id.to_owned(),
+            name: name.to_owned(),
+            issued_at,
+            public_key,
+            signature: URL_SAFE_NO_PAD.encode(&signature),
+            created_at: chrono::Utc::now().into(),
         };
 
-        wallet_pass::Entity::insert(row)
+        let mut writing: wallet_pass::ActiveModel = fresh.clone().into();
+        writing.created_at = ActiveValue::NotSet;
+
+        wallet_pass::Entity::insert(writing)
             .on_conflict(
                 sea_query::OnConflict::column(wallet_pass::Column::UserId)
                     .update_columns([
@@ -283,13 +288,41 @@ impl Passes {
             .await
             .map_err(db_down)?;
 
-        let pkpass = build(signing, &serial, andrew_id, name, &token)?;
+        Ok((fresh, true))
+    }
+
+    pub async fn issue(
+        &self,
+        user: Uuid,
+        andrew_id: &str,
+        name: &str,
+        offered: Option<Signed>,
+    ) -> Result<Issued, AuthError> {
+        let signing = self.signing.as_ref().ok_or(AuthError::NotConfigured)?;
+        let (row, fresh) = self.ensure(user, andrew_id, name, offered).await?;
 
         Ok(Issued {
-            serial,
-            token,
-            fresh: true,
-            pkpass,
+            fresh,
+            ..rebuild(signing, row)?
+        })
+    }
+
+    pub async fn token(
+        &self,
+        user: Uuid,
+        andrew_id: &str,
+        name: &str,
+        offered: Option<Signed>,
+    ) -> Result<Minted, AuthError> {
+        let (row, _) = self.ensure(user, andrew_id, name, offered).await?;
+        let signature =
+            decode_base64(&row.signature).ok_or(AuthError::Upstream("pass_signature_corrupt"))?;
+
+        Ok(Minted {
+            token: encode_token(&row.andrew_id, row.issued_at, &signature),
+            andrew_id: row.andrew_id,
+            name: row.name,
+            issued_at: row.issued_at,
         })
     }
 

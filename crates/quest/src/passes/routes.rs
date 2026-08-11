@@ -19,8 +19,51 @@ pub fn router(passes: Passes) -> OpenApiRouter {
     OpenApiRouter::new()
         .routes(routes!(challenge))
         .routes(routes!(issue))
+        .routes(routes!(token))
         .routes(routes!(verify))
         .with_state(passes)
+}
+
+#[derive(Serialize, ToSchema)]
+struct PassToken {
+    token: String,
+    andrew_id: String,
+    name: String,
+    issued_at: i64,
+}
+
+#[utoipa::path(
+    post,
+    path = "/passes/token",
+    tag = "passes",
+    request_body = IssueBody,
+    responses(
+        (status = OK, body = PassToken),
+        (status = BAD_REQUEST, body = AuthErrBody),
+        (status = UNAUTHORIZED, body = AuthErrBody),
+        (status = SERVICE_UNAVAILABLE, body = AuthErrBody),
+        (status = BAD_GATEWAY, body = AuthErrBody),
+    ),
+)]
+async fn token(
+    State(passes): State<Passes>,
+    Extension(users): Extension<Users>,
+    CurrentUser(user): CurrentUser,
+    body: Result<Json<IssueBody>, JsonRejection>,
+) -> Result<Json<PassToken>, AuthError> {
+    let Json(body) = body.map_err(|_| AuthError::BadRequest("pass_body_invalid"))?;
+
+    let row = users.row(&user).await?;
+    let held = passes
+        .token(row.id, &user.andrew_id, &user.name, offered(&body)?)
+        .await?;
+
+    Ok(Json(PassToken {
+        token: held.token,
+        andrew_id: held.andrew_id,
+        name: held.name,
+        issued_at: held.issued_at,
+    }))
 }
 
 #[derive(Serialize, ToSchema)]

@@ -513,6 +513,74 @@
         }
       }
     },
+    "/api/passes/token": {
+      "post": {
+        "tags": ["passes"],
+        "operationId": "token",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IssueBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PassToken"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/passes/verify": {
       "post": {
         "tags": ["passes"],
@@ -1503,6 +1571,25 @@
             "format": "int64"
           },
           "message": {
+            "type": "string"
+          }
+        }
+      },
+      "PassToken": {
+        "type": "object",
+        "required": ["token", "andrew_id", "name", "issued_at"],
+        "properties": {
+          "andrew_id": {
+            "type": "string"
+          },
+          "issued_at": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "token": {
             "type": "string"
           }
         }

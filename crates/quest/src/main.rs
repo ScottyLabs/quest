@@ -8,6 +8,7 @@ mod db;
 mod devices;
 mod items;
 mod leaderboard;
+mod legal;
 mod openapi;
 mod passes;
 mod taps;
@@ -165,6 +166,7 @@ async fn main() {
     };
 
     let app = app
+        .merge(legal::router())
         .merge(openapi::docs())
         .layer(cors::layer())
         .layer(axum::middleware::from_fn(log_request));

@@ -13,6 +13,9 @@
   let failed = $state<string | null>(null);
   let picking = $state(false);
   let query = $state("");
+  let accuracy = $state<number | null>(null);
+
+  const PRECISE_METRES = 25;
 
   const all = $derived<Quest[]>(quests.data ?? []);
   const linked = $derived(all.find((quest) => quest.id === card.challenge_id) ?? null);
@@ -67,6 +70,13 @@
     void run("place", async () => {
       const here = await fix();
       if (!here) throw new Error("no_location_fix");
+
+      if (here.accuracy === undefined) throw new Error("accuracy_unknown");
+      if (here.accuracy > PRECISE_METRES) {
+        throw new Error(`fix_too_coarse_${Math.round(here.accuracy)}m`);
+      }
+
+      accuracy = here.accuracy;
       await placeCard(card.card_id, here.lat, here.lon);
     });
   }
@@ -94,7 +104,10 @@
       </div>
       <div>
         <dt>Position</dt>
-        <dd>{placed ? `${card.lat?.toFixed(5)}, ${card.lon?.toFixed(5)}` : "Not set"}</dd>
+        <dd>
+          {placed ? `${card.lat?.toFixed(5)}, ${card.lon?.toFixed(5)}` : "Not set"}
+          {#if accuracy !== null}<span class="within">±{Math.round(accuracy)} m</span>{/if}
+        </dd>
       </div>
     </dl>
 
@@ -239,6 +252,13 @@
     font-size: calc(14 * var(--u));
     font-weight: 600;
     text-align: right;
+  }
+
+  .within {
+    display: block;
+    color: var(--tertiary);
+    font-size: calc(12 * var(--u));
+    font-weight: 600;
   }
 
   .failed {

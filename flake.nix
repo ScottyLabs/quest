@@ -47,6 +47,20 @@
             ];
           };
 
+          mobileSrc = pkgs.lib.fileset.toSource {
+            root = ./.;
+            fileset = pkgs.lib.fileset.unions [
+              ./deno.json
+              ./deno.lock
+              (pkgs.lib.fileset.difference ./apps/mobile (
+                pkgs.lib.fileset.unions [
+                  ./apps/mobile/android
+                  ./apps/mobile/ios
+                ]
+              ))
+            ];
+          };
+
           quest = helpers.buildRustService {
             src = ./.;
             pname = "quest";
@@ -58,23 +72,41 @@
             ];
             nativeBuildInputs = [
               pkgs.pkg-config
+              pkgs.makeWrapper
             ];
             buildInputs = [ ];
             buildArgs = {
               cargoExtraArgs = "-p quest";
               src = questSrc;
+              postInstall = ''
+                mkdir -p $out/share/quest
+                cp ${bundle} $out/share/quest/bundle.zip
+                wrapProgram $out/bin/quest \
+                  --set-default QUEST_BUNDLE $out/share/quest/bundle.zip
+              '';
             };
           };
 
           mobile = helpers.buildDenoTask {
-            src = ./apps/mobile;
+            src = mobileSrc;
+            cwd = "apps/mobile";
             pname = "quest-mobile";
             version = "0.1.0";
             output = "build";
           };
+
+          bundle =
+            pkgs.runCommand "quest-bundle.zip"
+              {
+                nativeBuildInputs = [ pkgs.zip ];
+              }
+              ''
+                cd ${mobile}
+                find . -type f -o -type l | sort | zip -q -X -9 "$out" -@
+              '';
         in
         {
-          inherit quest mobile;
+          inherit quest mobile bundle;
           default = quest;
         }
       );

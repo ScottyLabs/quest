@@ -2707,7 +2707,7 @@ dependencies = [
  "sha2 0.10.9",
  "thiserror 2.0.19",
  "x509-cert",
- "zip",
+ "zip 4.6.1",
 ]
 
 [[package]]
@@ -2872,6 +2872,7 @@ dependencies = [
  "utoipa-scalar",
  "uuid",
  "x509-cert",
+ "zip 6.0.0",
 ]
 
 [[package]]
@@ -5255,6 +5256,20 @@ dependencies = [
  "zeroize",
  "zopfli",
  "zstd",
+]
+
+[[package]]
+name = "zip"
+version = "6.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eb2a05c7c36fde6c09b08576c9f7fb4cda705990f73b58fe011abf7dfb24168b"
+dependencies = [
+ "arbitrary",
+ "crc32fast",
+ "flate2",
+ "indexmap 2.14.0",
+ "memchr",
+ "zopfli",
 ]
 
 [[package]]

@@ -8,8 +8,11 @@
   import { NfcError } from "$lib/nfc";
   import { warn } from "$lib/notice.svelte";
   import { handleTap } from "$lib/tap";
+  import { ready } from "$lib/updates";
 
   document.documentElement.dataset.platform = Capacitor.getPlatform();
+
+  if (Capacitor.isNativePlatform()) void ready();
 
   let { children } = $props();
 

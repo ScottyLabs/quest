@@ -13,6 +13,7 @@ mod openapi;
 mod passes;
 mod taps;
 mod tokens;
+mod updates;
 mod users;
 
 use std::sync::Arc;
@@ -94,6 +95,23 @@ async fn log_request(
     response
 }
 
+fn bundle_source() -> Option<String> {
+    let mut args = std::env::args().skip(1);
+
+    while let Some(arg) = args.next() {
+        if let Some(path) = arg.strip_prefix("--bundle=") {
+            return Some(path.to_owned());
+        }
+        if arg == "--bundle" {
+            return Some(args.next().expect("--bundle needs a path"));
+        }
+    }
+
+    std::env::var("QUEST_BUNDLE")
+        .ok()
+        .filter(|path| !path.is_empty())
+}
+
 #[tokio::main]
 async fn main() {
     if std::env::args().nth(1).as_deref() == Some("openapi") {
@@ -120,6 +138,19 @@ async fn main() {
         .await
         .expect("failed to connect to Postgres");
 
+    let updates = match bundle_source() {
+        Some(path) => {
+            let loaded = updates::Updates::load(std::path::Path::new(&path))
+                .unwrap_or_else(|err| panic!("bundle {path}: {err}"));
+            let live = loaded.live().expect("a loaded bundle is always live");
+            println!("serving bundle {} from {path}", live.version);
+            loaded
+        }
+        None => {
+            eprintln!("no bundle configured; over-the-air updates are off");
+            updates::Updates::disabled()
+        }
+    };
     let master = Arc::new(load_master_key());
 
     let app = Router::new()
@@ -167,6 +198,7 @@ async fn main() {
 
     let app = app
         .merge(legal::router())
+        .merge(updates::routes::router(updates))
         .merge(openapi::docs())
         .layer(cors::layer())
         .layer(axum::middleware::from_fn(log_request));

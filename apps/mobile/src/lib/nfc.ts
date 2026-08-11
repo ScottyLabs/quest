@@ -1,5 +1,5 @@
 import { Capacitor } from "@capacitor/core";
-import { CapacitorNfc } from "@capgo/capacitor-nfc";
+import { CapacitorNfc, type StartScanningOptions } from "@capgo/capacitor-nfc";
 import type { NdefRecord, NfcSessionEndEvent } from "@capgo/capacitor-nfc";
 
 export class NfcError extends Error {}
@@ -122,6 +122,12 @@ function listen(): Promise<void> {
   return mounted;
 }
 
+const IOS_TAG_SESSION: StartScanningOptions = {
+  invalidateAfterFirstRead: true,
+  iosSessionType: "tag",
+  iosPollingOptions: ["iso14443"],
+};
+
 export async function arm(handler: (url: string) => void): Promise<() => void> {
   ambient = handler;
   await listen();
@@ -157,14 +163,11 @@ export async function scan(prompt: string, signal?: AbortSignal): Promise<string
   try {
     if (!armed) {
       try {
-        await CapacitorNfc.startScanning({ alertMessage: prompt, invalidateAfterFirstRead: true });
+        await CapacitorNfc.startScanning({ alertMessage: prompt, ...IOS_TAG_SESSION });
       } catch {
         await new Promise<void>((done) => setTimeout(done, 400));
         try {
-          await CapacitorNfc.startScanning({
-            alertMessage: prompt,
-            invalidateAfterFirstRead: true,
-          });
+          await CapacitorNfc.startScanning({ alertMessage: prompt, ...IOS_TAG_SESSION });
         } catch {
           throw new NfcError("The scanner is still closing. Try that again.");
         }

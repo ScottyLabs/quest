@@ -66,7 +66,6 @@ in
   };
 
   packages = [
-    ios.xtool
     ios.swift
     pkgs.usbmuxd
     pkgs.libimobiledevice
@@ -205,102 +204,6 @@ in
       '';
     };
 
-    ios-xtool = {
-      description = "ios-xtool build|run|devices|open  (run --help for flags)";
-      exec = ''
-        set -euo pipefail
-        cd "$DEVENV_ROOT/apps/mobile"
-
-        # Two concurrent runs each create an "XTL profile <id>" on Apple's side;
-        # xtool only cleans up when it finds exactly one, so the second profile
-        # wedges every later run with a 409 until it expires. One at a time.
-        exec 9>/tmp/quest-xtool.lock
-        flock -n 9 || {
-          echo "another ios-xtool run holds the lock; wait for it or kill it" >&2
-          exit 1
-        }
-
-        sub="''${1-help}"
-        [ $# -gt 0 ] && shift
-
-        api_base() {
-          if [ "''${1-}" = "prod" ]; then
-            echo "https://cmu.quest"
-          else
-            echo "http://''${1}:''${PORT:-8080}"
-          fi
-        }
-        lan_ip() { hostname -I | awk '{print $1}'; }
-
-        case "$sub" in
-        build)
-          if [ "''${1-}" = "--release" ]; then
-            export VITE_QUEST_API_BASE="$(api_base prod)"
-            echo "backend: $VITE_QUEST_API_BASE"
-            deno task cap:sync ios
-            (cd ios/xtool && xtool dev build --ipa --configuration release)
-            echo "ipa: ios/xtool/xtool/App.ipa"
-          else
-            export VITE_QUEST_API_BASE="$(api_base "$(lan_ip)")"
-            echo "backend: $VITE_QUEST_API_BASE"
-            deno task cap:sync ios
-            (cd ios/xtool && xtool dev build)
-            echo "app: ios/xtool/xtool/App.app"
-          fi
-          ;;
-        run)
-          live=""
-          host=""
-          args=()
-          while [ $# -gt 0 ]; do
-            case "$1" in
-            --live) live=1 ;;
-            --host) host="$2"; shift ;;
-            *) args+=("$1") ;;
-            esac
-            shift
-          done
-
-          [ -n "$host" ] || host=$(lan_ip)
-          export VITE_QUEST_API_BASE="$(api_base "$host")"
-          echo "backend: $VITE_QUEST_API_BASE"
-
-          if [ -n "$live" ]; then
-            export CAP_SERVER_URL="http://$host:5173"
-            echo "live reload from $CAP_SERVER_URL"
-          fi
-
-          deno task cap:sync ios
-          (cd ios/xtool && xtool dev run ''${args[@]+"''${args[@]}"})
-
-          # the app is installed now, so the dev server can take over this
-          # terminal: exec means its log is the only thing you are looking at,
-          # and ctrl-c stops it directly with nothing left running behind you
-          if [ -n "$live" ]; then
-            echo
-            echo "--- dev server on :5173 (relaunch the app once vite is ready) ---"
-            exec deno task dev --port 5173 --strictPort
-          fi
-          ;;
-        devices)
-          xtool devices
-          ;;
-        open)
-          deno task cap:sync ios
-          deno task cap open ios
-          ;;
-        *)
-          cat <<'USAGE'
-        ios-xtool build [--release]      unsigned .app, or release .ipa
-        ios-xtool run [--live] [--host IP] [--udid X] [--network]
-                                         build, sign and launch on a device
-        ios-xtool devices                list paired devices (usb and network)
-        ios-xtool open                   open the Xcode project (macOS only)
-        USAGE
-          ;;
-        esac
-      '';
-    };
   };
 
   treefmt.config.settings.excludes = [

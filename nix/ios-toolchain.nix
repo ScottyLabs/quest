@@ -1,63 +1,8 @@
-# xtool + Swift 6.3 for building the iOS app on Linux (nixpkgs swift is 5.10).
+# Swift 6.3 for building the iOS app on Linux (nixpkgs swift is 5.10).
 { pkgs }:
 
 let
   inherit (pkgs) lib stdenv;
-
-  xtoolVersion = "1.17.0";
-
-  xtoolSources = {
-    x86_64-linux = {
-      arch = "x86_64";
-      hash = "sha256-dWbWK4KaTerbAbU4nJT0V2PYUfIExdIvo26fnRyI1Xs=";
-    };
-    aarch64-linux = {
-      arch = "aarch64";
-      hash = "sha256-moxH97Lum0UrzO585yPA/IdGrFDUpSWjbaA1hIa8N14=";
-    };
-  };
-
-  xtoolSource =
-    xtoolSources.${stdenv.hostPlatform.system}
-      or (throw "xtool: no AppImage for ${stdenv.hostPlatform.system}");
-
-  xtoolAppImage = pkgs.appimageTools.wrapType2 {
-    pname = "xtool";
-    version = xtoolVersion;
-    src = pkgs.fetchurl {
-      url = "https://github.com/xtool-org/xtool/releases/download/${xtoolVersion}/xtool-${xtoolSource.arch}.AppImage";
-      inherit (xtoolSource) hash;
-    };
-    extraPkgs = xtoolRuntimeDeps;
-  };
-
-  xtoolRuntimeDeps =
-    p: with p; [
-      cacert
-      curl
-      git
-      libimobiledevice
-      unzip
-      zip
-    ];
-
-  xtool =
-    pkgs.runCommand "xtool-${xtoolVersion}"
-      {
-        nativeBuildInputs = [ pkgs.makeWrapper ];
-        meta = {
-          description = "Cross-platform Xcode replacement";
-          homepage = "https://xtool.sh";
-          license = lib.licenses.mit;
-          mainProgram = "xtool";
-          platforms = lib.attrNames xtoolSources;
-        };
-      }
-      ''
-        mkdir -p "$out/bin"
-        makeWrapper ${xtoolAppImage}/bin/xtool "$out/bin/xtool" \
-          --prefix PATH : ${lib.makeBinPath (xtoolRuntimeDeps pkgs)}
-      '';
 
   swiftVersion = "6.3";
 
@@ -119,7 +64,10 @@ let
         homepage = "https://swift.org";
         license = lib.licenses.asl20;
         mainProgram = name;
-        platforms = lib.attrNames xtoolSources;
+        platforms = [
+          "x86_64-linux"
+          "aarch64-linux"
+        ];
       };
     };
 
@@ -132,5 +80,5 @@ let
   };
 in
 {
-  inherit xtool swift;
+  inherit swift;
 }

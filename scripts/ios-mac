@@ -162,32 +162,95 @@ cd apps/mobile/ios/App
 # 3.2), where `set -u` rejects an empty array as unbound.
 echo "==> xcodebuild${skip_why:+ (no asset catalog)}"
 [ -z "$skip_why" ] || echo "    no app icon, no launch image: $skip_why"
+
+config=Debug
+[ -z "${QUEST_RELEASE:-}" ] || config=Release
+echo "    configuration $config"
+
+if [ -z "${QUEST_RELEASE:-}" ]; then
+  xcodebuild \
+    -project App.xcodeproj \
+    -scheme App \
+    -configuration "$config" \
+    -destination generic/platform=iOS \
+    -derivedDataPath DerivedData \
+    -allowProvisioningUpdates \
+    ENABLE_DEBUG_DYLIB=NO \
+    ENABLE_PREVIEWS=NO \
+    COMPRESS_PNG_FILES=NO \
+    ASSETCATALOG_COMPILER_OPTIMIZATION=time \
+    ${asset_args[@]+"${asset_args[@]}"} \
+    build
+
+  app=$(find DerivedData/Build/Products -maxdepth 2 -name 'App.app' -print -quit)
+  [ -n "$app" ] || { echo "no App.app under DerivedData" >&2; exit 1; }
+
+  echo "==> signed entitlements"
+  codesign -d --entitlements :- "$app" 2>/dev/null | grep -A2 'nfc\|application-identifier' || {
+    echo "  WARNING: no nfc/application-identifier entitlement in the signature" >&2
+  }
+
+  echo "==> packaging ipa"
+  rm -rf dist
+  mkdir -p dist/Payload
+  cp -R "$app" dist/Payload/
+  (cd dist && zip -qry App.ipa Payload && rm -rf Payload)
+
+  echo "==> $(pwd)/dist/App.ipa"
+  exit 0
+fi
+
+team=$(sed -n 's/.*DEVELOPMENT_TEAM = \([A-Z0-9]*\);.*/\1/p' App.xcodeproj/project.pbxproj | head -1)
+[ -n "$team" ] || { echo "no DEVELOPMENT_TEAM in project.pbxproj" >&2; exit 1; }
+echo "    team $team"
+
+rm -rf dist
+mkdir -p dist
+
 xcodebuild \
   -project App.xcodeproj \
   -scheme App \
-  -configuration Debug \
+  -configuration Release \
   -destination generic/platform=iOS \
   -derivedDataPath DerivedData \
+  -archivePath dist/App.xcarchive \
   -allowProvisioningUpdates \
-  ENABLE_DEBUG_DYLIB=NO \
   ENABLE_PREVIEWS=NO \
   COMPRESS_PNG_FILES=NO \
   ASSETCATALOG_COMPILER_OPTIMIZATION=time \
   ${asset_args[@]+"${asset_args[@]}"} \
-  build
+  archive
 
-app=$(find DerivedData/Build/Products -maxdepth 2 -name 'App.app' -print -quit)
-[ -n "$app" ] || { echo "no App.app under DerivedData" >&2; exit 1; }
+cat > dist/export.plist <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>method</key>
+	<string>${QUEST_EXPORT_METHOD:-app-store-connect}</string>
+	<key>teamID</key>
+	<string>$team</string>
+	<key>uploadSymbols</key>
+	<true/>
+	<key>signingStyle</key>
+	<string>automatic</string>
+</dict>
+</plist>
+PLIST
+
+echo "==> exporting for ${QUEST_EXPORT_METHOD:-app-store-connect}"
+xcodebuild -exportArchive \
+  -archivePath dist/App.xcarchive \
+  -exportPath dist \
+  -exportOptionsPlist dist/export.plist \
+  -allowProvisioningUpdates
+
+ipa=$(find dist -maxdepth 1 -name '*.ipa' -print -quit)
+[ -n "$ipa" ] || { echo "export produced no ipa" >&2; exit 1; }
 
 echo "==> signed entitlements"
-codesign -d --entitlements :- "$app" 2>/dev/null | grep -A2 'nfc\|application-identifier' || {
-  echo "  WARNING: no nfc/application-identifier entitlement in the signature" >&2
-}
+codesign -d --entitlements :- "dist/App.xcarchive/Products/Applications/App.app" 2>/dev/null |
+  grep -A2 'nfc\|application-identifier' || true
 
-echo "==> packaging ipa"
-rm -rf dist
-mkdir -p dist/Payload
-cp -R "$app" dist/Payload/
-(cd dist && zip -qry App.ipa Payload && rm -rf Payload)
-
-echo "==> $(pwd)/dist/App.ipa"
+echo "==> $(pwd)/$ipa"
+echo "    upload: xcrun altool --upload-app -f $ipa -t ios --apiKey KEYID --apiIssuer ISSUER"

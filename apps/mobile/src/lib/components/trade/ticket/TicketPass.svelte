@@ -1,5 +1,5 @@
 <script lang="ts">
-  import QRCode from "qrcode";
+  import qrcode from "qrcode-generator";
   import { passToken } from "$lib/pass";
   import PassField from "./PassField.svelte";
 
@@ -18,11 +18,10 @@
     void (async () => {
       try {
         const payload = token ?? (await passToken());
-        const svg = await QRCode.toString(payload, {
-          type: "svg",
-          errorCorrectionLevel: "M",
-          margin: 0,
-        });
+        const matrix = qrcode(0, "M");
+        matrix.addData(payload);
+        matrix.make();
+        const svg = matrix.createSvgTag({ cellSize: 1, margin: 0, scalable: true });
         if (live) drawn = svg;
       } catch (error) {
         console.error("ticket", error);

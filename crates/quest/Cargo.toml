@@ -56,3 +56,4 @@ utoipa-axum = "0.2.0"
 utoipa-scalar = { version = "0.3.0", features = ["axum"] }
 uuid = { version = "1.24.0", features = ["v4"] }
 x509-cert = "0.2.5"
+zip = { version = "6", default-features = false, features = ["deflate"] }

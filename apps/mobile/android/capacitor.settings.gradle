@@ -23,5 +23,8 @@ project(':capacitor-geolocation').projectDir = new File('../../../node_modules/.
 include ':capgo-capacitor-nfc'
 project(':capgo-capacitor-nfc').projectDir = new File('../../../node_modules/.deno/@capgo+capacitor-nfc@8.2.2/node_modules/@capgo/capacitor-nfc/android')
 
+include ':capgo-capacitor-updater'
+project(':capgo-capacitor-updater').projectDir = new File('../../../node_modules/.deno/@capgo+capacitor-updater@8.51.3/node_modules/@capgo/capacitor-updater/android')
+
 include ':perfood-capacitor-crypto-api'
 project(':perfood-capacitor-crypto-api').projectDir = new File('../../../node_modules/.deno/@perfood+capacitor-crypto-api@8.0.0/node_modules/@perfood/capacitor-crypto-api/android')

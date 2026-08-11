@@ -7,7 +7,7 @@ const apiBase = process.env.VITE_QUEST_API_BASE;
 const updateBase = (apiBase ?? "https://cmu.quest").replace(/\/$/u, "");
 
 const config: CapacitorConfig = {
-  appId: "quest.cmu.app",
+  appId: "quest.cmu.application",
   appName: "CMU O-Quest",
   webDir: "build",
   ...(devServer ? { server: { url: devServer, cleartext: true } } : {}),

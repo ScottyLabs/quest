@@ -12,7 +12,6 @@ async function shelf(): Promise<void> {
 
 export async function commemorate(challengeId: string): Promise<void> {
   const shot = await Camera.takePhoto({
-    saveToGallery: true,
     correctOrientation: true,
     quality: 85,
   });

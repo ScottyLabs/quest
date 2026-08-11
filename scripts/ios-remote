@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 set -euo pipefail
 
 : "${QUEST_MAC:?set QUEST_MAC=user@host}"
@@ -79,7 +80,6 @@ excludes=(
   --exclude=DerivedData
   --exclude=.build
   --exclude=./apps/mobile/android
-  --exclude=./apps/mobile/ios/xtool
 )
 
 if [ -n "${QUEST_FRESH:-}" ]; then
@@ -92,7 +92,7 @@ ssh "$QUEST_MAC" "mkdir -p -- '$remote_dir'"
 tar czf - "${excludes[@]}" . | ssh "$QUEST_MAC" "tar xzf - -C '$remote_dir'"
 
 echo "==> building on $QUEST_MAC"
-ssh "$QUEST_MAC" "cd '$remote_dir' && VITE_QUEST_API_BASE='$api_base' CAP_SERVER_URL='$server_url' scripts/ios-mac"
+ssh "$QUEST_MAC" "cd '$remote_dir' && VITE_QUEST_API_BASE='$api_base' CAP_SERVER_URL='$server_url' QUEST_RELEASE='$release' QUEST_EXPORT_METHOD='${QUEST_EXPORT_METHOD:-app-store-connect}' scripts/ios-mac"
 
 ipa=apps/mobile/ios/App/dist/App.ipa
 echo "==> fetching $(basename "$ipa")"

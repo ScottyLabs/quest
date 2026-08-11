@@ -4,7 +4,7 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::get;
 use serde_json::json;
 
-const APPLE_APP_IDS: [&str; 1] = ["C6LJ3FB5B3.quest.cmu.app"];
+const APPLE_APP_IDS: [&str; 1] = ["27LU3HGQJP.quest.cmu.application"];
 
 const ANDROID_PACKAGE: &str = "quest.cmu.twa";
 

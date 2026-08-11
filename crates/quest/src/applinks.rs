@@ -6,7 +6,7 @@ use serde_json::json;
 
 const APPLE_APP_IDS: [&str; 1] = ["C6LJ3FB5B3.quest.cmu.app"];
 
-const ANDROID_PACKAGE: &str = "quest.cmu.app";
+const ANDROID_PACKAGE: &str = "quest.cmu.twa";
 
 //TODO: Use scottylabs cert for prod builds
 const DEBUG_CERT_SHA256: &str = "E7:FF:D7:F1:E0:FD:E6:B3:C2:92:81:63:F3:43:B2:FF:E7:E1:B7:20:CB:25:1F:45:70:DD:C4:0C:D1:BA:36:AE";

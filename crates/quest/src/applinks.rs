@@ -8,9 +8,11 @@ const APPLE_APP_IDS: [&str; 1] = ["C6LJ3FB5B3.quest.cmu.app"];
 
 const ANDROID_PACKAGE: &str = "quest.cmu.twa";
 
-const DEBUG_CERT_SHA256: &str = "E7:FF:D7:F1:E0:FD:E6:B3:C2:92:81:63:F3:43:B2:FF:E7:E1:B7:20:CB:25:1F:45:70:DD:C4:0C:D1:BA:36:AE";
-
-const CERT_ENV: &str = "QUEST_ANDROID_CERT_SHA256";
+const ANDROID_CERT_SHA256: [&str; 3] = [
+    "E7:FF:D7:F1:E0:FD:E6:B3:C2:92:81:63:F3:43:B2:FF:E7:E1:B7:20:CB:25:1F:45:70:DD:C4:0C:D1:BA:36:AE",
+    "16:18:DE:16:12:F5:92:8C:7F:83:3B:39:15:60:93:3E:BE:64:EC:43:63:EB:06:EB:77:94:11:78:23:CB:FD:46",
+    "2B:7F:05:EA:AD:C0:CB:A3:A3:6F:F2:E1:E9:A4:BF:DA:3C:9A:CE:53:18:5C:AD:23:F5:02:2E:0C:01:FE:55:2F",
+];
 
 fn json_response(body: String) -> Response {
     (
@@ -38,30 +40,17 @@ async fn apple() -> Response {
     )
 }
 
-fn android_certs() -> Vec<String> {
-    let configured: Vec<String> = std::env::var(CERT_ENV)
-        .unwrap_or_default()
-        .split(',')
-        .map(str::trim)
-        .filter(|cert| !cert.is_empty())
-        .map(str::to_owned)
-        .collect();
-
-    if configured.is_empty() {
-        return vec![DEBUG_CERT_SHA256.to_owned()];
-    }
-
-    configured
-}
-
 async fn android() -> Response {
     json_response(
         json!([{
-            "relation": ["delegate_permission/common.handle_all_urls"],
+            "relation": [
+                "delegate_permission/common.handle_all_urls",
+                "delegate_permission/common.get_login_creds"
+            ],
             "target": {
                 "namespace": "android_app",
                 "package_name": ANDROID_PACKAGE,
-                "sha256_cert_fingerprints": android_certs()
+                "sha256_cert_fingerprints": ANDROID_CERT_SHA256
             }
         }])
         .to_string(),

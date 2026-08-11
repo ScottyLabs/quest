@@ -26,6 +26,14 @@ pub struct SessionUser {
     pub admin: bool,
 }
 
+pub const STAFF_GROUP: &str = "/projects/quest/orientation-staff";
+
+impl SessionUser {
+    pub fn staff(&self) -> bool {
+        self.admin || self.groups.iter().any(|group| group == STAFF_GROUP)
+    }
+}
+
 pub struct Sessions {
     pool: Pool,
     secure_cookies: bool,

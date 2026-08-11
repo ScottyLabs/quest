@@ -4,6 +4,7 @@ export interface QuestUser {
   andrewId: string;
   groups: string[];
   admin: boolean;
+  staff: boolean;
 }
 
 export interface Session {

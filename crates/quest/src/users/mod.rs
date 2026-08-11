@@ -23,14 +23,13 @@ impl Users {
     pub async fn upsert(&self, user: &SessionUser) -> Result<users::Model, AuthError> {
         let fresh = users::ActiveModel {
             andrew_id: ActiveValue::Set(user.andrew_id.clone()),
-            staff: ActiveValue::Set(user.admin),
             ..Default::default()
         };
 
         users::Entity::insert(fresh)
             .on_conflict(
                 OnConflict::column(users::Column::AndrewId)
-                    .update_column(users::Column::Staff)
+                    .do_nothing()
                     .to_owned(),
             )
             .exec_without_returning(&self.db)

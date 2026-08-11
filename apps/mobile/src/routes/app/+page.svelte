@@ -21,7 +21,7 @@
   import { gemDay, refresh, wallet } from "$lib/wallet.svelte";
 
   async function beginScan(quest: Quest) {
-    await tapScan(quest.title);
+    await tapScan(quest.title, null, quest.id);
   }
 
   const all = $derived(quests.data ?? []);

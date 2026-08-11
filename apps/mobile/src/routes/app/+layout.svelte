@@ -1,10 +1,12 @@
 <script lang="ts">
+  import { card, closeCard } from "$lib/staff.svelte";
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
   import BottomNav from "$lib/components/shell/BottomNav.svelte";
   import DailyBriefing from "$lib/components/daily/DailyBriefing.svelte";
   import NfcSheet from "$lib/components/tap/NfcSheet.svelte";
   import TapFailedSheet from "$lib/components/tap/TapFailedSheet.svelte";
+  import StaffCardSheet from "$lib/components/staff/StaffCardSheet.svelte";
   import TapResultSheet from "$lib/components/tap/TapResultSheet.svelte";
   import TicketSheet from "$lib/components/trade/ticket/TicketSheet.svelte";
   import WarningDialog from "$lib/components/shell/WarningDialog.svelte";
@@ -86,6 +88,10 @@
       andrewId={ticket.current.andrewId}
       onclose={hideTicket}
     />
+  {/if}
+
+  {#if card.current}
+    <StaffCardSheet card={card.current} from={card.from} onclose={closeCard} />
   {/if}
 
   {#if tapfail.current}

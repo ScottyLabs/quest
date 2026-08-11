@@ -106,11 +106,13 @@ pub struct UserView {
     pub andrew_id: String,
     pub groups: Vec<String>,
     pub admin: bool,
+    pub staff: bool,
 }
 
 impl From<SessionUser> for UserView {
     fn from(u: SessionUser) -> Self {
         Self {
+            staff: u.staff(),
             email: u.email,
             name: u.name,
             andrew_id: u.andrew_id,

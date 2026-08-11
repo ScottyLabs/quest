@@ -89,10 +89,18 @@ class SessionStore {
       this.#session = stored;
       this.#phase = "signedIn";
       await enrollDevice(stored.id).catch(() => false);
+      await this.#recheck(stored);
     } catch (error) {
       console.error("session restore failed", error);
       this.#phase = "signedOut";
     }
+  }
+
+  async #recheck(stored: Session): Promise<void> {
+    const fresh = await fetchStatus(stored.id).catch(() => null);
+    if (fresh === null) return;
+
+    this.#adopt({ ...stored, user: fresh });
   }
 
   async adoptFragment(hash: string): Promise<QuestUser | null> {

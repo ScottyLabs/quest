@@ -52,6 +52,7 @@ impl Modify for Credentials {
         (name = "items", description = "The shop and a user's purchases"),
         (name = "leaderboard", description = "Standings and the Carnegie Cup"),
         (name = "passes", description = "Apple Wallet passes"),
+        (name = "staff", description = "Card placement for orientation staff"),
     )
 )]
 pub struct ApiDoc;
@@ -66,6 +67,7 @@ pub struct Services {
     pub tokens: crate::tokens::Tokens,
     pub taps: crate::taps::Taps,
     pub passes: crate::passes::Passes,
+    pub staff: crate::staff::Staff,
 }
 
 impl Services {
@@ -84,6 +86,7 @@ impl Services {
             leaderboard: crate::leaderboard::Leaderboard::new(db.clone()),
             tokens: crate::tokens::Tokens::new(db.clone()),
             passes,
+            staff: crate::staff::Staff::new(db.clone()),
             taps: crate::taps::Taps::new(db, std::sync::Arc::new(master)),
         }
     }
@@ -125,6 +128,10 @@ pub fn api_router(services: &Services) -> utoipa_axum::router::OpenApiRouter {
             services.leaderboard.clone(),
         ))
         .merge(crate::passes::routes::router(services.passes.clone()))
+        .merge(crate::staff::routes::router(
+            services.staff.clone(),
+            services.taps.clone(),
+        ))
 }
 
 pub fn split(services: &Services) -> (axum::Router, utoipa::openapi::OpenApi) {

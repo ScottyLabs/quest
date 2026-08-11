@@ -827,6 +827,329 @@
         }
       }
     },
+    "/api/staff/card": {
+      "post": {
+        "tags": ["staff"],
+        "operationId": "read",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CardUrl"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/staff/card/{card_id}/challenge": {
+      "put": {
+        "tags": ["staff"],
+        "operationId": "link",
+        "parameters": [
+          {
+            "name": "card_id",
+            "in": "path",
+            "description": "Uppercase hex card UID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["staff"],
+        "operationId": "unlink",
+        "parameters": [
+          {
+            "name": "card_id",
+            "in": "path",
+            "description": "Uppercase hex card UID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/staff/card/{card_id}/location": {
+      "put": {
+        "tags": ["staff"],
+        "operationId": "place",
+        "parameters": [
+          {
+            "name": "card_id",
+            "in": "path",
+            "description": "Uppercase hex card UID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaceBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/users/me": {
       "get": {
         "tags": ["users"],
@@ -1342,6 +1665,36 @@
           }
         }
       },
+      "CardUrl": {
+        "type": "object",
+        "required": ["url"],
+        "properties": {
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "CardView": {
+        "type": "object",
+        "required": ["card_id"],
+        "properties": {
+          "card_id": {
+            "type": "string"
+          },
+          "challenge_id": {
+            "type": ["string", "null"],
+            "format": "uuid"
+          },
+          "lat": {
+            "type": ["number", "null"],
+            "format": "double"
+          },
+          "lon": {
+            "type": ["number", "null"],
+            "format": "double"
+          }
+        }
+      },
       "Challenge": {
         "type": "object",
         "required": ["nonce", "expires_in"],
@@ -1537,6 +1890,16 @@
           }
         }
       },
+      "LinkBody": {
+        "type": "object",
+        "required": ["challenge_id"],
+        "properties": {
+          "challenge_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
       "Location": {
         "type": "object",
         "required": ["lat", "lon"],
@@ -1594,9 +1957,23 @@
           }
         }
       },
+      "PlaceBody": {
+        "type": "object",
+        "required": ["lat", "lon"],
+        "properties": {
+          "lat": {
+            "type": "number",
+            "format": "double"
+          },
+          "lon": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
       "Profile": {
         "type": "object",
-        "required": ["andrew_id", "staff", "created_at"],
+        "required": ["andrew_id", "created_at"],
         "properties": {
           "andrew_id": {
             "type": "string"
@@ -1606,9 +1983,6 @@
           },
           "dorm": {
             "type": ["string", "null"]
-          },
-          "staff": {
-            "type": "boolean"
           }
         }
       },
@@ -1850,7 +2224,7 @@
       },
       "UserView": {
         "type": "object",
-        "required": ["name", "andrew_id", "groups", "admin"],
+        "required": ["name", "andrew_id", "groups", "admin", "staff"],
         "properties": {
           "admin": {
             "type": "boolean"
@@ -1869,6 +2243,9 @@
           },
           "name": {
             "type": "string"
+          },
+          "staff": {
+            "type": "boolean"
           }
         }
       },
@@ -2009,6 +2386,10 @@
     {
       "name": "passes",
       "description": "Apple Wallet passes"
+    },
+    {
+      "name": "staff",
+      "description": "Card placement for orientation staff"
     }
   ]
 }

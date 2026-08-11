@@ -7,9 +7,7 @@
 
 <section class="ticket">
   <p class="lead">
-    Go to the <b>{PICKUP}</b> with ticket below to have&nbsp;
-    <b class="mark">ITEMS BOUGHT</b>
-    be <b class="mark">DELIVERED</b>
+    Go to the <b>{PICKUP}</b> with ticket below to have your purchased items delivered.
   </p>
 
   <TicketGate {name} {andrewId} />
@@ -32,11 +30,5 @@
 
   .lead b {
     font-weight: 700;
-  }
-
-  .mark {
-    text-decoration: underline;
-    text-decoration-skip-ink: none;
-    text-underline-position: from-font;
   }
 </style>

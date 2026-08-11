@@ -8,6 +8,7 @@
   import { fit } from "$lib/fit";
   import { MASCOTS } from "$lib/mascots";
   import { done, inCategory, quests } from "$lib/quests.svelte";
+  import { setStaffMode, staffMode } from "$lib/staff.svelte";
   import { profile, type Profile } from "$lib/user";
   import { refresh, wallet } from "$lib/wallet.svelte";
 
@@ -98,6 +99,27 @@
     {#each BADGE_ROWS as row (row.id)}
       <BadgeRail {row} {progress} bind:open />
     {/each}
+
+    {#if session.user?.staff || session.user?.admin}
+      <div class="staff">
+        <span id="staffmode">Staff mode</span>
+        <button
+          class="switch"
+          type="button"
+          role="switch"
+          aria-checked={staffMode.on}
+          aria-labelledby="staffmode"
+          onclick={() => setStaffMode(!staffMode.on)}
+        >
+          <span class="knob"></span>
+        </button>
+      </div>
+      <p class="staffnote">
+        {staffMode.on
+          ? "Tapping a card opens placement options instead of scoring it."
+          : "Turn on to link cards to challenges and set their positions."}
+      </p>
+    {/if}
 
     <div class="acts">
       <button class="out" type="button" onclick={signOut}>Sign out</button>
@@ -261,6 +283,48 @@
     font-size: calc(15 * var(--u));
     font-weight: 700;
     cursor: pointer;
+  }
+
+  .staff {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: calc(12 * var(--u));
+    margin-top: calc(18 * var(--u));
+    color: var(--secondary);
+    font-size: calc(15 * var(--u));
+    font-weight: 700;
+  }
+
+  .switch {
+    display: flex;
+    align-items: center;
+    width: calc(52 * var(--u));
+    padding: calc(3 * var(--u));
+    border: 0;
+    border-radius: calc(14 * var(--u));
+    background: var(--tertiary-normal);
+    cursor: pointer;
+    transition: background 120ms ease;
+  }
+
+  .switch[aria-checked="true"] {
+    background: var(--accent);
+    justify-content: flex-end;
+  }
+
+  .knob {
+    display: block;
+    width: calc(22 * var(--u));
+    height: calc(22 * var(--u));
+    border-radius: 50%;
+    background: var(--highlight);
+  }
+
+  .staffnote {
+    margin: calc(6 * var(--u)) 0 0;
+    color: var(--tertiary);
+    font-size: calc(13 * var(--u));
   }
 
   .acts {

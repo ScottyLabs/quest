@@ -11,6 +11,7 @@ mod leaderboard;
 mod legal;
 mod openapi;
 mod passes;
+mod staff;
 mod taps;
 mod tokens;
 mod updates;

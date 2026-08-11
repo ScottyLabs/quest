@@ -107,6 +107,7 @@ function parseUser(raw: UserBody | undefined): QuestUser {
     email: typeof raw.email === "string" ? raw.email : null,
     groups: Array.isArray(raw.groups) ? raw.groups : [],
     admin: raw.admin === true,
+    staff: raw.staff === true,
   };
 }
 

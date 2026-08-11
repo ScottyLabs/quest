@@ -6,6 +6,7 @@ import { NfcError, openSettings, readiness, scan } from "$lib/nfc";
 import { warn } from "$lib/notice.svelte";
 import { CATEGORIES, quests, type Registered, registerTap, TapError } from "$lib/quests.svelte";
 import { closeScan, openScan, scanning } from "$lib/scanning.svelte";
+import { readCard, staffMode } from "$lib/staff.svelte";
 import { showTapFail } from "$lib/tapfail.svelte";
 import { FALLBACK } from "$lib/theme";
 import { active } from "$lib/theme.svelte";
@@ -15,6 +16,7 @@ const BOARD = "/app";
 
 let starting = false;
 let pending: string | null = null;
+let origin: string | null = null;
 
 export async function handleTap(url: string): Promise<void> {
   if (pending === url) return;
@@ -28,6 +30,15 @@ export async function handleTap(url: string): Promise<void> {
 }
 
 async function register(url: string): Promise<void> {
+  if (staffMode.on) {
+    try {
+      await readCard(url, origin);
+    } catch (error) {
+      warn(error instanceof Error ? error.message : "Couldn't read that card.");
+    }
+    return;
+  }
+
   if (!(await permitted())) {
     raise(NEEDS_LOCATION);
     return;
@@ -68,9 +79,14 @@ async function register(url: string): Promise<void> {
   await quests.reload();
 }
 
-export async function tapScan(label: string, previous: string | null = null): Promise<void> {
+export async function tapScan(
+  label: string,
+  previous: string | null = null,
+  from: string | null = null,
+): Promise<void> {
   if (starting || scanning.label !== null) return;
   starting = true;
+  origin = from;
 
   try {
     const state = await readiness();
@@ -105,5 +121,6 @@ export async function tapScan(label: string, previous: string | null = null): Pr
     }
   } finally {
     starting = false;
+    origin = null;
   }
 }

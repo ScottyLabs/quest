@@ -202,13 +202,12 @@ struct Verified {
 )]
 async fn verify(
     State(passes): State<Passes>,
-    Extension(users): Extension<Users>,
     CurrentUser(user): CurrentUser,
     body: Result<Json<VerifyBody>, JsonRejection>,
 ) -> Result<Json<Verified>, AuthError> {
     let Json(body) = body.map_err(|_| AuthError::BadRequest("pass_body_invalid"))?;
 
-    if !users.row(&user).await?.staff {
+    if !user.staff() {
         return Err(AuthError::Forbidden("staff_only"));
     }
 

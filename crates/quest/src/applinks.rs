@@ -8,7 +8,6 @@ const APPLE_APP_IDS: [&str; 1] = ["C6LJ3FB5B3.quest.cmu.app"];
 
 const ANDROID_PACKAGE: &str = "quest.cmu.twa";
 
-//TODO: Use scottylabs cert for prod builds
 const DEBUG_CERT_SHA256: &str = "E7:FF:D7:F1:E0:FD:E6:B3:C2:92:81:63:F3:43:B2:FF:E7:E1:B7:20:CB:25:1F:45:70:DD:C4:0C:D1:BA:36:AE";
 
 const CERT_ENV: &str = "QUEST_ANDROID_CERT_SHA256";
@@ -40,19 +39,19 @@ async fn apple() -> Response {
 }
 
 fn android_certs() -> Vec<String> {
-    let mut certs = vec![DEBUG_CERT_SHA256.to_owned()];
+    let configured: Vec<String> = std::env::var(CERT_ENV)
+        .unwrap_or_default()
+        .split(',')
+        .map(str::trim)
+        .filter(|cert| !cert.is_empty())
+        .map(str::to_owned)
+        .collect();
 
-    if let Ok(extra) = std::env::var(CERT_ENV) {
-        certs.extend(
-            extra
-                .split(',')
-                .map(str::trim)
-                .filter(|cert| !cert.is_empty())
-                .map(str::to_owned),
-        );
+    if configured.is_empty() {
+        return vec![DEBUG_CERT_SHA256.to_owned()];
     }
 
-    certs
+    configured
 }
 
 async fn android() -> Response {

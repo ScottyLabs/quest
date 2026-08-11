@@ -45,18 +45,20 @@
 		<key>NSAllowsArbitraryLoadsInWebContent</key>
 		<true/>
 	</dict>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>Connects to your computer's dev server for live reload.</string>
 	<key>NFCReaderUsageDescription</key>
 	<string>Orientation Quest reads challenge tags around campus to mark them complete.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Orientation Quest records where a challenge tag was tapped to confirm you were there.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Orientation Quest records where a challenge tag was tapped to confirm you were there. It only checks your location while you are using the app.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Take a photo to commemorate a challenge you just cleared.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Pick a photo to commemorate a challenge you just cleared.</string>
+	<string>The commemoration camera is a system photo component that can also browse your library, so O-Quest asks for access. It only reads a photo you pick yourself and never scans your library.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Save your commemoration photo back to your library.</string>
+	<string>Only used when you save a commemoration photo out to your library. Photos you take are otherwise kept inside O-Quest.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UILaunchScreen</key>
@@ -73,13 +75,6 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>UISupportedInterfaceOrientations~ipad</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>

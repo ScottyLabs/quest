@@ -77,7 +77,7 @@ actool_answers() {
     --compile "$out" --output-partial-info-plist "$plist" --app-icon AppIcon \
     --output-format human-readable-text \
     --platform iphoneos --minimum-deployment-target 16.0 \
-    --target-device iphone --target-device ipad --development-region en \
+    --target-device iphone --development-region en \
     >"$actool_log" 2>&1 &
   pid=$!
   (

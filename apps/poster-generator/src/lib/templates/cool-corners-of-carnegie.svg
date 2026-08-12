@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Cool Corners of Carnegie
+
+  Poster template. Everything inside this file is yours to design; the generator
+  only substitutes placeholders and never rewrites geometry.
+
+  Placeholders (case-insensitive, replaced verbatim and XML-escaped):
+    {{NAME}}        challenge name
+    {{CODE}}        four hex digits, e.g. 01A4
+    {{CATEGORY}}    Cool Corners of Carnegie
+    {{TAGLINE}}     optional, from the CSV
+    {{LOCATION}}    optional, from the CSV
+    {{DESCRIPTION}} optional, from the CSV
+
+  width/height set the PDF page size. viewBox units are points (72 per inch).
+-->
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="18in"
+  height="24in"
+  viewBox="0 0 1296 1728"
+>
+</svg>

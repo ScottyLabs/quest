@@ -22,5 +22,9 @@
     "**/build",
     "apps/mobile/android",
     "apps/mobile/ios"
-  ]
+  ],
+  "allowScripts": {
+    "allow": [],
+    "deny": ["npm:core-js@3.50.0"]
+  }
 }

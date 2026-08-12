@@ -1,0 +1,178 @@
+{
+  "hash": "60544ea7",
+  "configHash": "21f16b21",
+  "lockfileHash": "e3b0c442",
+  "browserHash": "71f4974d",
+  "optimized": {
+    "svelte": {
+      "src": "../../../../node_modules/.deno/svelte@5.56.8/node_modules/svelte/src/index-server.js",
+      "file": "svelte.js",
+      "fileHash": "a47d0f23",
+      "needsInterop": false
+    },
+    "svelte/animate": {
+      "src": "../../../../node_modules/.deno/svelte@5.56.8/node_modules/svelte/src/animate/index.js",
+      "file": "svelte_animate.js",
+      "fileHash": "c4941791",
+      "needsInterop": false
+    },
+    "svelte/attachments": {
+      "src": "../../../../node_modules/.deno/svelte@5.56.8/node_modules/svelte/src/attachments/index.js",
+      "file": "svelte_attachments.js",
+      "fileHash": "48d86372",
+      "needsInterop": false
+    },
+    "svelte/compiler": {
+      "src": "../../../../node_modules/.deno/svelte@5.56.8/node_modules/svelte/src/compiler/index.js",
+      "file": "svelte_compiler.js",
+      "fileHash": "bd804208",
+      "needsInterop": false
+    },
+    "svelte/easing": {
+      "src": "../../../../node_modules/.deno/svelte@5.56.8/node_modules/svelte/src/easing/index.js",
+      "file": "svelte_easing.js",
+      "fileHash": "c092c07f",
+      "needsInterop": false
+    },
+    "svelte/events": {
+      "src": "../../../../node_modules/.deno/svelte@5.56.8/node_modules/svelte/src/events/index.js",
+      "file": "svelte_events.js",
+      "fileHash": "f995704a",
+      "needsInterop": false
+    },
+    "svelte/internal": {
+      "src": "../../../../node_modules/.deno/svelte@5.56.8/node_modules/svelte/src/internal/index.js",
+      "file": "svelte_internal.js",
+      "fileHash": "0e793091",
+      "needsInterop": true
+    },
+    "svelte/internal/client": {
+      "src": "../../../../node_modules/.deno/svelte@5.56.8/node_modules/svelte/src/internal/client/index.js",
+      "file": "svelte_internal_client.js",
+      "fileHash": "4c133271",
+      "needsInterop": false
+    },
+    "svelte/internal/disclose-version": {
+      "src": "../../../../node_modules/.deno/svelte@5.56.8/node_modules/svelte/src/internal/disclose-version.js",
+      "file": "svelte_internal_disclose-version.js",
+      "fileHash": "05d2eda0",
+      "needsInterop": false
+    },
+    "svelte/internal/flags/async": {
+      "src": "../../../../node_modules/.deno/svelte@5.56.8/node_modules/svelte/src/internal/flags/async.js",
+      "file": "svelte_internal_flags_async.js",
+      "fileHash": "dde156be",
+      "needsInterop": false
+    },
+    "svelte/internal/flags/legacy": {
+      "src": "../../../../node_modules/.deno/svelte@5.56.8/node_modules/svelte/src/internal/flags/legacy.js",
+      "file": "svelte_internal_flags_legacy.js",
+      "fileHash": "f293f1c2",
+      "needsInterop": false
+    },
+    "svelte/internal/flags/tracing": {
+      "src": "../../../../node_modules/.deno/svelte@5.56.8/node_modules/svelte/src/internal/flags/tracing.js",
+      "file": "svelte_internal_flags_tracing.js",
+      "fileHash": "08573762",
+      "needsInterop": false
+    },
+    "svelte/internal/server": {
+      "src": "../../../../node_modules/.deno/svelte@5.56.8/node_modules/svelte/src/internal/server/index.js",
+      "file": "svelte_internal_server.js",
+      "fileHash": "9c1b33f6",
+      "needsInterop": false
+    },
+    "svelte/legacy": {
+      "src": "../../../../node_modules/.deno/svelte@5.56.8/node_modules/svelte/src/legacy/legacy-server.js",
+      "file": "svelte_legacy.js",
+      "fileHash": "0998a2da",
+      "needsInterop": false
+    },
+    "svelte/motion": {
+      "src": "../../../../node_modules/.deno/svelte@5.56.8/node_modules/svelte/src/motion/index.js",
+      "file": "svelte_motion.js",
+      "fileHash": "96e6a802",
+      "needsInterop": false
+    },
+    "svelte/reactivity": {
+      "src": "../../../../node_modules/.deno/svelte@5.56.8/node_modules/svelte/src/reactivity/index-server.js",
+      "file": "svelte_reactivity.js",
+      "fileHash": "97088cbe",
+      "needsInterop": false
+    },
+    "svelte/reactivity/window": {
+      "src": "../../../../node_modules/.deno/svelte@5.56.8/node_modules/svelte/src/reactivity/window/index.js",
+      "file": "svelte_reactivity_window.js",
+      "fileHash": "87115c41",
+      "needsInterop": false
+    },
+    "svelte/server": {
+      "src": "../../../../node_modules/.deno/svelte@5.56.8/node_modules/svelte/src/server/index.js",
+      "file": "svelte_server.js",
+      "fileHash": "2773d816",
+      "needsInterop": false
+    },
+    "svelte/store": {
+      "src": "../../../../node_modules/.deno/svelte@5.56.8/node_modules/svelte/src/store/index-server.js",
+      "file": "svelte_store.js",
+      "fileHash": "309f69c7",
+      "needsInterop": false
+    },
+    "svelte/transition": {
+      "src": "../../../../node_modules/.deno/svelte@5.56.8/node_modules/svelte/src/transition/index.js",
+      "file": "svelte_transition.js",
+      "fileHash": "faab0766",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "attachments-CPJgc0ns": {
+      "file": "attachments-CPJgc0ns.js",
+      "isDynamicEntry": false
+    },
+    "constants-CryMY321": {
+      "file": "constants-CryMY321.js",
+      "isDynamicEntry": false
+    },
+    "dev-C5fpyFC0": {
+      "file": "dev-C5fpyFC0.js",
+      "isDynamicEntry": false
+    },
+    "events-B09ElS3E": {
+      "file": "events-B09ElS3E.js",
+      "isDynamicEntry": false
+    },
+    "flags-0VUX__9w": {
+      "file": "flags-0VUX__9w.js",
+      "isDynamicEntry": false
+    },
+    "hydration-Bj_lZxG7": {
+      "file": "hydration-Bj_lZxG7.js",
+      "isDynamicEntry": false
+    },
+    "legacy-client-CLkQGHXG": {
+      "file": "legacy-client-CLkQGHXG.js",
+      "isDynamicEntry": false
+    },
+    "utils-B4naoC2p": {
+      "file": "utils-B4naoC2p.js",
+      "isDynamicEntry": false
+    },
+    "utils-eAam9OGe": {
+      "file": "utils-eAam9OGe.js",
+      "isDynamicEntry": false
+    },
+    "validate-CqMb-XmZ": {
+      "file": "validate-CqMb-XmZ.js",
+      "isDynamicEntry": false
+    },
+    "version-B0dTPbuL": {
+      "file": "version-B0dTPbuL.js",
+      "isDynamicEntry": false
+    },
+    "warnings-BUpdTraN": {
+      "file": "warnings-BUpdTraN.js",
+      "isDynamicEntry": false
+    }
+  }
+}

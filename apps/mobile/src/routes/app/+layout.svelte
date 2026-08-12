@@ -1,6 +1,6 @@
 <script lang="ts">
   import { card, closeCard } from "$lib/staff.svelte";
-  import { goto } from "$app/navigation";
+  import { destination, HOME, steer } from "$lib/gate";
   import { page } from "$app/state";
   import BottomNav from "$lib/components/shell/BottomNav.svelte";
   import DailyBriefing from "$lib/components/daily/DailyBriefing.svelte";
@@ -45,12 +45,10 @@
     await tapScan("challenge", url).catch(report);
   }
 
-  $effect(() => {
-    if (session.phase === "signedOut") void goto("/", { replaceState: true });
-  });
+  $effect(() => steer(HOME));
 
   $effect(() => {
-    if (session.phase === "signedIn") greet();
+    if (destination() === HOME) greet();
   });
 
   $effect(() => {

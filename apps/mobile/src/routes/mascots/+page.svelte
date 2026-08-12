@@ -5,10 +5,9 @@
   import Carousel from "$lib/components/mascots/Carousel.svelte";
   import Hero from "$lib/components/mascots/Hero.svelte";
   import { MASCOTS } from "$lib/mascots";
-  import { setDorm } from "$lib/user";
+  import { HOME } from "$lib/gate";
+  import { me } from "$lib/user.svelte";
   import { warn } from "$lib/notice.svelte";
-
-  const HOME = "/app";
 
   let selected = $state<string | null>(null);
   let engaged = $state(false);
@@ -16,11 +15,10 @@
   const chosen = $derived(selected === null ? null : (MASCOTS[selected] ?? null));
 
   async function confirm() {
-    if (selected !== null) {
-      localStorage.setItem("quest.mascot", selected);
+    const dorm = selected === null ? undefined : MASCOTS[selected]?.mascot.dorm;
 
-      const dorm = MASCOTS[selected]?.mascot.dorm;
-      if (dorm && !(await setDorm(dorm))) warn("Couldn't save your dorm. We'll try again later.");
+    if (dorm && !(await me.chooseDorm(dorm))) {
+      warn("Couldn't save your dorm. We'll try again later.");
     }
 
     goto(HOME);
@@ -30,7 +28,7 @@
 <svelte:head><title>{chosen?.mascot.name ?? "Dorm Mascots"}</title></svelte:head>
 
 <div class="screen">
-  <TopBar onback={() => goto(HOME)} onskip={() => goto(HOME)} />
+  <TopBar />
 
   <Hero mascot={engaged ? (chosen?.mascot ?? null) : null} />
 

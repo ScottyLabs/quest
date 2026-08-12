@@ -41,7 +41,8 @@
     list-style: none;
   }
 
-  .tiles li:last-child {
+  /* a lone trailing tile (odd count) centres across both columns */
+  .tiles li:last-child:nth-child(odd) {
     grid-column: 1 / -1;
     justify-self: center;
   }

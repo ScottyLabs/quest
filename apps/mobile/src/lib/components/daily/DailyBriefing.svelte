@@ -2,21 +2,11 @@
   import { fade } from "svelte/transition";
   import { acknowledge } from "$lib/daily.svelte";
   import { MASCOTS } from "$lib/mascots";
-  import { profile } from "$lib/user";
+  import { me } from "$lib/user.svelte";
   import { DAILY_BONUS, DAILY_CLEARS, DAILY_GEMS } from "$lib/wallet.svelte";
 
-  const cached = localStorage.getItem("quest.mascot");
-  let slug = $state<string | null>(cached);
-  let ready = $state(cached !== null);
-
-  $effect(() => {
-    void profile()
-      .then((me) => {
-        const found = Object.keys(MASCOTS).find((key) => MASCOTS[key]?.mascot.dorm === me?.dorm);
-        if (found !== undefined) slug = found;
-      })
-      .finally(() => (ready = true));
-  });
+  const slug = $derived(me.mascot);
+  const ready = $derived(me.settled || slug !== null);
 
   const picked = $derived(slug === null ? null : (MASCOTS[slug] ?? null));
   const mascot = $derived(picked?.mascot ?? null);

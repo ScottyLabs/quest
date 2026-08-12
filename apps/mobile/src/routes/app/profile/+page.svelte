@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import BadgeRail from "$lib/components/profile/BadgeRail.svelte";
   import WaveEdge from "$lib/components/ui/WaveEdge.svelte";
@@ -9,15 +10,14 @@
   import { MASCOTS } from "$lib/mascots";
   import { done, inCategory, quests } from "$lib/quests.svelte";
   import { setStaffMode, staffMode } from "$lib/staff.svelte";
-  import { profile, type Profile } from "$lib/user";
+  import { me } from "$lib/user.svelte";
   import { refresh, wallet } from "$lib/wallet.svelte";
 
-  let me = $state<Profile | null>(null);
   let open = $state<string | null>(null);
   let confirming = $state(false);
 
-  $effect(() => {
-    void profile().then((found) => (me = found));
+  onMount(() => {
+    void me.reload();
   });
 
   $effect(() => {
@@ -25,15 +25,12 @@
     void refresh();
   });
 
-  const cached = localStorage.getItem("quest.mascot");
-  const slug = $derived(
-    Object.keys(MASCOTS).find((key) => MASCOTS[key]?.mascot.dorm === me?.dorm) ?? cached,
-  );
+  const slug = $derived(me.mascot);
   const entry = $derived(slug === null ? null : (MASCOTS[slug] ?? null));
   const dorm = $derived(entry?.mascot.home ?? "");
 
   const name = $derived(session.user?.name ?? session.user?.andrewId ?? "Orientation Quest");
-  const handle = $derived(me?.andrew_id ?? session.user?.andrewId ?? "");
+  const handle = $derived(me.current?.andrew_id ?? session.user?.andrewId ?? "");
 
   const all = $derived(quests.data ?? []);
   const progress = $derived<Progress>({

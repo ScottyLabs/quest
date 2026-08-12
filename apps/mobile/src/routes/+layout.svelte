@@ -49,9 +49,34 @@
 
 <Toast />
 
+<div class="sideways">
+  <p>Orientation Quest works upright.<br />Turn your phone back to portrait.</p>
+</div>
+
 <style>
   .booting {
     height: 100dvh;
     background: var(--highlight);
+  }
+
+  .sideways {
+    display: none;
+  }
+
+  @media (orientation: landscape) and (max-height: 520px) {
+    .sideways {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+      background: var(--highlight);
+      color: var(--ink-shade);
+      font-size: 1.0625rem;
+      font-weight: 600;
+      line-height: 1.5;
+      text-align: center;
+    }
   }
 </style>

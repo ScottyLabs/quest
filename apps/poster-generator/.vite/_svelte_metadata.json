@@ -1,0 +1,15 @@
+{
+  "compilerOptions": { "css": "external", "dev": true, "hmr": true },
+  "configFile": false,
+  "extensions": [".svelte"],
+  "preprocess": [
+    {
+      "name": "vite-preprocess",
+      "style": "async ({ attributes, content, filename = \"\" }) => {\n      const ext = attributes.lang ? `.${attributes.lang}` : \".css\";\n      if (attributes.lang && !isCSSRequest(ext)) return;\n      if (!cssTransform) {\n        cssTransform = createCssTransform(style, config).then((t) => (cssTransform = t));\n      }\n      const transform = await cssTransform;\n      const suffix = `${lang_sep}${ext}`;\n      const moduleId = `${filename}${suffix}`;\n      const { code, map, deps } = await transform(content, moduleId);\n      removeLangSuffix(map, suffix);\n      mapToRelative(map, filename);\n      const dependencies = deps ? Array.from(deps).filter((d) => !d.endsWith(suffix)) : undefined;\n      return {\n        code,\n        map: map ?? undefined,\n        dependencies,\n      };\n    }"
+    },
+    {
+      "script": "({ content, filename }) => {\n    if (!filename) return;\n\n    const basename = path.basename(filename);\n    if (basename.startsWith(\"+page.\") || basename.startsWith(\"+layout.\")) {\n      const match = content.match(options_regex);\n      if (match && match.index !== undefined && !should_ignore(content, match.index)) {\n        const fixed = basename.replace(\".svelte\", \"(.server).js/ts\");\n\n        const message =\n          `\\n${colors.bold().red(path.relative(\".\", filename))}\\n` +\n          `\\`${match[1]}\\` will be ignored — move it to ${fixed} instead. See https://svelte.dev/docs/kit/page-options for more information.`;\n\n        if (!warned.has(message)) {\n          console.log(message);\n          warned.add(message);\n        }\n      }\n    }\n  }",
+      "markup": "({ content, filename }) => {\n    if (!filename) return;\n\n    const basename = path.basename(filename);\n\n    if (basename.startsWith(\"+layout.\") && !has_children(content, isSvelte5Plus())) {\n      const message =\n        `\\n${colors.bold().red(path.relative(\".\", filename))}\\n` +\n        `\\`<slot />\\`${isSvelte5Plus() ? \" or `{@render ...}` tag\" : \"\"}` +\n        \" missing — inner content will not be rendered\";\n\n      if (!warned.has(message)) {\n        console.log(message);\n        warned.add(message);\n      }\n    }\n  }"
+    }
+  ]
+}

@@ -1,11 +1,12 @@
 {
-  "workspace": ["./apps/mobile"],
+  "workspace": ["./apps/mobile", "./apps/poster-generator"],
   "nodeModulesDir": "auto",
   "tasks": {
     "check": "deno task --cwd apps/mobile check",
     "build": "deno task --cwd apps/mobile build",
     "dev": "deno task --cwd apps/mobile dev",
     "mobile": "deno task --cwd apps/mobile",
+    "posters": "deno task --cwd apps/poster-generator",
     "ios": "scripts/ios-remote",
     "api": "cargo run -q -p quest --bin quest -- openapi > crates/quest/openapi.json && deno run -A --node-modules-dir npm:openapi-typescript crates/quest/openapi.json -o apps/mobile/src/lib/api/schema.d.ts && treefmt crates/quest/openapi.json apps/mobile/src/lib/api/schema.d.ts",
     "api:check": "deno task api && test -z \"$(git status --porcelain -- crates/quest/openapi.json apps/mobile/src/lib/api/schema.d.ts)\""

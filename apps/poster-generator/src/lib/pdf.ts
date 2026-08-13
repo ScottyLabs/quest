@@ -1,4 +1,8 @@
 import type { jsPDF as JsPdf } from "jspdf";
+import { inlineImages } from "./images";
+import { centreCardText } from "./layout";
+import { flattenMasks } from "./masks";
+import { loadFonts, outlineText } from "./outline";
 import { pageSize } from "./posters";
 import type { PageSize } from "./posters";
 
@@ -75,7 +79,7 @@ export async function buildPdf(
   const [first] = posters;
   if (first === undefined) throw new Error("no posters selected");
 
-  const kit = await loadKit();
+  const [kit] = await Promise.all([loadKit(), loadFonts()]);
   const doc = kit.create(pageSize(first.svg) ?? FALLBACK_SIZE);
 
   for (let index = 0; index < posters.length; index += 1) {
@@ -87,6 +91,10 @@ export async function buildPdf(
 
     const { element, dispose } = mount(poster.svg);
     try {
+      centreCardText(element);
+      flattenMasks(element);
+      inlineImages(element);
+      outlineText(element);
       await kit.render(element, doc, { x: 0, y: 0, width: size.width, height: size.height });
     } finally {
       dispose();

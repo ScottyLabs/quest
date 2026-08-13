@@ -1,7 +1,19 @@
 import { SvelteMap, SvelteSet } from "svelte/reactivity";
 import { detectColumns, parseCsv } from "./csv";
+import { loadFonts, textWidth } from "./outline";
 import type { Columns, Sheet } from "./csv";
-import { cleanCode, codeOk, fill, nextCode, slugify, templateFor } from "./posters";
+import {
+  cleanCode,
+  codeOk,
+  fill,
+  nameLines,
+  NAME_FONT,
+  nextCode,
+  slugify,
+  templateFor,
+  typeset,
+} from "./posters";
+import type { Measure } from "./posters";
 
 export interface Challenge {
   key: string;
@@ -43,6 +55,12 @@ class Posters {
   #override = $state<Partial<Columns>>({});
   #codes = new SvelteMap<string, string>();
   #excluded = new SvelteSet<string>();
+  #metrics = $state(false);
+
+  async ready(): Promise<void> {
+    await loadFonts();
+    this.#metrics = true;
+  }
 
   get headers(): string[] {
     return this.#sheet.headers;
@@ -192,11 +210,20 @@ class Posters {
     const template = templateFor(challenge.category);
     if (template === null) return null;
 
+    const extras = Object.fromEntries(
+      Object.entries(challenge.extras).map(([key, value]) => [key, typeset(value)]),
+    );
+
+    const measure: Measure = this.#metrics
+      ? (line) => textWidth(line, NAME_FONT.family, NAME_FONT.weight, NAME_FONT.size)
+      : () => null;
+
     return fill(template, {
-      NAME: challenge.name,
+      NAME: typeset(challenge.name),
       CODE: challenge.code,
       CATEGORY: challenge.category,
-      ...challenge.extras,
+      ...nameLines(challenge.name, measure),
+      ...extras,
     });
   }
 

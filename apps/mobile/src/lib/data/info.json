@@ -26,12 +26,6 @@
       "url": "https://cmu.lol/quest-report"
     },
     {
-      "id": "support",
-      "label": "Support",
-      "icon": "/img/info/support.svg",
-      "url": "https://cmu.quest/support"
-    },
-    {
       "id": "credits",
       "label": "Credits",
       "icon": "/img/info/credits.svg",

@@ -8,6 +8,7 @@
   import { NfcError } from "$lib/nfc";
   import { warn } from "$lib/notice.svelte";
   import { handleTap } from "$lib/tap";
+  import { hideSplash } from "$lib/splash";
   import { ready } from "$lib/updates";
 
   document.documentElement.dataset.platform = Capacitor.getPlatform();
@@ -22,6 +23,10 @@
     if (error instanceof NfcError) warn(error.message);
     else warn("Couldn't register that tap.");
   }
+
+  $effect(() => {
+    if (session.phase !== "restoring") hideSplash();
+  });
 
   $effect(() => {
     let unwatch: (() => void) | null = null;

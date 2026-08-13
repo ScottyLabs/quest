@@ -1,26 +1,39 @@
+@font-face {
+  font-family: "Open Sans";
+  font-style: normal;
+  font-weight: 300 800;
+  font-display: swap;
+  src: url("/fonts/open-sans-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Open Sans";
+  font-style: italic;
+  font-weight: 300 800;
+  font-display: swap;
+  src: url("/fonts/open-sans-italic.woff2") format("woff2");
+}
+
 :root {
-  --tartan: #c41230;
-  --tartan-dark: #9c0e26;
-  --ink: #16181d;
-  --ink-soft: #5b6270;
-  --line: #e2e5ea;
-  --surface: #ffffff;
-  --canvas: #f5f6f8;
-  --good: #1a7f4b;
-  --warn: #a25e00;
-  --radius: 10px;
-  --shadow: 0 1px 2px rgb(22 24 29 / 0.06), 0 4px 16px rgb(22 24 29 / 0.06);
+  --primary: #c41230;
+  --primary-dark: #000000;
+  --primary-light: #555555;
+  --secondary: #000000;
+  --tertiary: #6d6e71;
+  --tertiary-normal: #edeef1;
+  --tertiary-dark: #dddddd;
+  --highlight: #ffffff;
+  --muted: #bcbdc0;
+  --ink-shade: #3f4143;
+
+  --quest-done: #dbecdb;
+  --quest-done-ink: #54b751;
+  --quest-coin: #fdb813;
 
   color-scheme: light;
-  font-family:
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
+  font-family: "Open Sans", ui-sans-serif, system-ui, sans-serif;
   font-size: 15px;
-  color: var(--ink);
+  color: var(--secondary);
 }
 
 *,
@@ -31,7 +44,7 @@
 
 body {
   margin: 0;
-  background: var(--canvas);
+  background: var(--tertiary-normal);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -39,63 +52,102 @@ h1,
 h2,
 h3 {
   margin: 0;
-  font-weight: 650;
+  font-weight: 700;
   letter-spacing: -0.01em;
 }
 
 button {
   font: inherit;
   cursor: pointer;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface);
-  color: var(--ink);
-  padding: 0.5rem 0.85rem;
+  border: 2px solid var(--secondary);
+  border-radius: 999px;
+  background: var(--highlight);
+  color: var(--secondary);
+  padding: 0.45rem 0.9rem;
+  font-weight: 600;
   transition:
+    filter 120ms,
     background 120ms,
-    border-color 120ms,
     opacity 120ms;
 }
 
 button:hover:not(:disabled) {
-  border-color: #c8ccd4;
-  background: #fafbfc;
+  background: var(--tertiary-normal);
 }
 
 button:disabled {
   cursor: not-allowed;
-  opacity: 0.45;
+  opacity: 0.4;
 }
 
 button.primary {
-  border-color: transparent;
-  background: var(--tartan);
-  color: #fff;
-  font-weight: 600;
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--highlight);
+  font-weight: 700;
 }
 
 button.primary:hover:not(:disabled) {
-  background: var(--tartan-dark);
+  filter: brightness(0.92);
 }
 
 select,
 input[type="text"] {
   font: inherit;
-  padding: 0.4rem 0.55rem;
-  border: 1px solid var(--line);
+  padding: 0.4rem 0.6rem;
+  border: 2px solid var(--tertiary-dark);
   border-radius: 8px;
-  background: var(--surface);
-  color: var(--ink);
+  background: var(--highlight);
+  color: var(--secondary);
 }
 
 input[type="text"]:focus-visible,
 select:focus-visible,
 button:focus-visible {
-  outline: 2px solid var(--tartan);
+  outline: 3px solid var(--quest-coin);
   outline-offset: 1px;
+}
+
+input[type="checkbox"] {
+  accent-color: var(--quest-done-ink);
+  width: 1.05rem;
+  height: 1.05rem;
 }
 
 code {
   font-family: ui-monospace, "SF Mono", Menlo, monospace;
   font-size: 0.92em;
+  letter-spacing: 0.04em;
+}
+
+@font-face {
+  font-family: "Poppins";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/Poppins-Regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Satoshi";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/Satoshi-Regular.otf") format("opentype");
+}
+
+@font-face {
+  font-family: "Satoshi";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/Satoshi-Medium.otf") format("opentype");
+}
+
+@font-face {
+  font-family: "Satoshi";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/Satoshi-Bold.otf") format("opentype");
 }

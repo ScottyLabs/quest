@@ -11,7 +11,124 @@ export const TEMPLATES: Record<string, string> = Object.fromEntries(
   ]),
 );
 
-export const PLACEHOLDERS = ["NAME", "CODE", "CATEGORY", "TAGLINE", "LOCATION", "DESCRIPTION"];
+export const PLACEHOLDERS = [
+  "NAME",
+  "NAME_1",
+  "NAME_2",
+  "NAME_3",
+  "CODE",
+  "CATEGORY",
+  "TAGLINE",
+  "LOCATION",
+  "DESCRIPTION",
+];
+
+export const NAME_WIDTH = 1700;
+
+export const NAME_FONT = { family: "Satoshi", weight: 700, size: 80 };
+
+export const NAME_WRAP = 30;
+
+const NAME_LINES = 3;
+
+export type Measure = (line: string) => number | null;
+
+function fitter(measure?: Measure): (line: string) => boolean {
+  return (line) => {
+    const width = measure?.(line) ?? null;
+    return width === null ? line.length <= NAME_WRAP : width <= NAME_WIDTH;
+  };
+}
+
+const TWO_WAY = /\s*<[-\u2010-\u2015]+>\s*/gu;
+
+export const ARROW_GLYPH = "\u2194";
+
+export function typeset(value: string): string {
+  return value.replace(TWO_WAY, ` ${ARROW_GLYPH} `).replace(/\s+/gu, " ").trim();
+}
+
+export function wrapWords(value: string, fits: (line: string) => boolean): string[] {
+  const lines: string[] = [];
+  let line = "";
+
+  for (const word of value.split(/\s+/u).filter((part) => part !== "")) {
+    if (line === "") line = word;
+    else if (fits(`${line} ${word}`)) line = `${line} ${word}`;
+    else {
+      lines.push(line);
+      line = word;
+    }
+  }
+
+  if (line !== "") lines.push(line);
+  return lines;
+}
+
+function arrowLines(text: string, fits: (line: string) => boolean): string[] | null {
+  const at = text.indexOf(ARROW_GLYPH);
+  if (at === -1) return null;
+  if (fits(text)) return [text];
+
+  return [text.slice(0, at).trim(), ARROW_GLYPH, text.slice(at + ARROW_GLYPH.length).trim()];
+}
+
+/**
+ * A colon is a stronger break than a space, so an overflowing name hinges there
+ * rather than mid-phrase. Names that already fit are left whole - a lone "SCS:"
+ * on its own line reads worse than the full line does.
+ */
+function colonLines(text: string, fits: (line: string) => boolean): string[] | null {
+  if (fits(text)) return null;
+
+  let best: string[] | null = null;
+  let slack = Infinity;
+
+  for (let at = text.indexOf(":"); at !== -1; at = text.indexOf(":", at + 1)) {
+    const head = text.slice(0, at + 1).trim();
+    const tail = text.slice(at + 1).trim();
+    if (tail === "" || !fits(head) || !fits(tail)) continue;
+
+    const imbalance = Math.abs(head.length - tail.length);
+    if (imbalance < slack) {
+      slack = imbalance;
+      best = [head, tail];
+    }
+  }
+
+  return best;
+}
+
+export function nameLines(
+  value: string,
+  measure?: Measure,
+  count = NAME_LINES,
+): Record<string, string> {
+  const text = typeset(value);
+  const fits = fitter(measure);
+  const lines = arrowLines(text, fits) ?? colonLines(text, fits) ?? wrapWords(text, fits);
+  const slots: Record<string, string> = {};
+
+  for (let index = 0; index < count; index += 1) {
+    slots[`NAME_${index + 1}`] = lines[index] ?? "";
+  }
+
+  if (lines.length > count) slots[`NAME_${count}`] = lines.slice(count - 1).join(" ");
+  return slots;
+}
+
+export const CATEGORY_TINT: Record<string, string> = {
+  "campus-of-bridges": "#1D7FA5",
+  "cool-corners-of-carnegie": "#3A7A4E",
+  "lets-eat": "#E4A104",
+  "minor-major-general": "#056A75",
+  "residence-and-relaxation": "#3A547A",
+  "the-essentials": "#C71533",
+};
+
+export function tintFor(slug: string): string {
+  return CATEGORY_TINT[slug] ?? "var(--tertiary)";
+}
 
 export const CODE_PATTERN = /^[0-9A-Z]{4}$/u;
 

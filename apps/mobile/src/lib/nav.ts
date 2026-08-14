@@ -70,3 +70,20 @@ export function currentTab(path: string): Tab | null {
 
   return found;
 }
+
+export function tabAt(path: string, step: number): string | null {
+  const index = TABS.findIndex((tab) => tab.href === path);
+  if (index === -1) return null;
+
+  return TABS[index + step]?.href ?? null;
+}
+
+export function tabDrift(from: string | null | undefined, to: string | null | undefined): number {
+  if (from == null || to == null) return 0;
+
+  const a = TABS.findIndex((tab) => tab.href === from);
+  const b = TABS.findIndex((tab) => tab.href === to);
+  if (a === -1 || b === -1) return 0;
+
+  return Math.sign(b - a);
+}

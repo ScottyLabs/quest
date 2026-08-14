@@ -26,7 +26,8 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    max-width: 22rem;
+    max-width: min(22rem, var(--frame));
+    margin-inline: auto;
     padding: 12px 14px;
     border-radius: 14px;
     background: var(--primary-dark);

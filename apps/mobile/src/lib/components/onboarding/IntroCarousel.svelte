@@ -125,6 +125,14 @@
     user-select: none;
   }
 
+  .topbar,
+  .hero,
+  .actions {
+    width: 100%;
+    max-width: var(--frame);
+    margin-inline: auto;
+  }
+
   .hero {
     display: flex;
     flex: 1;

@@ -18,6 +18,7 @@
     z-index: 20;
     display: flex;
     align-items: flex-end;
+    justify-content: center;
     background: rgb(0 0 0 / 0.45);
   }
 
@@ -26,6 +27,8 @@
     justify-items: center;
     gap: 12px;
     width: 100%;
+    max-width: var(--frame);
+    margin-inline: auto;
     padding: 28px calc(24px + var(--safe-right)) max(28px, var(--safe-bottom))
       calc(24px + var(--safe-left));
     border-radius: 24px 24px 0 0;

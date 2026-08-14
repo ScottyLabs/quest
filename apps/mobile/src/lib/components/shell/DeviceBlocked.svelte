@@ -54,6 +54,9 @@
     justify-content: center;
     align-items: center;
     gap: 12px;
+    width: 100%;
+    max-width: var(--frame);
+    margin-inline: auto;
   }
 
   .mark {
@@ -90,5 +93,8 @@
     flex-direction: column;
     align-items: center;
     gap: 18px;
+    width: 100%;
+    max-width: var(--frame);
+    margin-inline: auto;
   }
 </style>

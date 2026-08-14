@@ -16,6 +16,7 @@
 <style>
   .ticket {
     width: calc(369 * var(--u));
+    max-width: 100%;
     margin-inline: auto;
     padding-top: calc(35 * var(--u));
   }

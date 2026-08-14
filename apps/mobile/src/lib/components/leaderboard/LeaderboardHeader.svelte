@@ -15,14 +15,16 @@
   <img class="band" src="/img/leaderboard/wave-band.svg" alt="" />
   <img class="red" src="/img/leaderboard/wave-red.svg" alt="" />
 
-  <div class="brand">
-    <img class="chart" src="/img/leaderboard/chart.svg" alt="" />
-    <h1>Leaderboard</h1>
-  </div>
+  <div class="frame">
+    <div class="brand">
+      <img class="chart" src="/img/leaderboard/chart.svg" alt="" />
+      <h1>Leaderboard</h1>
+    </div>
 
-  <button class="medal" type="button" aria-label={label} onclick={ontoggle}>
-    <img src={badge} alt="" />
-  </button>
+    <button class="medal" type="button" aria-label={label} onclick={ontoggle}>
+      <img src={badge} alt="" />
+    </button>
+  </div>
 </div>
 
 <style>
@@ -51,6 +53,14 @@
     left: -4.328%;
     width: 112.073%;
     height: calc(387 * var(--u));
+  }
+
+  .frame {
+    position: relative;
+    width: var(--frame);
+    max-width: 100%;
+    height: 100%;
+    margin-inline: auto;
   }
 
   .brand {

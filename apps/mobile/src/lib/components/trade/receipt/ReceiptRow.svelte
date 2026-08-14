@@ -54,11 +54,6 @@
     word-break: break-word;
   }
 
-  .row:not(.done) .name {
-    flex: none;
-    width: calc(260 * var(--u));
-  }
-
   .tail {
     display: flex;
     flex: none;

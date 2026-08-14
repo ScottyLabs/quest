@@ -63,25 +63,27 @@
     <span class="mid" aria-hidden="true"><WaveEdge shape="crown" /></span>
     <span class="glow" aria-hidden="true"></span>
 
-    {#if dorm}
-      <svg class="arc" viewBox="0 0 286 286" aria-hidden="true">
-        <path id="crest-arc" d="M 152 39 A 104 104 0 0 1 228 203" fill="none" />
-        <text>
-          <textPath href="#crest-arc" startOffset="50%" text-anchor="middle">{dorm}</textPath>
-        </text>
-      </svg>
-    {/if}
-
-    <span class="crest">
-      {#if entry}
-        <img src="/img/mascots/{slug}.svg" alt="" />
+    <div class="frame">
+      {#if dorm}
+        <svg class="arc" viewBox="0 0 286 286" aria-hidden="true">
+          <path id="crest-arc" d="M 152 39 A 104 104 0 0 1 228 203" fill="none" />
+          <text>
+            <textPath href="#crest-arc" startOffset="50%" text-anchor="middle">{dorm}</textPath>
+          </text>
+        </svg>
       {/if}
-    </span>
 
-    <div class="who">
-      <p class="name" use:fit={name}>{name}</p>
-      <p class="handle" use:fit={handle}>{handle}</p>
-      <p class="kind">Badges</p>
+      <span class="crest">
+        {#if entry}
+          <img src="/img/mascots/{slug}.svg" alt="" />
+        {/if}
+      </span>
+
+      <div class="who">
+        <p class="name" use:fit={name}>{name}</p>
+        <p class="handle" use:fit={handle}>{handle}</p>
+        <p class="kind">Badges</p>
+      </div>
     </div>
   </header>
 
@@ -95,7 +97,6 @@
     {#each BADGE_ROWS as row (row.id)}
       <BadgeRail {row} {progress} bind:open />
     {/each}
-
 
     {#if session.user?.staff || session.user?.admin}
       <div class="toggle">
@@ -189,6 +190,14 @@
     pointer-events: none;
   }
 
+  .frame {
+    position: relative;
+    width: var(--frame);
+    max-width: 100%;
+    height: 100%;
+    margin-inline: auto;
+  }
+
   .arc {
     position: absolute;
     top: calc(44 * var(--u));
@@ -264,7 +273,7 @@
     flex-direction: column;
     gap: calc(16 * var(--u));
     width: 100%;
-    max-width: calc(439 * var(--u));
+    max-width: var(--column);
     margin-inline: auto;
     padding: 0 calc(22 * var(--u)) var(--dock-clear);
   }

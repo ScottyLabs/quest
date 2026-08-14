@@ -114,7 +114,10 @@
     display: flex;
     align-items: flex-end;
     gap: calc(10 * var(--u));
+    width: var(--frame);
+    max-width: 100%;
     min-height: calc(101 * var(--u));
+    margin-inline: auto;
     padding: 0 calc(86 * var(--u)) 0 calc(24 * var(--u));
   }
 

@@ -24,7 +24,10 @@
     flex: none;
     align-items: center;
     justify-content: space-between;
+    width: 100%;
+    max-width: var(--frame);
     height: 24px;
+    margin-inline: auto;
     padding: 0 16px;
   }
   .arrow {

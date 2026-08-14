@@ -35,9 +35,12 @@
     position: absolute;
     z-index: 3;
     top: var(--notch);
+    right: 0;
     left: 0;
-    width: calc(439 * var(--u));
+    width: var(--frame);
+    max-width: 100%;
     height: 0;
+    margin-inline: auto;
     pointer-events: none;
   }
 

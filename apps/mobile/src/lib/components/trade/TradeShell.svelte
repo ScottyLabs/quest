@@ -13,8 +13,10 @@
     <img class="wave" src="/img/trade/header-wave.svg" alt="" />
     <div class="wash"></div>
 
-    <TradeHeader balance={wallet.scottycoins} />
-    <TradeTabs current={tab.id} onpick={openTab} />
+    <div class="frame">
+      <TradeHeader balance={wallet.scottycoins} />
+      <TradeTabs current={tab.id} onpick={openTab} />
+    </div>
   </div>
 
   <div class="panel">
@@ -57,6 +59,15 @@
     width: 106.378%;
     height: calc(190 * var(--u) + var(--notch));
     background: linear-gradient(180deg, var(--accent) 0%, var(--sink) 100%);
+  }
+
+  .frame {
+    position: relative;
+    z-index: 2;
+    width: var(--frame);
+    max-width: 100%;
+    height: 100%;
+    margin-inline: auto;
   }
 
   .panel {

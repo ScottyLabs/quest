@@ -8,7 +8,8 @@ const LEDGE = 0.08;
 const FAR = 0.09;
 const FLICK = 0.2;
 const SMOOTH = 0.7;
-const BRIEF = 60;
+const BRIEF = 55;
+const SWIPE_MS = 110;
 
 export const TAP_MS = 180;
 
@@ -106,5 +107,5 @@ export function swipeCommit(from: Origin, event: Gesture, width: number): number
 export function swipeGlide(distance: number, width: number): number {
   const share = width === 0 ? 1 : Math.min(1, Math.abs(distance) / width);
 
-  return Math.round(Math.max(BRIEF, TAP_MS * share));
+  return Math.round(Math.max(BRIEF, SWIPE_MS * share));
 }

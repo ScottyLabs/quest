@@ -90,10 +90,13 @@
   .rail {
     position: relative;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
+    align-content: center;
     justify-content: space-between;
-    height: calc(72 * var(--u));
-    padding: 0 calc(16 * var(--u));
+    gap: calc(12 * var(--u));
+    min-height: calc(72 * var(--u));
+    padding: calc(11 * var(--u)) calc(16 * var(--u));
     border-radius: calc(20 * var(--u));
     background: #383838;
     box-shadow: 0 calc(7 * var(--u)) 0 0 rgb(0 0 0 / 25%);

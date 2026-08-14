@@ -11,11 +11,14 @@
   let settled = false;
 
   $effect(() => {
-    const chip = rail?.querySelector(`[data-id="${current}"]`);
-    if (!chip) return;
+    const strip = rail;
+    const chip = strip?.querySelector(`[data-id="${current}"]`);
+    if (!strip || !chip) return;
 
-    const show = (behavior: ScrollBehavior) =>
+    const show = (behavior: ScrollBehavior) => {
+      if (strip.scrollWidth <= strip.clientWidth) return;
       chip.scrollIntoView({ block: "nearest", inline: "center", behavior });
+    };
 
     show(settled ? "smooth" : "instant");
     if (settled) return;
@@ -45,13 +48,22 @@
   .rail {
     display: flex;
     gap: calc(8 * var(--u));
+    justify-content: safe center;
     padding: 0 calc(23 * var(--u));
     overflow-x: auto;
     scrollbar-width: none;
+    scroll-padding-inline: calc(23 * var(--u));
   }
 
   .rail::-webkit-scrollbar {
     display: none;
+  }
+
+  @media (min-width: 560px) {
+    .rail {
+      flex-wrap: wrap;
+      overflow-x: clip;
+    }
   }
 
   .chip {

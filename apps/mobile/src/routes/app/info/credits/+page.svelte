@@ -41,6 +41,8 @@
 
 <style>
   .roll {
+    max-width: var(--column);
+    margin-inline: auto;
     padding: calc(30 * var(--u)) calc(26 * var(--u)) var(--dock-clear);
   }
 

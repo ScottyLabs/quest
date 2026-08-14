@@ -16,27 +16,29 @@
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 <div class="catch" onclick={onclose}></div>
 
-<div class="menu" class:narrowed role="group" aria-label="Filter challenges">
-  {#each ORDER as key (key)}
-    <button
-      class="row"
-      class:on={filters[key]}
-      type="button"
-      aria-pressed={filters[key]}
-      onclick={() => (filters[key] = !filters[key])}
-    >
-      <span class="label">{LABELS[key]}</span>
+<div class="anchor">
+  <div class="menu" class:narrowed role="group" aria-label="Filter challenges">
+    {#each ORDER as key (key)}
+      <button
+        class="row"
+        class:on={filters[key]}
+        type="button"
+        aria-pressed={filters[key]}
+        onclick={() => (filters[key] = !filters[key])}
+      >
+        <span class="label">{LABELS[key]}</span>
 
-      <span class="box">
-        <img
-          src="/img/quest/filter-{key}-{filters[key] ? 'on' : 'off'}.svg"
-          alt=""
-          style:--w="calc({GLYPH[key].w} * var(--u))"
-          style:--h="calc({GLYPH[key].h} * var(--u))"
-        />
-      </span>
-    </button>
-  {/each}
+        <span class="box">
+          <img
+            src="/img/quest/filter-{key}-{filters[key] ? 'on' : 'off'}.svg"
+            alt=""
+            style:--w="calc({GLYPH[key].w} * var(--u))"
+            style:--h="calc({GLYPH[key].h} * var(--u))"
+          />
+        </span>
+      </button>
+    {/each}
+  </div>
 </div>
 
 <style>
@@ -46,17 +48,29 @@
     inset: 0;
   }
 
+  .anchor {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 21;
+    width: var(--frame);
+    max-width: 100%;
+    height: 0;
+    margin-inline: auto;
+  }
+
   .menu {
     --line: #f7f6f6;
-    --frame: #b3b3b3;
+    --rim: #b3b3b3;
 
     position: absolute;
     top: calc(19 * var(--u));
     right: calc(20 * var(--u));
-    z-index: 21;
     overflow: hidden;
     width: calc(268 * var(--u));
-    border: calc(2 * var(--u)) solid var(--frame);
+    max-width: 100%;
+    border: calc(2 * var(--u)) solid var(--rim);
     border-radius: calc(10 * var(--u));
     background: var(--highlight);
     box-shadow: 0 calc(6 * var(--u)) calc(18 * var(--u)) rgb(0 0 0 / 0.18);
@@ -64,7 +78,7 @@
 
   .narrowed {
     --line: #54b751;
-    --frame: #54b751;
+    --rim: #54b751;
   }
 
   .row {

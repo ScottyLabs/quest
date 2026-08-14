@@ -55,7 +55,6 @@
     const inner = sheet;
     if (outer === null || inner === null) return;
 
-
     const measure = () => {
       const pad = getComputedStyle(outer);
       const wide = outer.clientWidth - parseFloat(pad.paddingLeft) - parseFloat(pad.paddingRight);
@@ -85,8 +84,10 @@
     transition:fade={{ duration: 180 }}
   >
     <header>
-      <img class="art" src={art} alt="" />
-      <p class="house">{house}</p>
+      <div class="frame">
+        <img class="art" src={art} alt="" />
+        <p class="house">{house}</p>
+      </div>
     </header>
 
     <div class="body" bind:this={room}>
@@ -136,20 +137,29 @@
   }
 
   header {
-    position: relative;
     display: flex;
     flex: none;
-    align-items: center;
-    justify-content: flex-end;
     height: calc(var(--safe-top) + 189 * var(--u));
     overflow: hidden;
-    padding: var(--safe-top) calc(44 * var(--u)) 0 0;
+    padding-top: var(--safe-top);
     background: var(--house);
+  }
+
+  .frame {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: var(--frame);
+    max-width: 100%;
+    height: 100%;
+    margin-inline: auto;
+    padding-right: calc(44 * var(--u));
   }
 
   .art {
     position: absolute;
-    top: calc(var(--safe-top) + (189 * var(--u)) / 2);
+    top: 50%;
     left: calc(16 * var(--u));
     width: calc(210 * var(--u));
     height: calc(168 * var(--u));

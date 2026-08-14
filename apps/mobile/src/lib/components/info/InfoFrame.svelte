@@ -18,19 +18,21 @@
 
 <section>
   <header>
-    {#if crest}
-      <img class="crest" src={crest} alt="" width="97" height="97" />
-    {:else if onback}
-      <button class="back" type="button" onclick={onback} aria-label="Back">
-        <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2Z" fill="currentColor" />
-        </svg>
-      </button>
-    {/if}
+    <div class="bar">
+      {#if crest}
+        <img class="crest" src={crest} alt="" width="97" height="97" />
+      {:else if onback}
+        <button class="back" type="button" onclick={onback} aria-label="Back">
+          <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2Z" fill="currentColor" />
+          </svg>
+        </button>
+      {/if}
 
-    <div class="titles">
-      <h1>{title}</h1>
-      <p>{subtitle}</p>
+      <div class="titles">
+        <h1>{title}</h1>
+        <p>{subtitle}</p>
+      </div>
     </div>
   </header>
 
@@ -50,13 +52,18 @@
   }
 
   header {
-    display: flex;
     flex: none;
-    align-items: flex-end;
-    gap: calc(2 * var(--u));
     padding: calc(var(--safe-top) + 16 * var(--u)) calc(24 * var(--u)) calc(6 * var(--u))
       calc(22 * var(--u));
     background: linear-gradient(180deg, #c41230, #990012);
+  }
+
+  .bar {
+    display: flex;
+    align-items: flex-end;
+    gap: calc(2 * var(--u));
+    max-width: var(--column);
+    margin-inline: auto;
   }
 
   .crest {

@@ -108,6 +108,7 @@
   .card {
     position: relative;
     width: calc(331.294 * var(--u));
+    max-width: 100%;
     padding-bottom: calc(22.75 * var(--u));
     border-radius: calc(20 * var(--u));
     background: var(--highlight);

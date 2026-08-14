@@ -83,7 +83,8 @@
 
 <style>
   .note {
-    margin: calc(24 * var(--u)) 0;
+    max-width: var(--column);
+    margin: calc(24 * var(--u)) auto;
     color: var(--tertiary);
     font-size: calc(14 * var(--u));
     font-weight: 600;

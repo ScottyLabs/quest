@@ -1188,6 +1188,64 @@
         }
       }
     },
+    "/api/users/me/anonymous": {
+      "put": {
+        "tags": ["users"],
+        "operationId": "anonymous",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnonymousBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnonymousBody"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/users/me/daily": {
       "get": {
         "tags": ["daily"],
@@ -1610,6 +1668,15 @@
   },
   "components": {
     "schemas": {
+      "AnonymousBody": {
+        "type": "object",
+        "required": ["anonymous"],
+        "properties": {
+          "anonymous": {
+            "type": "boolean"
+          }
+        }
+      },
       "AuthErrBody": {
         "type": "object",
         "required": ["error"],
@@ -1973,10 +2040,13 @@
       },
       "Profile": {
         "type": "object",
-        "required": ["andrew_id", "created_at"],
+        "required": ["andrew_id", "anonymous", "created_at"],
         "properties": {
           "andrew_id": {
             "type": "string"
+          },
+          "anonymous": {
+            "type": "boolean"
           },
           "created_at": {
             "type": "string"

@@ -41,6 +41,7 @@
     background: var(--canvas);
   }
 
+
   .note {
     margin: calc(80 * var(--u)) calc(24 * var(--u));
     color: var(--tertiary);
@@ -49,3 +50,4 @@
     text-align: center;
   }
 </style>
+

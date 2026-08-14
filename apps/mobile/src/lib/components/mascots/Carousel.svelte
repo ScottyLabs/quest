@@ -54,9 +54,9 @@
     };
 
     const reserve = () => {
-      const all = houses(node);
-      const first = all.at(0);
-      const last = all.at(-1);
+      const tiles = tilesOf(node);
+      const first = tiles.at(0);
+      const last = tiles.at(-1);
       if (!first || !last) return;
       node.style.setProperty("--lead", `${first.offsetWidth / 2}px`);
       node.style.setProperty("--tail", `${last.offsetWidth / 2}px`);

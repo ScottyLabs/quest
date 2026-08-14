@@ -83,6 +83,7 @@ totals AS (
         "users"."id" AS "id",
         "users"."andrew_id" AS "andrew_id",
         "users"."dorm" AS "community",
+        "users"."anonymous" AS "anonymous",
         (COALESCE(earned."stones", 0) + COALESCE(bonus."stones", 0))::BIGINT AS "thistlestones",
         (COALESCE(coins."coins", 0) - COALESCE(spent."spent", 0))::BIGINT AS "scottycoins"
     FROM "users"
@@ -103,6 +104,7 @@ SELECT
     )::BIGINT AS "rank",
     scored."andrew_id" AS "andrew_id",
     scored."community" AS "community",
+    scored."anonymous" AS "anonymous",
     scored."thistlestones" AS "thistlestones",
     scored."score" AS "score",
     (scored."id" = $3) AS "you"
@@ -139,6 +141,7 @@ struct Standing {
     rank: i64,
     andrew_id: String,
     community: Option<String>,
+    anonymous: bool,
     thistlestones: i64,
     score: i64,
     you: bool,
@@ -226,10 +229,10 @@ impl Leaderboard {
         let rows = standings
             .into_iter()
             .map(|row| Row {
-                name: if row.you {
-                    row.andrew_id
-                } else {
+                name: if row.anonymous && !row.you {
                     format!("Anonymous #{}", row.rank)
+                } else {
+                    row.andrew_id
                 },
                 rank: row.rank,
                 community: row.community,

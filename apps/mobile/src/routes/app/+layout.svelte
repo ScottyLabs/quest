@@ -19,8 +19,8 @@
   import { caution, hush } from "$lib/caution.svelte";
   import { celebration, closeCelebration } from "$lib/celebrate.svelte";
   import { briefing, greet } from "$lib/daily.svelte";
-  import { currentTab, TABS, tabAt, tabDrift } from "$lib/nav";
-  import { goto, onNavigate, preloadCode } from "$app/navigation";
+  import { currentTab, TABS, tabAt } from "$lib/nav";
+  import { goto, onNavigate } from "$app/navigation";
   import {
     swipeCommit,
     swipeFrom,
@@ -54,28 +54,9 @@
   const board = $derived(currentTab(page.url.pathname)?.href === "/app");
   const style = $derived(vars(theme(board ? active.id : FALLBACK)));
 
-  onNavigate((navigation) => {
-    const drift = tabDrift(navigation.from?.url.pathname, navigation.to?.url.pathname);
-    if (drift === 0 || peeking !== null || !animates()) return;
-
-    const root = document.documentElement;
-    root.dataset.slide = drift > 0 ? "forward" : "back";
-    root.style.setProperty("--peek", `${shift}px`);
-    root.style.setProperty("--slide-ms", `${shift === 0 ? TAP_MS : glide}ms`);
-
-    return new Promise((resolve) => {
-      const shown = document.startViewTransition(async () => {
-        resolve();
-        shift = 0;
-        await navigation.complete;
-      });
-
-      void shown.finished.finally(() => {
-        delete root.dataset.slide;
-        root.style.removeProperty("--peek");
-        root.style.removeProperty("--slide-ms");
-      });
-    });
+  onNavigate(() => {
+    if (flung) flung = false;
+    else glide = TAP_MS;
   });
 
   function report(error: unknown): void {
@@ -95,67 +76,51 @@
 
   let origin: Origin | null = null;
   let shift = $state(0);
-  let glide = $state(240);
-  let gliding = $state(false);
-  let peeking = $state<string | null>(null);
+  let glide = $state(TAP_MS);
+  let dragging = $state(false);
+  let pending = $state<number | null>(null);
+  let flung = false;
 
-  const Peek = $derived(
-    peeking === null ? null : (PANES[peeking as keyof typeof PANES] ?? null),
-  );
+  const here = $derived(page.url.pathname);
+  const at = $derived(TABS.findIndex((tab) => tab.href === here));
+  const slot = $derived(pending ?? at);
 
   $effect(() => {
-    const warm = (): void => {
-      for (const tab of TABS) void preloadCode(tab.href);
-    };
-    const idle = window.requestIdleCallback?.(warm);
-    const timer = idle === undefined ? setTimeout(warm, 1200) : undefined;
-
-    return () => {
-      if (idle !== undefined) window.cancelIdleCallback?.(idle);
-      if (timer !== undefined) clearTimeout(timer);
-    };
+    const tab = currentTab(here);
+    if (tab !== null) document.title = `${tab.label} - Orientation Quest`;
   });
 
-  function animates(): boolean {
-    return (
-      typeof document.startViewTransition === "function" &&
-      !matchMedia("(prefers-reduced-motion: reduce)").matches
-    );
+  function mouse(event: PointerEvent): boolean {
+    return event.pointerType !== "touch";
   }
 
-  function rested(): void {
-    if (origin === null && shift === 0) peeking = null;
+  function still(): boolean {
+    return matchMedia("(prefers-reduced-motion: reduce)").matches;
   }
 
-  function settle(vx: number): void {
-    if (shift === 0) {
-      peeking = null;
-      return;
-    }
+  function settle(): void {
+    dragging = false;
+    if (shift === 0) return;
 
-    glide = swipeGlide(Math.abs(shift), vx);
-    gliding = true;
+    glide = swipeGlide(shift, window.innerWidth);
     shift = 0;
   }
 
   function swipeStart(event: Gesture): void {
     origin = swipeFrom(event);
-    gliding = false;
-    shift = 0;
-    peeking = null;
   }
 
   function swipeMove(event: Gesture): void {
-    if (origin === null) return;
+    if (origin === null || still()) return;
 
     const dx = swipeShift(origin, event);
     if (dx === null) return;
 
-    const step = dx < 0 ? 1 : -1;
-    const href = tabAt(page.url.pathname, step);
-    if (href !== null && peeking !== href) peeking = href;
+    dragging = true;
 
-    shift = swipePeek(dx, href !== null, window.innerWidth);
+    const step = dx < 0 ? 1 : -1;
+    const open = tabAt(here, step) !== null;
+    shift = swipePeek(dx, open, window.innerWidth);
   }
 
   async function swipeEnd(event: Gesture): Promise<void> {
@@ -164,22 +129,20 @@
     if (from === null) return;
 
     const step = swipeCommit(from, event, window.innerWidth);
-    const href = step === 0 ? null : tabAt(page.url.pathname, step);
+    const href = step === 0 ? null : tabAt(here, step);
     if (href === null) {
-      settle(from.vx);
+      settle();
       return;
     }
 
-    const width = window.innerWidth;
-    glide = swipeGlide(width - Math.abs(shift), from.vx);
-    gliding = true;
-    shift = step > 0 ? -width : width;
-
-    await new Promise((resolve) => setTimeout(resolve, glide));
-    await goto(href);
-    gliding = false;
+    glide = swipeGlide(window.innerWidth - Math.abs(shift), window.innerWidth);
+    flung = true;
+    pending = at + step;
+    dragging = false;
     shift = 0;
-    peeking = null;
+
+    await goto(href);
+    pending = null;
   }
 
   $effect(() => steer(HOME));
@@ -206,36 +169,41 @@
 </script>
 
 <svelte:window
-  onpointerdown={swipeStart}
-  onpointermove={swipeMove}
-  onpointerup={(event) => void swipeEnd(event)}
+  onpointerdown={(event) => mouse(event) && swipeStart(event)}
+  onpointermove={(event) => mouse(event) && swipeMove(event)}
+  onpointerup={(event) => {
+    if (mouse(event)) void swipeEnd(event);
+  }}
   ontouchstart={swipeStart}
   ontouchmove={swipeMove}
   ontouchend={(event) => void swipeEnd(event)}
   ontouchcancel={() => {
-    const vx = origin?.vx ?? 0;
     origin = null;
-    settle(vx);
+    settle();
   }}
 />
 
 <div class="shell" {style}>
-  <div
-    class="stage"
-    class:gliding
-    style:translate="{shift}px 0"
-    style:--glide="{glide}ms"
-    ontransitionend={rested}
-  >
-    <div class="pane">
+  {#if at === -1}
+    <div class="pane solo">
       {@render children()}
     </div>
-    {#if Peek !== null}
-      <div class="pane peek" class:before={shift > 0}>
-        <Peek />
-      </div>
-    {/if}
-  </div>
+  {:else}
+    <div
+      class="stage"
+      class:dragging
+      style:--at={slot}
+      style:--shift="{shift}px"
+      style:--glide="{glide}ms"
+    >
+      {#each TABS as tab, index (tab.href)}
+        {@const Tab = PANES[tab.href as keyof typeof PANES]}
+        <div class="pane" inert={index !== at && !dragging}>
+          <Tab />
+        </div>
+      {/each}
+    </div>
+  {/if}
   <BottomNav />
 
   {#if scanning.label !== null && !showsSystemSheet}
@@ -286,7 +254,7 @@
     margin-inline: auto;
     padding-right: var(--safe-right);
     padding-left: var(--safe-left);
-    overflow: hidden;
+    overflow: clip;
     background: var(--canvas);
   }
 
@@ -294,7 +262,13 @@
     display: flex;
     flex: 1;
     min-height: 0;
-    position: relative;
+    transform: translate3d(calc(var(--at) * -100% + var(--shift)), 0, 0);
+    transition: transform var(--glide, 220ms) cubic-bezier(0.22, 0.61, 0.36, 1);
+    will-change: transform;
+  }
+
+  .stage.dragging {
+    transition: none;
   }
 
   .pane {
@@ -304,27 +278,15 @@
     min-width: 0;
     min-height: 0;
     overflow: clip;
+    contain: paint;
   }
 
-  .pane.peek {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 100%;
-    width: 100%;
-  }
-
-  .pane.peek.before {
-    right: 100%;
-    left: auto;
-  }
-
-  .stage.gliding {
-    transition: translate var(--glide, 180ms) cubic-bezier(0.22, 0.61, 0.36, 1);
+  .pane.solo {
+    flex: 1;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .stage.gliding {
+    .stage {
       transition: none;
     }
   }

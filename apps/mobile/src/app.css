@@ -32,17 +32,17 @@
   --quest-done-ink: #54b751;
   --quest-coin: #fdb813;
 
-  --safe-top: env(safe-area-inset-top, 0px);
-  --safe-right: env(safe-area-inset-right, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-top: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
+  --safe-right: max(env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px));
+  --safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px));
+  --safe-left: max(env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px));
 
   --dock-gap: max(32px, var(--safe-bottom));
   --dock-clear: calc(78px + var(--dock-gap));
 }
 
 :root[data-platform="android"] {
-  --dock-gap: calc(12px + var(--safe-bottom));
+  --dock-gap: max(20px, calc(10px + var(--safe-bottom)));
 }
 
 @supports (height: 1svh) {
@@ -83,52 +83,4 @@ textarea {
 
 a:link {
   color: var(--primary);
-}
-
-@keyframes slide-in-right {
-  from {
-    translate: calc(100% + var(--peek, 0px)) 0;
-  }
-}
-
-@keyframes slide-in-left {
-  from {
-    translate: calc(-100% + var(--peek, 0px)) 0;
-  }
-}
-
-@keyframes slide-out-left {
-  to {
-    translate: calc(-100% - var(--peek, 0px)) 0;
-  }
-}
-
-@keyframes slide-out-right {
-  to {
-    translate: calc(100% - var(--peek, 0px)) 0;
-  }
-}
-
-html[data-slide]::view-transition-group(root),
-html[data-slide]::view-transition-old(root),
-html[data-slide]::view-transition-new(root) {
-  animation-duration: var(--slide-ms, 240ms);
-  animation-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
-  mix-blend-mode: normal;
-}
-
-html[data-slide="forward"]::view-transition-old(root) {
-  animation-name: slide-out-left;
-}
-
-html[data-slide="forward"]::view-transition-new(root) {
-  animation-name: slide-in-right;
-}
-
-html[data-slide="back"]::view-transition-old(root) {
-  animation-name: slide-out-right;
-}
-
-html[data-slide="back"]::view-transition-new(root) {
-  animation-name: slide-in-left;
 }

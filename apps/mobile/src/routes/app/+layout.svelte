@@ -80,6 +80,11 @@
   let dragging = $state(false);
   let pending = $state<number | null>(null);
   let flung = false;
+  let stage = $state<HTMLElement | null>(null);
+
+  function span(): number {
+    return stage?.clientWidth ?? window.innerWidth;
+  }
 
   const here = $derived(page.url.pathname);
   const at = $derived(TABS.findIndex((tab) => tab.href === here));
@@ -102,7 +107,7 @@
     dragging = false;
     if (shift === 0) return;
 
-    glide = swipeGlide(shift, window.innerWidth);
+    glide = swipeGlide(shift, span());
     shift = 0;
   }
 
@@ -120,7 +125,7 @@
 
     const step = dx < 0 ? 1 : -1;
     const open = tabAt(here, step) !== null;
-    shift = swipePeek(dx, open, window.innerWidth);
+    shift = swipePeek(dx, open, span());
   }
 
   async function swipeEnd(event: Gesture): Promise<void> {
@@ -128,14 +133,15 @@
     origin = null;
     if (from === null) return;
 
-    const step = swipeCommit(from, event, window.innerWidth);
+    const step = swipeCommit(from, event, span());
     const href = step === 0 ? null : tabAt(here, step);
     if (href === null) {
       settle();
       return;
     }
 
-    glide = swipeGlide(window.innerWidth - Math.abs(shift), window.innerWidth);
+    const reach = span();
+    glide = swipeGlide(reach - Math.abs(shift), reach);
     flung = true;
     pending = at + step;
     dragging = false;
@@ -190,6 +196,7 @@
     </div>
   {:else}
     <div
+      bind:this={stage}
       class="stage"
       class:dragging
       style:--at={slot}
@@ -198,7 +205,11 @@
     >
       {#each TABS as tab, index (tab.href)}
         {@const Tab = PANES[tab.href as keyof typeof PANES]}
-        <div class="pane" inert={index !== at && !dragging}>
+        <div
+          class="pane"
+          class:far={Math.abs(index - slot) > 1}
+          inert={index !== at && !dragging}
+        >
           <Tab />
         </div>
       {/each}
@@ -249,7 +260,6 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    max-width: calc(439px + var(--safe-left) + var(--safe-right));
     height: 100dvh;
     margin-inline: auto;
     padding-right: var(--safe-right);
@@ -264,11 +274,11 @@
     min-height: 0;
     transform: translate3d(calc(var(--at) * -100% + var(--shift)), 0, 0);
     transition: transform var(--glide, 220ms) cubic-bezier(0.22, 0.61, 0.36, 1);
-    will-change: transform;
   }
 
   .stage.dragging {
     transition: none;
+    will-change: transform;
   }
 
   .pane {
@@ -278,7 +288,10 @@
     min-width: 0;
     min-height: 0;
     overflow: clip;
-    contain: paint;
+  }
+
+  .pane.far {
+    content-visibility: hidden;
   }
 
   .pane.solo {

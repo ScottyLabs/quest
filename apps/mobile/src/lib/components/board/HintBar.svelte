@@ -51,8 +51,9 @@
     left: 0;
     z-index: 15;
     display: flow-root;
+    max-width: var(--frame);
     min-height: calc(68 * var(--u));
-    margin: 0;
+    margin: 0 auto;
     padding: calc(14 * var(--u)) calc(36 * var(--u)) calc(14 * var(--u)) calc(18 * var(--u));
     border-radius: 0 0 calc(8 * var(--u)) calc(8 * var(--u));
     background: rgb(27 27 29 / 0.96);

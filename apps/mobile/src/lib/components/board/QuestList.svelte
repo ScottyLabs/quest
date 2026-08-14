@@ -27,7 +27,7 @@
 
   {#if upcoming.length > 0}
     {#if daily || open.length > 0}
-      <ListDivider label="Upcoming Challenges" />
+      <div class="wide"><ListDivider label="Upcoming Challenges" /></div>
     {/if}
 
     {#each upcoming as quest (quest.id)}
@@ -39,9 +39,14 @@
 <style>
   .list {
     position: relative;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    align-items: start;
     gap: calc(17 * var(--u));
+    grid-template-columns: repeat(auto-fill, minmax(calc(300 * var(--u)), 1fr));
+  }
+
+  .wide {
+    grid-column: 1 / -1;
   }
 
   .rail {

@@ -30,6 +30,9 @@
     flex: none;
     flex-direction: column;
     align-items: center;
+    width: 100%;
+    max-width: var(--frame);
+    margin-inline: auto;
     padding: 17px 16px 0;
     gap: 16px;
     text-align: center;

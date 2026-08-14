@@ -149,7 +149,6 @@
   {/if}
 </div>
 
-
 <style>
   .board {
     position: relative;
@@ -217,7 +216,8 @@
   }
 
   .note {
-    margin: calc(24 * var(--u)) 0 0;
+    max-width: var(--column);
+    margin: calc(24 * var(--u)) auto 0;
     color: var(--shade);
     font-size: calc(15 * var(--u));
     font-weight: 600;

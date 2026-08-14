@@ -21,43 +21,54 @@
 </script>
 
 <div class="row" class:you={row.you}>
-  <span class="rank">{row.rank}.</span>
+  <div class="inner">
+    <span class="rank">{row.rank}.</span>
 
-  <span class="who">
-    <span class="name" class:veiled>{shown}</span>
-    <span class="house">{house}</span>
-  </span>
+    <span class="who">
+      <span class="name" class:veiled>{shown}</span>
+      <span class="house">{house}</span>
+    </span>
 
-  {#if row.you}
-    <button
-      class="veil"
-      class:on={veiled}
-      type="button"
-      role="switch"
-      aria-checked={veiled}
-      aria-label="Anonymous on the leaderboard"
-      disabled={busy}
-      onclick={() => void toggleHidden()}
-    >
-      <span class="pip"></span>
-      <span class="word">{veiled ? "Hidden" : "Shown"}</span>
-    </button>
-  {/if}
+    {#if row.you}
+      <button
+        class="veil"
+        class:on={veiled}
+        type="button"
+        role="switch"
+        aria-checked={veiled}
+        aria-label="Anonymous on the leaderboard"
+        disabled={busy}
+        onclick={() => void toggleHidden()}
+      >
+        <span class="pip"></span>
+        <span class="word">{veiled ? "Hidden" : "Shown"}</span>
+      </button>
+    {/if}
 
-  <span class="score">
-    <img class="gem" src={icon} alt="" />
-    <span class="tally">{row.score}</span>
-  </span>
+    <span class="score">
+      <img class="gem" src={icon} alt="" />
+      <span class="tally">{row.score}</span>
+    </span>
+  </div>
 </div>
 
 <style>
   .row {
     display: flex;
     align-items: center;
-    gap: calc(20 * var(--u));
     width: 100%;
     height: calc(80 * var(--u));
     padding: 0 calc(27.5 * var(--u));
+  }
+
+  .inner {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: calc(20 * var(--u));
+    max-width: var(--column);
+    min-width: 0;
+    margin-inline: auto;
   }
 
   .you {
@@ -105,13 +116,6 @@
     font-style: italic;
     letter-spacing: calc(0.2 * var(--u));
   }
-
-
-
-
-
-
-
 
   .veil {
     display: flex;

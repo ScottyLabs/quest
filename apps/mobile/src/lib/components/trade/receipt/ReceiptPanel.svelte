@@ -31,6 +31,8 @@
 
 <style>
   .receipt {
+    max-width: var(--column);
+    margin-inline: auto;
     padding: calc(11 * var(--u)) calc(9.5 * var(--u)) 0;
   }
 

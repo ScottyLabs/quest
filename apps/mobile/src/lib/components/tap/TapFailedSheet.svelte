@@ -56,12 +56,15 @@
     z-index: 35;
     display: flex;
     align-items: flex-end;
+    justify-content: center;
     background: rgb(0 0 0 / 0.55);
   }
 
   .sheet {
     width: 100%;
+    max-width: var(--frame);
     max-height: 100%;
+    margin-inline: auto;
     padding: 0 calc(24 * var(--u) + var(--safe-right)) max(calc(24 * var(--u)), var(--safe-bottom))
       calc(24 * var(--u) + var(--safe-left));
     overflow-y: auto;

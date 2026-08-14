@@ -32,18 +32,14 @@
 
 <style>
   .tiles {
-    display: grid;
-    grid-template-columns: repeat(2, calc(150 * var(--u)));
+    display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     gap: calc(44 * var(--u)) calc(48 * var(--u));
-    margin: 0;
+    max-width: var(--column);
+    margin: 0 auto;
     padding: calc(42 * var(--u)) 0 var(--dock-clear);
     list-style: none;
-  }
-
-  .tiles li:last-child {
-    grid-column: 1 / -1;
-    justify-self: center;
   }
 
   .tile {

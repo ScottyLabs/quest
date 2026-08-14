@@ -51,6 +51,9 @@
   }
   .actions {
     flex: none;
+    width: 100%;
+    max-width: var(--frame);
+    margin-inline: auto;
     padding: 24px 16px 0;
   }
 </style>

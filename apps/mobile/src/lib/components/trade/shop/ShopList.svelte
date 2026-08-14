@@ -13,8 +13,8 @@
 
 <style>
   .list {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(calc(260 * var(--u)), 1fr));
     gap: calc(10 * var(--u));
     margin: 0;
     padding: calc(10 * var(--u)) 0 0;

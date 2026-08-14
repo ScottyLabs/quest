@@ -1,7 +1,8 @@
 <script lang="ts">
   import "../app.css";
   import { Capacitor } from "@capacitor/core";
-  import { session } from "$lib/auth";
+  import { authMessage, session } from "$lib/auth";
+  import { watchCallbacks } from "$lib/auth/callback";
   import DeviceBlocked from "$lib/components/shell/DeviceBlocked.svelte";
   import Toast from "$lib/components/shell/Toast.svelte";
   import { watchTaps } from "$lib/deeplink";
@@ -10,6 +11,7 @@
   import { handleTap } from "$lib/tap";
   import { hideSplash } from "$lib/splash";
   import { ready } from "$lib/updates";
+  import { me } from "$lib/user.svelte";
 
   document.documentElement.dataset.platform = Capacitor.getPlatform();
 
@@ -25,6 +27,10 @@
   }
 
   $effect(() => {
+    if (session.signedIn) void me.load();
+  });
+
+  $effect(() => {
     if (session.phase !== "restoring") hideSplash();
   });
 
@@ -35,6 +41,21 @@
     watchTaps((url) => void handleTap(url).catch(report)).then(
       (off) => (dropped ? off() : (unwatch = off)),
       report,
+    );
+
+    return () => {
+      dropped = true;
+      unwatch?.();
+    };
+  });
+
+  $effect(() => {
+    let unwatch: (() => void) | null = null;
+    let dropped = false;
+
+    watchCallbacks().then(
+      (off) => (dropped ? off() : (unwatch = off)),
+      (error: unknown) => warn(authMessage(error)),
     );
 
     return () => {

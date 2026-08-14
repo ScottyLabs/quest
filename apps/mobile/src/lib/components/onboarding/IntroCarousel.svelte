@@ -9,10 +9,12 @@
   let {
     cta,
     onfinish,
+    busy = false,
     label = "Onboarding",
   }: {
     cta: string;
     onfinish: () => void;
+    busy?: boolean;
     label?: string;
   } = $props();
 
@@ -21,6 +23,7 @@
   const last = $derived(index === STEPS.length - 1);
 
   function next() {
+    if (busy) return;
     if (last) onfinish();
     else index += 1;
   }
@@ -72,7 +75,7 @@
           />
         </svg>
       </button>
-      <button class="skip" onclick={onfinish}>Skip</button>
+      <button class="skip" onclick={onfinish} disabled={busy}>Skip</button>
     </div>
 
     <div class="hero">
@@ -107,7 +110,9 @@
     </div>
 
     <div class="actions">
-      <Button onclick={next}>{last ? cta : "Next"}</Button>
+      <Button onclick={next} disabled={busy}>
+        {#if last && busy}Signing in&hellip;{:else}{last ? cta : "Next"}{/if}
+      </Button>
     </div>
   {/if}
 </div>
@@ -129,7 +134,7 @@
   .hero,
   .actions {
     width: 100%;
-    max-width: var(--frame);
+    max-width: var(--sheet);
     margin-inline: auto;
   }
 

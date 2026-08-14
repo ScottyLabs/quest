@@ -52,7 +52,7 @@
   .actions {
     flex: none;
     width: 100%;
-    max-width: var(--frame);
+    max-width: var(--sheet);
     margin-inline: auto;
     padding: 24px 16px 0;
   }

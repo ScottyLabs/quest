@@ -151,10 +151,10 @@ export const HOUSES: House[] = [
       {
         slug: "redpanda",
         dorm: "mcgillboss",
-        home: "McGill & Boss",
-        name: "Randal the Red Panda",
+        home: "Boss, McGill & Maggie Mo",
+        name: "Randal Red Panda + Maggie Magpie",
         quote: '"Can I get a Hill Yeah?! Hill Yeah!!"',
-        credit: "~McGill and Boss",
+        credit: "~Boss, McGill, and Maggie Mo",
         fill: "#d5242c",
         edge: "#691418",
         shade: "#691418",

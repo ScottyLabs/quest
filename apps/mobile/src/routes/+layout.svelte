@@ -13,6 +13,8 @@
   import { ready } from "$lib/updates";
   import { me } from "$lib/user.svelte";
 
+  const SETTLE_GRACE = 2000;
+
   document.documentElement.dataset.platform = Capacitor.getPlatform();
 
   if (Capacitor.isNativePlatform()) void ready();
@@ -26,12 +28,25 @@
     else warn("Couldn't register that tap.");
   }
 
+  let waited = $state(false);
+
+  const decided = $derived(
+    session.phase !== "restoring" && (waited || !session.signedIn || me.settled),
+  );
+
   $effect(() => {
     if (session.signedIn) void me.load();
   });
 
   $effect(() => {
-    if (session.phase !== "restoring") hideSplash();
+    if (session.phase === "restoring") return;
+
+    const timer = setTimeout(() => (waited = true), SETTLE_GRACE);
+    return () => clearTimeout(timer);
+  });
+
+  $effect(() => {
+    if (decided) hideSplash();
   });
 
   $effect(() => {

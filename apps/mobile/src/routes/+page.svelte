@@ -3,6 +3,11 @@
   import { authMessage, session } from "$lib/auth";
   import { steer, WELCOME } from "$lib/gate";
   import { warn } from "$lib/notice.svelte";
+  import { me } from "$lib/user.svelte";
+
+  const pending = $derived(
+    session.phase === "awaitingBrowser" || (session.signedIn && !me.settled),
+  );
 
   $effect(() => steer(WELCOME));
 
@@ -18,6 +23,4 @@
 
 <svelte:head><title>Orientation Quest</title></svelte:head>
 
-{#if !session.signedIn}
-  <IntroCarousel cta="Log In" onfinish={login} busy={session.phase === "awaitingBrowser"} />
-{/if}
+<IntroCarousel cta="Log In" onfinish={login} busy={pending} />

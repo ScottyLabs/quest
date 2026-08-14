@@ -6,7 +6,7 @@
   import WarningDialog from "$lib/components/shell/WarningDialog.svelte";
   import { BADGE_ROWS, type Progress } from "$lib/badges";
   import { session } from "$lib/auth";
-  import { fit } from "$lib/fit";
+  import { arc, fit } from "$lib/fit";
   import { MASCOTS } from "$lib/mascots";
   import { done, inCategory, quests } from "$lib/quests.svelte";
   import { setStaffMode, staffMode } from "$lib/staff.svelte";
@@ -67,7 +67,7 @@
       {#if dorm}
         <svg class="arc" viewBox="0 0 286 286" aria-hidden="true">
           <path id="crest-arc" d="M 152 39 A 104 104 0 0 1 228 203" fill="none" />
-          <text>
+          <text use:arc={dorm}>
             <textPath href="#crest-arc" startOffset="50%" text-anchor="middle">{dorm}</textPath>
           </text>
         </svg>
@@ -207,7 +207,7 @@
     fill: var(--highlight);
     font-size: calc(23 * var(--u));
     font-weight: 700;
-    letter-spacing: calc(1.2 * var(--u));
+    letter-spacing: 0.052em;
     pointer-events: none;
     text-transform: uppercase;
   }

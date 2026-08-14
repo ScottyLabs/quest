@@ -17,7 +17,7 @@ const config: CapacitorConfig = {
       updateUrl: `${updateBase}/api/app/updates`,
       statsUrl: "",
       channelUrl: "",
-      autoUpdate: !devServer,
+      autoUpdate: devServer ? "off" : "onLaunch",
       appReadyTimeout: 15000,
     },
   },

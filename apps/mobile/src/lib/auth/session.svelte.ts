@@ -54,6 +54,7 @@ class SessionStore {
   readonly #storage: SessionStorage = localSessionStorage;
   #adopting: { hash: string; user: Promise<QuestUser | null> } | null = null;
   #restored: Promise<void> | null = null;
+  #signingIn: Promise<QuestUser> | null = null;
 
   get user(): QuestUser | null {
     return this.#session?.user ?? null;
@@ -81,6 +82,8 @@ class SessionStore {
       if (browser && (await this.#consume(location.hash))) return;
 
       const stored = browser ? await this.#storage.load() : null;
+
+      if (this.#session !== null) return;
       if (!stored || stored.expiresAt <= Date.now()) {
         this.clear();
         return;
@@ -92,7 +95,7 @@ class SessionStore {
       await this.#recheck(stored);
     } catch (error) {
       console.error("session restore failed", error);
-      this.#phase = "signedOut";
+      if (this.#session === null) this.#phase = "signedOut";
     }
   }
 
@@ -133,8 +136,22 @@ class SessionStore {
     }
   }
 
-  async login(options: LoginOptions = {}): Promise<QuestUser> {
+  login(options: LoginOptions = {}): Promise<QuestUser> {
+    this.#signingIn ??= this.#loginOnce(options)
+      .catch((error: unknown) => {
+        this.#blocked(error);
+        this.#phase = this.#session ? "signedIn" : "signedOut";
+        throw error;
+      })
+      .finally(() => {
+        this.#signingIn = null;
+      });
+    return this.#signingIn;
+  }
+
+  async #loginOnce(options: LoginOptions): Promise<QuestUser> {
     this.#deviceOwned = false;
+    this.#phase = "awaitingBrowser";
 
     const ticket = await loginTicket();
     const native = Capacitor.isNativePlatform();
@@ -199,6 +216,22 @@ class SessionStore {
     this.#phase = "signedOut";
     this.#deviceOwned = false;
     void this.#storage.clear();
+  }
+
+  async adoptCallback(url: string | null | undefined): Promise<boolean> {
+    if (typeof url !== "string") return false;
+
+    const cut = url.indexOf("#");
+    if (cut === -1) return false;
+
+    const hash = url.slice(cut);
+    if (parseFragment(hash) === null) return false;
+
+    const user = await this.adoptFragment(hash).catch((error: unknown) => {
+      this.#blocked(error);
+      return null;
+    });
+    return user !== null;
   }
 
   async #consume(hash: string): Promise<boolean> {

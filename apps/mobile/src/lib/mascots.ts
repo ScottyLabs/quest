@@ -179,5 +179,3 @@ export const MASCOTS: Record<string, { mascot: Mascot; house: House }> = Object.
 );
 
 export const ART_BOX = 253;
-
-export const FIXED_ROWS = 469;

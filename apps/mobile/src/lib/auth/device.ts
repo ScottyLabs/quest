@@ -32,7 +32,7 @@ async function load(): Promise<string> {
 
   const start = spki.length - 65;
   if (start < 0 || spki[start] !== 0x04) {
-    throw new AuthError("device_unverified", `keystore returned ${spki.length} spki bytes`);
+    throw new AuthError("device_insecure", `keystore returned ${spki.length} spki bytes`);
   }
 
   return hex(spki.subarray(start));

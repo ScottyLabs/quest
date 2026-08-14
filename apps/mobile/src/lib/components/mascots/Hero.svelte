@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { ART_BOX, FIXED_ROWS, type Mascot } from "$lib/mascots";
+  import { ART_BOX, type Mascot } from "$lib/mascots";
 
   let { mascot = null }: { mascot?: Mascot | null } = $props();
 </script>
 
 <div class="hero">
-  <div class="art" style:height="min({ART_BOX}px, calc(100dvh - {FIXED_ROWS}px))">
+  <div class="art" style:max-height="{ART_BOX}px">
     <img src="/img/mascots/hero/{mascot?.slug ?? 'scotty'}.svg" alt="" />
   </div>
 
@@ -27,11 +27,12 @@
 <style>
   .hero {
     display: flex;
-    flex: none;
+    flex: 1;
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: var(--frame);
+    min-height: 0;
+    max-width: var(--sheet);
     margin-inline: auto;
     padding: 17px 16px 0;
     gap: 16px;
@@ -39,9 +40,11 @@
   }
   .art {
     display: flex;
+    flex: 1;
     align-items: flex-end;
     justify-content: center;
     width: 100%;
+    min-height: 0;
     margin-bottom: 14px;
   }
   .art img {

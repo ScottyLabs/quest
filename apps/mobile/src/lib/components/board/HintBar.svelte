@@ -51,7 +51,7 @@
     left: 0;
     z-index: 15;
     display: flow-root;
-    max-width: var(--frame);
+    max-width: var(--sheet);
     min-height: calc(68 * var(--u));
     margin: 0 auto;
     padding: calc(14 * var(--u)) calc(36 * var(--u)) calc(14 * var(--u)) calc(18 * var(--u));

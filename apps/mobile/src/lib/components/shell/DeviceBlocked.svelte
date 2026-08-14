@@ -55,7 +55,7 @@
     align-items: center;
     gap: 12px;
     width: 100%;
-    max-width: var(--frame);
+    max-width: var(--sheet);
     margin-inline: auto;
   }
 
@@ -94,7 +94,7 @@
     align-items: center;
     gap: 18px;
     width: 100%;
-    max-width: var(--frame);
+    max-width: var(--sheet);
     margin-inline: auto;
   }
 </style>

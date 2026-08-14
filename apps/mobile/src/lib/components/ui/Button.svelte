@@ -4,11 +4,17 @@
   let {
     children,
     onclick,
+    disabled = false,
     type = "button",
-  }: { children: Snippet; onclick?: () => void; type?: "button" | "submit" } = $props();
+  }: {
+    children: Snippet;
+    onclick?: () => void;
+    disabled?: boolean;
+    type?: "button" | "submit";
+  } = $props();
 </script>
 
-<button {type} {onclick}>{@render children()}</button>
+<button {type} {onclick} {disabled}>{@render children()}</button>
 
 <style>
   button {
@@ -31,5 +37,10 @@
 
   button:active {
     opacity: 0.9;
+  }
+
+  button:disabled {
+    opacity: 0.6;
+    cursor: default;
   }
 </style>

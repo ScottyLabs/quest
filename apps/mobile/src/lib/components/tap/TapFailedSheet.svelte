@@ -62,7 +62,7 @@
 
   .sheet {
     width: 100%;
-    max-width: var(--frame);
+    max-width: var(--sheet);
     max-height: 100%;
     margin-inline: auto;
     padding: 0 calc(24 * var(--u) + var(--safe-right)) max(calc(24 * var(--u)), var(--safe-bottom))

@@ -27,7 +27,7 @@
     justify-items: center;
     gap: 12px;
     width: 100%;
-    max-width: var(--frame);
+    max-width: var(--sheet);
     margin-inline: auto;
     padding: 28px calc(24px + var(--safe-right)) max(28px, var(--safe-bottom))
       calc(24px + var(--safe-left));

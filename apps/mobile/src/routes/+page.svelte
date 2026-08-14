@@ -19,5 +19,5 @@
 <svelte:head><title>Orientation Quest</title></svelte:head>
 
 {#if !session.signedIn}
-  <IntroCarousel cta="Log In" onfinish={login} />
+  <IntroCarousel cta="Log In" onfinish={login} busy={session.phase === "awaitingBrowser"} />
 {/if}

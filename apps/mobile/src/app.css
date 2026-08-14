@@ -84,3 +84,51 @@ textarea {
 a:link {
   color: var(--primary);
 }
+
+@keyframes slide-in-right {
+  from {
+    translate: calc(100% + var(--peek, 0px)) 0;
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    translate: calc(-100% + var(--peek, 0px)) 0;
+  }
+}
+
+@keyframes slide-out-left {
+  to {
+    translate: calc(-100% - var(--peek, 0px)) 0;
+  }
+}
+
+@keyframes slide-out-right {
+  to {
+    translate: calc(100% - var(--peek, 0px)) 0;
+  }
+}
+
+html[data-slide]::view-transition-group(root),
+html[data-slide]::view-transition-old(root),
+html[data-slide]::view-transition-new(root) {
+  animation-duration: var(--slide-ms, 240ms);
+  animation-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
+  mix-blend-mode: normal;
+}
+
+html[data-slide="forward"]::view-transition-old(root) {
+  animation-name: slide-out-left;
+}
+
+html[data-slide="forward"]::view-transition-new(root) {
+  animation-name: slide-in-right;
+}
+
+html[data-slide="back"]::view-transition-old(root) {
+  animation-name: slide-out-right;
+}
+
+html[data-slide="back"]::view-transition-new(root) {
+  animation-name: slide-in-left;
+}

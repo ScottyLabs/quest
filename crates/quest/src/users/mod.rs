@@ -70,6 +70,21 @@ impl Users {
 
         Ok(())
     }
+
+    async fn set_anonymous(&self, user: &SessionUser, anonymous: bool) -> Result<(), AuthError> {
+        let row = self.row(user).await?;
+
+        users::ActiveModel {
+            id: ActiveValue::Unchanged(row.id),
+            anonymous: ActiveValue::Set(anonymous),
+            ..Default::default()
+        }
+        .update(&self.db)
+        .await
+        .map_err(db_down)?;
+
+        Ok(())
+    }
 }
 
 fn db_down(err: DbErr) -> AuthError {

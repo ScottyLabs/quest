@@ -1,19 +1,48 @@
 <script lang="ts">
   import { mascotFor, type Metric, type Standing } from "$lib/leaderboard.svelte";
+  import { warn } from "$lib/notice.svelte";
+  import { me } from "$lib/user.svelte";
 
   let { row, metric }: { row: Standing; metric: Metric } = $props();
 
   const house = $derived(mascotFor(row.community)?.home ?? "");
   const icon = $derived(metric === "coins" ? "/img/trade/coin.svg" : "/img/leaderboard/gem.svg");
+  const veiled = $derived(row.you && me.anonymous);
+  const shown = $derived(veiled ? `Anonymous #${row.rank}` : row.name);
+
+  let busy = $state(false);
+
+  async function toggleHidden(): Promise<void> {
+    busy = true;
+    const ok = await me.setAnonymous(!me.anonymous);
+    busy = false;
+    if (!ok) warn("Couldn't change that just now.");
+  }
 </script>
 
 <div class="row" class:you={row.you}>
   <span class="rank">{row.rank}.</span>
 
   <span class="who">
-    <span class="name">{row.name}</span>
+    <span class="name" class:veiled>{shown}</span>
     <span class="house">{house}</span>
   </span>
+
+  {#if row.you}
+    <button
+      class="veil"
+      class:on={veiled}
+      type="button"
+      role="switch"
+      aria-checked={veiled}
+      aria-label="Anonymous on the leaderboard"
+      disabled={busy}
+      onclick={() => void toggleHidden()}
+    >
+      <span class="pip"></span>
+      <span class="word">{veiled ? "Hidden" : "Shown"}</span>
+    </button>
+  {/if}
 
   <span class="score">
     <img class="gem" src={icon} alt="" />
@@ -72,6 +101,75 @@
     text-overflow: ellipsis;
   }
 
+  .name.veiled {
+    font-style: italic;
+    letter-spacing: calc(0.2 * var(--u));
+  }
+
+
+
+
+
+
+
+
+  .veil {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: calc(7 * var(--u));
+    height: calc(30 * var(--u));
+    margin-right: calc(14 * var(--u));
+    padding: 0 calc(11 * var(--u)) 0 calc(9 * var(--u));
+    border: 0;
+    border-radius: calc(15 * var(--u));
+    background: var(--highlight);
+    box-shadow: inset 0 0 0 calc(1.5 * var(--u)) rgb(0 0 0 / 0.06);
+    cursor: pointer;
+    transition:
+      background 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .veil.on {
+    flex-direction: row-reverse;
+    padding: 0 calc(9 * var(--u)) 0 calc(11 * var(--u));
+    background: var(--secondary);
+    box-shadow: inset 0 0 0 calc(1.5 * var(--u)) rgb(255 255 255 / 0.18);
+  }
+
+  .veil:active {
+    translate: 0 calc(1 * var(--u));
+  }
+
+  .pip {
+    display: block;
+    flex: none;
+    width: calc(12 * var(--u));
+    height: calc(12 * var(--u));
+    border-radius: 50%;
+    background: var(--accent);
+    transition: background 160ms ease;
+  }
+
+  .veil.on .pip {
+    background: var(--highlight);
+  }
+
+  .word {
+    color: var(--secondary);
+    font-size: calc(11 * var(--u));
+    font-weight: 700;
+    letter-spacing: calc(0.4 * var(--u));
+    line-height: 1;
+    text-transform: uppercase;
+    transition: color 160ms ease;
+  }
+
+  .veil.on .word {
+    color: var(--highlight);
+  }
+
   .house {
     overflow: hidden;
     height: calc(17 * var(--u));
@@ -89,10 +187,6 @@
     flex: none;
     align-items: flex-end;
     margin-right: calc(15 * var(--u));
-  }
-
-  .you .score {
-    margin-right: 0;
   }
 
   .gem {

@@ -26,6 +26,7 @@ class ProfileStore {
   #profile = $state<Profile | null>(null);
   #phase = $state<ProfilePhase>("idle");
   #chosen = $state<Dorm | null>(null);
+  #veiled = $state<boolean | null>(null);
   #inflight: Promise<Profile | null> | null = null;
   #owner: string | null = null;
 
@@ -39,6 +40,10 @@ class ProfileStore {
 
   get dorm(): Dorm | null {
     return this.#profile?.dorm ?? this.#chosen;
+  }
+
+  get anonymous(): boolean {
+    return this.#veiled ?? this.#profile?.anonymous ?? false;
   }
 
   get settled(): boolean {
@@ -84,6 +89,7 @@ class ProfileStore {
 
       this.#profile = found;
       this.#chosen = null;
+      this.#veiled = null;
       this.#phase = "ready";
       this.#remember(found?.dorm ?? null);
 
@@ -110,13 +116,39 @@ class ProfileStore {
     return true;
   }
 
+  async setAnonymous(anonymous: boolean): Promise<boolean> {
+    const was = this.anonymous;
+    this.#veiled = anonymous;
+    if (this.#profile !== null) this.#profile = { ...this.#profile, anonymous };
+
+    const ok = await api
+      .PUT("/api/users/me/anonymous", { body: { anonymous } })
+      .then(({ response }) => response.ok)
+      .catch(() => false);
+
+    if (!ok) {
+      this.#veiled = was;
+      if (this.#profile !== null) this.#profile = { ...this.#profile, anonymous: was };
+    }
+
+    return ok;
+  }
+
   reset(): void {
     this.#inflight = null;
     this.#owner = null;
-    if (this.#profile === null && this.#phase === "idle" && this.#chosen === null) return;
+    if (
+      this.#profile === null &&
+      this.#phase === "idle" &&
+      this.#chosen === null &&
+      this.#veiled === null
+    ) {
+      return;
+    }
 
     this.#profile = null;
     this.#chosen = null;
+    this.#veiled = null;
     this.#phase = "idle";
   }
 

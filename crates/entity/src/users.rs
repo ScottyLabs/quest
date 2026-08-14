@@ -9,6 +9,7 @@ pub struct Model {
     #[sea_orm(unique)]
     pub andrew_id: String,
     pub dorm: Option<Dorm>,
+    pub anonymous: bool,
     pub created_at: DateTimeWithTimeZone,
 }
 

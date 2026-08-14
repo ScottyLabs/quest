@@ -5,14 +5,12 @@ const REACH = 0.34;
 const RUBBER = 0.25;
 const RESIST = 0.14;
 const LEDGE = 0.08;
-const FAR = 0.12;
-const FLICK = 0.25;
+const FAR = 0.09;
+const FLICK = 0.2;
 const SMOOTH = 0.7;
-const CRAWL = 1.4;
-const BRIEF = 110;
-const LONG = 220;
+const BRIEF = 60;
 
-export const TAP_MS = 240;
+export const TAP_MS = 180;
 
 export interface Origin {
   x: number;
@@ -105,8 +103,8 @@ export function swipeCommit(from: Origin, event: Gesture, width: number): number
   return dx < 0 ? 1 : -1;
 }
 
-export function swipeGlide(distance: number, vx: number): number {
-  const speed = Math.max(Math.abs(vx), CRAWL);
+export function swipeGlide(distance: number, width: number): number {
+  const share = width === 0 ? 1 : Math.min(1, Math.abs(distance) / width);
 
-  return Math.round(Math.max(BRIEF, Math.min(LONG, distance / speed)));
+  return Math.round(Math.max(BRIEF, TAP_MS * share));
 }

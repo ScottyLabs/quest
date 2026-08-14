@@ -16,6 +16,7 @@ pub fn router(users: Users) -> OpenApiRouter {
     OpenApiRouter::new()
         .routes(routes!(me))
         .routes(routes!(dorm))
+        .routes(routes!(anonymous))
         .with_state(users)
 }
 
@@ -23,6 +24,7 @@ pub fn router(users: Users) -> OpenApiRouter {
 struct Profile {
     andrew_id: String,
     dorm: Option<String>,
+    anonymous: bool,
     created_at: String,
 }
 
@@ -45,6 +47,7 @@ async fn me(
     Ok(Json(Profile {
         andrew_id: row.andrew_id,
         dorm: row.dorm.map(|dorm| dorm.to_value()),
+        anonymous: row.anonymous,
         created_at: row.created_at.to_rfc3339(),
     }))
 }
@@ -76,6 +79,35 @@ async fn dorm(
 
     let dorm = Dorm::try_from_value(&body.dorm).map_err(|_| invalid)?;
     users.set_dorm(&user, dorm).await?;
+
+    Ok(Json(body))
+}
+
+#[derive(Deserialize, Serialize, ToSchema)]
+struct AnonymousBody {
+    anonymous: bool,
+}
+
+#[utoipa::path(
+    put,
+    path = "/users/me/anonymous",
+    tag = "users",
+    request_body = AnonymousBody,
+    responses(
+        (status = OK, body = AnonymousBody),
+        (status = BAD_REQUEST, body = AuthErrBody),
+        (status = UNAUTHORIZED, body = AuthErrBody),
+        (status = BAD_GATEWAY, body = AuthErrBody),
+    ),
+)]
+async fn anonymous(
+    State(users): State<Users>,
+    CurrentUser(user): CurrentUser,
+    body: Result<Json<AnonymousBody>, JsonRejection>,
+) -> Result<Json<AnonymousBody>, AuthError> {
+    let Json(body) = body.map_err(|_| AuthError::BadRequest("anonymous_invalid"))?;
+
+    users.set_anonymous(&user, body.anonymous).await?;
 
     Ok(Json(body))
 }

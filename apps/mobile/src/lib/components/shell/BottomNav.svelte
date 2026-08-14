@@ -27,7 +27,6 @@
 <style>
   .dock {
     position: fixed;
-    view-transition-name: dock;
     right: 0;
     bottom: 0;
     left: 0;

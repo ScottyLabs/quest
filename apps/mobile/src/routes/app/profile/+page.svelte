@@ -15,7 +15,6 @@
 
   let open = $state<string | null>(null);
   let confirming = $state(false);
-
   onMount(() => {
     void me.reload();
   });
@@ -97,8 +96,9 @@
       <BadgeRail {row} {progress} bind:open />
     {/each}
 
+
     {#if session.user?.staff || session.user?.admin}
-      <div class="staff">
+      <div class="toggle">
         <span id="staffmode">Staff mode</span>
         <button
           class="switch"
@@ -111,7 +111,7 @@
           <span class="knob"></span>
         </button>
       </div>
-      <p class="staffnote">
+      <p class="note">
         {staffMode.on
           ? "Tapping a card opens placement options instead of scoring it."
           : "Turn on to link cards to challenges and set their positions."}
@@ -282,7 +282,7 @@
     cursor: pointer;
   }
 
-  .staff {
+  .toggle {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -318,7 +318,7 @@
     background: var(--highlight);
   }
 
-  .staffnote {
+  .note {
     margin: calc(6 * var(--u)) 0 0;
     color: var(--tertiary);
     font-size: calc(13 * var(--u));

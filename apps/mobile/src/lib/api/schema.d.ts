@@ -292,6 +292,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/users/me/anonymous": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put: operations["anonymous"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/users/me/daily": {
     parameters: {
       query?: never;
@@ -440,6 +456,9 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
+    AnonymousBody: {
+      anonymous: boolean;
+    };
     AuthErrBody: {
       error: string;
     };
@@ -568,6 +587,7 @@ export interface components {
     };
     Profile: {
       andrew_id: string;
+      anonymous: boolean;
       created_at: string;
       dorm?: string | null;
     };
@@ -1619,6 +1639,53 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["Profile"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuthErrBody"];
+        };
+      };
+      502: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuthErrBody"];
+        };
+      };
+    };
+  };
+  anonymous: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["AnonymousBody"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AnonymousBody"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuthErrBody"];
         };
       };
       401: {

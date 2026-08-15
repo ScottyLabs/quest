@@ -581,15 +581,30 @@
         }
       }
     },
-    "/api/passes/verify": {
+    "/api/portal/assets": {
       "post": {
-        "tags": ["passes"],
-        "operationId": "verify",
+        "tags": ["portal"],
+        "operationId": "upload",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
-            "application/json": {
+            "application/octet-stream": {
               "schema": {
-                "$ref": "#/components/schemas/VerifyBody"
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32",
+                  "minimum": 0
+                }
               }
             }
           },
@@ -601,7 +616,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Verified"
+                  "$ref": "#/components/schemas/Uploaded"
                 }
               }
             }
@@ -611,17 +626,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AuthErrBody"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AuthErrBody"
+                  "$ref": "#/components/schemas/PortalErrBody"
                 }
               }
             }
@@ -631,17 +636,17 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AuthErrBody"
+                  "$ref": "#/components/schemas/PortalErrBody"
                 }
               }
             }
           },
-          "404": {
+          "413": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AuthErrBody"
+                  "$ref": "#/components/schemas/PortalErrBody"
                 }
               }
             }
@@ -651,7 +656,846 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AuthErrBody"
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/portal/catalog/reload": {
+      "post": {
+        "tags": ["portal"],
+        "operationId": "catalog_reload",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reloaded"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/portal/me": {
+      "get": {
+        "tags": ["portal"],
+        "operationId": "me",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Identity"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/portal/sign-out": {
+      "post": {
+        "tags": ["portal"],
+        "operationId": "sign_out",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignedOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/portal/sql": {
+      "post": {
+        "tags": ["portal"],
+        "operationId": "sql",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SqlBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Outcome"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/portal/sql/script": {
+      "post": {
+        "tags": ["portal"],
+        "operationId": "sql_script",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SqlBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Script"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/portal/tables": {
+      "get": {
+        "tags": ["portal"],
+        "operationId": "tables",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TableView"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/portal/tables/{table}/rows": {
+      "get": {
+        "tags": ["portal"],
+        "operationId": "rows",
+        "parameters": [
+          {
+            "name": "table",
+            "in": "path",
+            "description": "Table name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": ["integer", "null"],
+              "format": "int64",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": ["integer", "null"],
+              "format": "int64",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": ["string", "null"]
+            }
+          },
+          {
+            "name": "desc",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": ["boolean", "null"]
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": ["string", "null"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["portal"],
+        "operationId": "insert_row",
+        "parameters": [
+          {
+            "name": "table",
+            "in": "path",
+            "description": "Table name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RowBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Written"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["portal"],
+        "operationId": "delete_row",
+        "parameters": [
+          {
+            "name": "table",
+            "in": "path",
+            "description": "Table name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KeyBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Written"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["portal"],
+        "operationId": "update_row",
+        "parameters": [
+          {
+            "name": "table",
+            "in": "path",
+            "description": "Table name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Written"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/portal/trade/items": {
+      "get": {
+        "tags": ["portal"],
+        "operationId": "trade_items",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ShopItem"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/portal/trade/orders": {
+      "get": {
+        "tags": ["portal"],
+        "operationId": "trade_orders",
+        "parameters": [
+          {
+            "name": "andrew_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": ["string", "null"]
+            }
+          },
+          {
+            "name": "delivered",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": ["boolean", "null"]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": ["integer", "null"],
+              "format": "int64",
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Order"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["portal"],
+        "operationId": "trade_buy",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeskSaleBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Bought"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/portal/trade/orders/{purchase_id}/delivery": {
+      "put": {
+        "tags": ["portal"],
+        "operationId": "trade_fulfil",
+        "parameters": [
+          {
+            "name": "purchase_id",
+            "in": "path",
+            "description": "Purchase id",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FulfilBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Fulfilled"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/portal/trade/orders/{purchase_id}/refund": {
+      "post": {
+        "tags": ["portal"],
+        "operationId": "trade_refund",
+        "parameters": [
+          {
+            "name": "purchase_id",
+            "in": "path",
+            "description": "Purchase id",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeskRefundBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GaveBack"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/portal/trade/pass": {
+      "post": {
+        "tags": ["portal"],
+        "operationId": "trade_pass",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PassLookup"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PassHolder"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
                 }
               }
             }
@@ -1723,6 +2567,52 @@
           }
         }
       },
+      "Bought": {
+        "type": "object",
+        "required": [
+          "purchase_id",
+          "item_id",
+          "item",
+          "cost",
+          "quantity",
+          "spent",
+          "stock",
+          "scottycoins"
+        ],
+        "properties": {
+          "cost": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "item": {
+            "type": "string"
+          },
+          "item_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "purchase_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "scottycoins": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "spent": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "stock": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
       "BuyBody": {
         "type": "object",
         "properties": {
@@ -1731,6 +2621,10 @@
             "format": "int64"
           }
         }
+      },
+      "Capability": {
+        "type": "string",
+        "enum": ["portal", "sql_console", "data_console", "card_desk", "trade_desk", "assets"]
       },
       "CardUrl": {
         "type": "object",
@@ -1825,6 +2719,31 @@
           }
         }
       },
+      "Column": {
+        "type": "object",
+        "required": ["name", "kind", "nullable", "generated", "key"],
+        "properties": {
+          "default_expr": {
+            "type": ["string", "null"]
+          },
+          "generated": {
+            "type": "boolean"
+          },
+          "key": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nullable": {
+            "type": "boolean"
+          }
+        }
+      },
       "Cup": {
         "type": "object",
         "required": ["community", "earned", "target", "percent"],
@@ -1865,6 +2784,36 @@
           }
         }
       },
+      "DeskRefundBody": {
+        "type": "object",
+        "required": ["andrew_id", "quantity"],
+        "properties": {
+          "andrew_id": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "DeskSaleBody": {
+        "type": "object",
+        "required": ["andrew_id", "item_id", "quantity"],
+        "properties": {
+          "andrew_id": {
+            "type": "string"
+          },
+          "item_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
       "DeviceView": {
         "type": "object",
         "required": ["public_key", "created_at"],
@@ -1889,6 +2838,26 @@
           }
         }
       },
+      "EditBody": {
+        "type": "object",
+        "required": ["key", "set"],
+        "properties": {
+          "key": {
+            "type": "object",
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            }
+          },
+          "set": {
+            "type": "object",
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            }
+          }
+        }
+      },
       "Enroll": {
         "type": "object",
         "required": ["ticket"],
@@ -1910,12 +2879,100 @@
           }
         }
       },
+      "FulfilBody": {
+        "type": "object",
+        "required": ["delivered"],
+        "properties": {
+          "delivered": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Fulfilled": {
+        "type": "object",
+        "required": ["purchase_id"],
+        "properties": {
+          "purchase_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "received_item_date": {
+            "type": ["string", "null"],
+            "format": "date"
+          }
+        }
+      },
+      "GaveBack": {
+        "type": "object",
+        "required": ["refunded", "scottycoins"],
+        "properties": {
+          "refunded": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "scottycoins": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "Grant": {
+        "type": "object",
+        "required": ["table", "level"],
+        "properties": {
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "table": {
+            "type": "string"
+          }
+        }
+      },
       "Health": {
         "type": "object",
         "required": ["status"],
         "properties": {
           "status": {
             "type": "string"
+          }
+        }
+      },
+      "Identity": {
+        "type": "object",
+        "required": ["name", "andrew_id", "groups", "roles", "capabilities", "tables"],
+        "properties": {
+          "andrew_id": {
+            "type": "string"
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Capability"
+            }
+          },
+          "email": {
+            "type": ["string", "null"]
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "name": {
+            "type": "string"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Role"
+            }
+          },
+          "tables": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Grant"
+            }
           }
         }
       },
@@ -1957,6 +3014,23 @@
           }
         }
       },
+      "KeyBody": {
+        "type": "object",
+        "required": ["key"],
+        "properties": {
+          "key": {
+            "type": "object",
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Level": {
+        "type": "string",
+        "enum": ["none", "read", "edit", "full"]
+      },
       "LinkBody": {
         "type": "object",
         "required": ["challenge_id"],
@@ -1989,6 +3063,117 @@
           }
         }
       },
+      "Order": {
+        "type": "object",
+        "required": ["purchase_id", "user_id", "andrew_id", "item_id", "item", "cost", "quantity"],
+        "properties": {
+          "andrew_id": {
+            "type": "string"
+          },
+          "cost": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "item": {
+            "type": "string"
+          },
+          "item_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "purchase_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "received_item_date": {
+            "type": ["string", "null"],
+            "format": "date"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "Outcome": {
+        "type": "object",
+        "required": ["columns", "rows", "rows_affected", "read_only", "elapsed_ms", "truncated"],
+        "properties": {
+          "columns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "elapsed_ms": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "read_only": {
+            "type": "boolean"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Value"
+            }
+          },
+          "rows_affected": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Page": {
+        "type": "object",
+        "required": ["table", "columns", "key", "rows", "total", "limit", "offset"],
+        "properties": {
+          "columns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Column"
+            }
+          },
+          "key": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "offset": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Value"
+            }
+          },
+          "table": {
+            "type": "string"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
       "PassChallenge": {
         "type": "object",
         "required": ["andrew_id", "issued_at", "message"],
@@ -2002,6 +3187,65 @@
           },
           "message": {
             "type": "string"
+          }
+        }
+      },
+      "PassHolder": {
+        "type": "object",
+        "required": [
+          "user_id",
+          "andrew_id",
+          "name",
+          "verified",
+          "scottycoins",
+          "thistlestones",
+          "orders"
+        ],
+        "properties": {
+          "andrew_id": {
+            "type": "string"
+          },
+          "dorm": {
+            "type": ["string", "null"]
+          },
+          "issued_at": {
+            "type": ["integer", "null"],
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Order"
+            }
+          },
+          "scottycoins": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "thistlestones": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "verified": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PassLookup": {
+        "type": "object",
+        "properties": {
+          "andrew_id": {
+            "type": ["string", "null"]
+          },
+          "token": {
+            "type": ["string", "null"]
           }
         }
       },
@@ -2035,6 +3279,18 @@
           "lon": {
             "type": "number",
             "format": "double"
+          }
+        }
+      },
+      "PortalErrBody": {
+        "type": "object",
+        "required": ["error"],
+        "properties": {
+          "detail": {
+            "type": ["string", "null"]
+          },
+          "error": {
+            "type": "string"
           }
         }
       },
@@ -2175,6 +3431,16 @@
           }
         }
       },
+      "Reloaded": {
+        "type": "object",
+        "required": ["tables"],
+        "properties": {
+          "tables": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
       "Revoked": {
         "type": "object",
         "required": ["revoked"],
@@ -2183,6 +3449,10 @@
             "type": "boolean"
           }
         }
+      },
+      "Role": {
+        "type": "string",
+        "enum": ["admins", "orientation-staff", "trade-admin", "challenge-placer"]
       },
       "Row": {
         "type": "object",
@@ -2207,6 +3477,50 @@
           }
         }
       },
+      "RowBody": {
+        "type": "object",
+        "required": ["row"],
+        "properties": {
+          "row": {
+            "type": "object",
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Script": {
+        "type": "object",
+        "required": ["steps", "statements", "committed", "read_only", "elapsed_ms"],
+        "properties": {
+          "committed": {
+            "type": "boolean"
+          },
+          "elapsed_ms": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "failed": {
+            "type": ["integer", "null"],
+            "minimum": 0
+          },
+          "read_only": {
+            "type": "boolean"
+          },
+          "statements": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Step"
+            }
+          }
+        }
+      },
       "Shelf": {
         "type": "object",
         "required": ["items", "total"],
@@ -2220,6 +3534,54 @@
           "total": {
             "type": "integer",
             "minimum": 0
+          }
+        }
+      },
+      "ShopItem": {
+        "type": "object",
+        "required": ["id", "name", "description", "cost", "stock"],
+        "properties": {
+          "cost": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "image_url": {
+            "type": ["string", "null"]
+          },
+          "name": {
+            "type": "string"
+          },
+          "stock": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "SignedOut": {
+        "type": "object",
+        "required": ["signed_out"],
+        "properties": {
+          "signed_out": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SqlBody": {
+        "type": "object",
+        "required": ["sql"],
+        "properties": {
+          "sql": {
+            "type": "string"
+          },
+          "write": {
+            "type": "boolean"
           }
         }
       },
@@ -2258,6 +3620,52 @@
           }
         }
       },
+      "Step": {
+        "type": "object",
+        "required": ["statement"],
+        "properties": {
+          "error": {
+            "type": ["string", "null"]
+          },
+          "outcome": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/Outcome"
+              }
+            ]
+          },
+          "statement": {
+            "type": "string"
+          }
+        }
+      },
+      "TableView": {
+        "type": "object",
+        "required": ["name", "level", "columns", "key"],
+        "properties": {
+          "columns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Column"
+            }
+          },
+          "key": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
       "TapBody": {
         "type": "object",
         "required": ["url"],
@@ -2292,6 +3700,18 @@
           }
         }
       },
+      "Uploaded": {
+        "type": "object",
+        "required": ["key", "url"],
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
       "UserView": {
         "type": "object",
         "required": ["name", "andrew_id", "groups", "admin", "staff"],
@@ -2319,22 +3739,7 @@
           }
         }
       },
-      "Verified": {
-        "type": "object",
-        "required": ["andrew_id", "name", "issued_at"],
-        "properties": {
-          "andrew_id": {
-            "type": "string"
-          },
-          "issued_at": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "name": {
-            "type": "string"
-          }
-        }
-      },
+      "Value": {},
       "Verify": {
         "type": "object",
         "required": ["public_key", "nonce", "signature"],
@@ -2353,15 +3758,6 @@
           }
         }
       },
-      "VerifyBody": {
-        "type": "object",
-        "required": ["token"],
-        "properties": {
-          "token": {
-            "type": "string"
-          }
-        }
-      },
       "Wallet": {
         "type": "object",
         "required": ["purchases"],
@@ -2370,6 +3766,18 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/PurchaseView"
+            }
+          }
+        }
+      },
+      "Written": {
+        "type": "object",
+        "required": ["rows"],
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Value"
             }
           }
         }
@@ -2460,6 +3868,10 @@
     {
       "name": "staff",
       "description": "Card placement for orientation staff"
+    },
+    {
+      "name": "portal",
+      "description": "The staff portal: data console, SQL console and trade desk"
     }
   ]
 }

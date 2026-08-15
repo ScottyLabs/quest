@@ -16,7 +16,6 @@ use session::Sessions;
 pub struct Auth {
     pub oidc: Option<Oidc>,
     pub sessions: Sessions,
-    pub project_admin_group: Option<String>,
     config: OidcConfig,
 }
 
@@ -31,7 +30,6 @@ impl Auth {
             .ok();
 
         Ok(Arc::new(Self {
-            project_admin_group: env_opt("PROJECT_ADMIN_GROUP"),
             oidc,
             sessions,
             config,
@@ -47,9 +45,7 @@ impl Auth {
     }
 
     pub fn is_admin(&self, groups: &[String]) -> bool {
-        self.project_admin_group
-            .as_deref()
-            .is_some_and(|admin| groups.iter().any(|g| g == admin))
+        crate::access::roles(groups).contains(crate::access::Role::Admins)
     }
 }
 

@@ -53,7 +53,6 @@ pub struct Minted {
 
 pub struct Holder {
     pub andrew_id: String,
-    pub name: String,
     pub issued_at: i64,
 }
 
@@ -341,16 +340,8 @@ impl Passes {
             .await?
             .ok_or(AuthError::Unauthorized("pass_signature"))?;
 
-        let name = wallet_pass::Entity::find_by_id(holder.id)
-            .one(&self.db)
-            .await
-            .map_err(db_down)?
-            .map(|row| row.name)
-            .unwrap_or_default();
-
         Ok(Holder {
             andrew_id: holder.andrew_id,
-            name,
             issued_at: token.issued_at,
         })
     }

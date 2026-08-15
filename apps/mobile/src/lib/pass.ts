@@ -115,9 +115,3 @@ export async function addAppleToWallet(): Promise<void> {
   const { uri } = await Filesystem.getUri({ path, directory: Directory.Cache });
   await CapacitorPassToWallet.addToWallet({ filePath: uri });
 }
-
-export async function verifyPass(token: string) {
-  const { data, error } = await api.POST("/api/passes/verify", { body: { token } });
-  if (!data) throw new Error(error?.error ?? "pass_unverified");
-  return data;
-}

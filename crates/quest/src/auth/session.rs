@@ -26,11 +26,11 @@ pub struct SessionUser {
     pub admin: bool,
 }
 
-pub const STAFF_GROUP: &str = "/projects/quest/orientation-staff";
-
 impl SessionUser {
+    /// Whether this user may work the NFC card desk in the mobile app. Resolved
+    /// through `crate::access`, which owns every group-to-right mapping.
     pub fn staff(&self) -> bool {
-        self.admin || self.groups.iter().any(|group| group == STAFF_GROUP)
+        crate::access::allows(self, crate::access::Capability::CardDesk)
     }
 }
 

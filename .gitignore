@@ -16,9 +16,10 @@ result-*
 target/
 .cargo/
 
-# Web (apps/mobile)
+# Web (apps/mobile, apps/portal)
 node_modules/
 .svelte-kit/
+.vite/
 build/
 
 # Android (devenv writes these from the nix SDK path)

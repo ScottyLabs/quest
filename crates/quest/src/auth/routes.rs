@@ -127,6 +127,16 @@ struct LoginQuery {
     #[serde(rename = "return")]
     return_to: Option<String>,
     ticket: Option<String>,
+    /// Set by the browser portal, which has no enrolled device to bind.
+    portal: Option<String>,
+}
+
+impl LoginQuery {
+    fn portal(&self) -> bool {
+        self.portal
+            .as_deref()
+            .is_some_and(|flag| !matches!(flag, "" | "0" | "false"))
+    }
 }
 
 async fn guard(
@@ -176,13 +186,20 @@ async fn login(
 
     let row = users.upsert(&user).await?;
 
-    let device = match devices.claim(query.ticket.as_deref(), row.id).await {
-        Ok(device) => device,
-        Err(AuthError::Conflict(code) | AuthError::Unauthorized(code)) => {
-            session.flush().await.ok();
-            return Ok(failed(Some(&target), code));
+    // A browser portal session has no enrolled device: it is deliberately
+    // unbound, which keeps it out of every device-proofed route and stops it
+    // from evicting the same person's phone session.
+    let device = if query.portal() {
+        None
+    } else {
+        match devices.claim(query.ticket.as_deref(), row.id).await {
+            Ok(device) => Some(device),
+            Err(AuthError::Conflict(code) | AuthError::Unauthorized(code)) => {
+                session.flush().await.ok();
+                return Ok(failed(Some(&target), code));
+            }
+            Err(err) => return Err(err),
         }
-        Err(err) => return Err(err),
     };
 
     session.flush().await.ok();
@@ -192,10 +209,14 @@ async fn login(
         .insert(USER_KEY, user)
         .await
         .map_err(|_| store_down())?;
-    session
-        .insert(DEVICE_KEY, device)
-        .await
-        .map_err(|_| store_down())?;
+
+    if let Some(device) = device.as_deref() {
+        session
+            .insert(DEVICE_KEY, device)
+            .await
+            .map_err(|_| store_down())?;
+    }
+
     session.save().await.map_err(|_| store_down())?;
 
     let id = session
@@ -203,7 +224,9 @@ async fn login(
         .ok_or(AuthError::Upstream("session_no_id"))?
         .to_string();
 
-    auth.sessions.bind(&andrew_id, &id).await?;
+    if device.is_some() {
+        auth.sessions.bind(&andrew_id, &id).await?;
+    }
 
     Ok(handoff(
         &format!(

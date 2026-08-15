@@ -47,11 +47,12 @@
             ];
           };
 
-          mobileSrc = pkgs.lib.fileset.toSource {
+          webSrc = pkgs.lib.fileset.toSource {
             root = ./.;
             fileset = pkgs.lib.fileset.unions [
               ./deno.json
               ./deno.lock
+              ./apps/portal
               (pkgs.lib.fileset.difference ./apps/mobile (
                 pkgs.lib.fileset.unions [
                   ./apps/mobile/android
@@ -82,15 +83,24 @@
                 mkdir -p $out/share/quest
                 cp ${bundle} $out/share/quest/bundle.zip
                 wrapProgram $out/bin/quest \
-                  --set-default QUEST_BUNDLE $out/share/quest/bundle.zip
+                  --set-default QUEST_BUNDLE $out/share/quest/bundle.zip \
+                  --set-default QUEST_PORTAL ${portal}
               '';
             };
           };
 
           mobile = helpers.buildDenoTask {
-            src = mobileSrc;
+            src = webSrc;
             cwd = "apps/mobile";
             pname = "quest-mobile";
+            version = "0.1.0";
+            output = "build";
+          };
+
+          portal = helpers.buildDenoTask {
+            src = webSrc;
+            cwd = "apps/portal";
+            pname = "quest-portal";
             version = "0.1.0";
             output = "build";
           };
@@ -106,7 +116,12 @@
               '';
         in
         {
-          inherit quest mobile bundle;
+          inherit
+            quest
+            mobile
+            bundle
+            portal
+            ;
           default = quest;
         }
       );

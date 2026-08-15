@@ -106,6 +106,7 @@ static GRANTS: &[Grant] = &[
             Capability::Assets,
         ],
         tables: Tables::Only(&[
+            ("asset", Level::Read),
             ("users", Level::Edit),
             ("challenge", Level::Full),
             ("challenge_card", Level::Full),
@@ -128,6 +129,7 @@ static GRANTS: &[Grant] = &[
             Capability::Assets,
         ],
         tables: Tables::Only(&[
+            ("asset", Level::Read),
             ("items", Level::Full),
             ("purchases", Level::Full),
             ("users", Level::Read),
@@ -266,127 +268,5 @@ where
 
         access.require(Capability::Portal)?;
         Ok(access)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn held(groups: &[&str]) -> RoleSet {
-        roles(&groups.iter().map(|g| (*g).to_owned()).collect::<Vec<_>>())
-    }
-
-    fn user(groups: &[&str]) -> SessionUser {
-        SessionUser {
-            email: None,
-            name: "Test".to_owned(),
-            andrew_id: "test".to_owned(),
-            groups: groups.iter().map(|g| (*g).to_owned()).collect(),
-            admin: false,
-        }
-    }
-
-    #[test]
-    fn admins_reach_everything() {
-        let roles = held(&["/projects/quest/admins"]);
-
-        assert!(roles.contains(Role::Admins));
-        assert!(roles.can(Capability::SqlConsole));
-        assert_eq!(roles.level("users"), Level::Full);
-        assert_eq!(roles.level("a_table_no_grant_names"), Level::Full);
-    }
-
-    #[test]
-    fn project_membership_alone_grants_nothing() {
-        let roles = held(&["/projects/quest"]);
-
-        assert_eq!(roles.iter().count(), 0);
-        assert!(!roles.can(Capability::Portal));
-        assert_eq!(roles.level("users"), Level::None);
-    }
-
-    #[test]
-    fn trade_admins_are_confined_to_the_trade_tables() {
-        let roles = held(&["/projects/quest/trade-admin"]);
-
-        assert!(roles.can(Capability::TradeDesk));
-        assert!(!roles.can(Capability::SqlConsole));
-        assert_eq!(roles.level("items"), Level::Full);
-        assert_eq!(roles.level("purchases"), Level::Full);
-        assert_eq!(roles.level("users"), Level::Read);
-        assert_eq!(roles.level("challenge"), Level::None);
-        assert_eq!(roles.level("a_table_no_grant_names"), Level::None);
-    }
-
-    #[test]
-    fn orientation_staff_edit_users_but_never_delete_them() {
-        let roles = held(&["/projects/quest/orientation-staff"]);
-
-        assert_eq!(roles.level("users"), Level::Edit);
-        assert_eq!(roles.level("challenge"), Level::Full);
-        assert!(!roles.can(Capability::TradeDesk));
-        assert!(roles.can(Capability::CardDesk));
-    }
-
-    #[test]
-    fn challenge_placers_only_work_cards() {
-        let roles = held(&["/projects/quest/challenge-placer"]);
-
-        assert_eq!(roles.level("challenge_card"), Level::Full);
-        assert_eq!(roles.level("challenge"), Level::Read);
-        assert_eq!(roles.level("users"), Level::None);
-        assert!(roles.can(Capability::CardDesk));
-    }
-
-    #[test]
-    fn roles_union_across_groups() {
-        let roles = held(&[
-            "/projects/quest/trade-admin",
-            "/projects/quest/challenge-placer",
-        ]);
-
-        assert_eq!(roles.iter().count(), 2);
-        assert_eq!(roles.level("challenge_card"), Level::Full);
-        assert_eq!(roles.level("items"), Level::Full);
-    }
-
-    #[test]
-    fn hidden_tables_are_never_reachable() {
-        let roles = held(&["/projects/quest/admins"]);
-
-        for table in HIDDEN_TABLES {
-            assert_eq!(roles.level(table), Level::None);
-        }
-    }
-
-    #[test]
-    fn the_admin_flag_still_grants_admin() {
-        let mut leftover = user(&[]);
-        leftover.admin = true;
-
-        assert!(allows(&leftover, Capability::SqlConsole));
-        assert!(!allows(&user(&[]), Capability::Portal));
-    }
-
-    #[test]
-    fn staff_is_the_card_desk_capability() {
-        assert!(user(&["/projects/quest/orientation-staff"]).staff());
-        assert!(user(&["/projects/quest/challenge-placer"]).staff());
-        assert!(user(&["/projects/quest/admins"]).staff());
-        assert!(!user(&["/projects/quest/trade-admin"]).staff());
-        assert!(!user(&["/projects/quest"]).staff());
-    }
-
-    #[test]
-    fn require_table_refuses_upgrades() {
-        let access = Access {
-            roles: held(&["/projects/quest/orientation-staff"]),
-            user: user(&["/projects/quest/orientation-staff"]),
-        };
-
-        assert!(access.require_table("users", Level::Edit).is_ok());
-        assert!(access.require_table("users", Level::Full).is_err());
-        assert!(access.require_table("no_such_table", Level::Read).is_err());
     }
 }

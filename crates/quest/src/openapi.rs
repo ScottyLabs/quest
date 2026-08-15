@@ -94,9 +94,9 @@ impl Services {
             portal: crate::portal::Portal::new(db.clone()),
             taps: crate::taps::Taps::new(db.clone(), std::sync::Arc::new(master)),
             desk: crate::portal::trade::Desk::new(db.clone()),
-            assets: crate::portal::assets::Assets::from_env().unwrap_or_else(|err| {
+            assets: crate::portal::assets::Assets::from_env(db.clone()).unwrap_or_else(|err| {
                 eprintln!("asset uploads disabled: {err}");
-                crate::portal::assets::Assets::unconfigured()
+                crate::portal::assets::Assets::unconfigured(db.clone())
             }),
         }
     }

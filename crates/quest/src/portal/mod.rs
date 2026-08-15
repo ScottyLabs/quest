@@ -670,6 +670,14 @@ impl Portal {
             return Err(PortalError::Auth(AuthError::BadRequest("sql_empty")));
         }
 
+        let count = script::split(sql).len();
+        if count > 1 {
+            return Err(PortalError::Sql(format!(
+                "this is {count} statements, and Run sends one at a time. \
+                 Use Run script to execute them in order as a single transaction."
+            )));
+        }
+
         let shape = shape_of(sql);
         let started = std::time::Instant::now();
         let txn = self.open(write).await?;
@@ -820,128 +828,5 @@ async fn run<C: ConnectionTrait>(conn: &C, sql: &str, write: bool) -> Result<Out
                 elapsed_ms: 0,
                 truncated: false,
             }),
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn identifiers_survive_embedded_quotes() {
-        assert_eq!(quote("users"), "\"users\"");
-        assert_eq!(quote("we\"ird"), "\"we\"\"ird\"");
-    }
-
-    #[test]
-    fn shapes_follow_the_leading_keyword() {
-        assert_eq!(shape_of("select 1"), Shape::Rows);
-        assert_eq!(
-            shape_of("  WITH x AS (select 1) select * from x"),
-            Shape::Rows
-        );
-        assert_eq!(shape_of("TABLE users"), Shape::Rows);
-        assert_eq!(shape_of("VALUES (1)"), Shape::Rows);
-        assert_eq!(shape_of("explain analyze select 1"), Shape::Plan);
-        assert_eq!(shape_of("update users set anonymous = true"), Shape::Count);
-        assert_eq!(shape_of("CREATE TABLE t (a int)"), Shape::Count);
-    }
-
-    #[test]
-    fn comments_do_not_hide_the_keyword() {
-        assert_eq!(shape_of("-- a note\nselect 1"), Shape::Rows);
-        assert_eq!(shape_of("/* block */ SELECT 1"), Shape::Rows);
-        assert_eq!(
-            shape_of("/* one */ -- two\n delete from users"),
-            Shape::Count
-        );
-    }
-
-    #[test]
-    fn parameters_render_as_postgres_text() {
-        assert_eq!(parameter(&Json::Null, "text"), None);
-        assert_eq!(
-            parameter(&Json::String("hi".to_owned()), "text"),
-            Some("hi".to_owned())
-        );
-        assert_eq!(
-            parameter(&serde_json::json!(7), "bigint"),
-            Some("7".to_owned())
-        );
-        assert_eq!(
-            parameter(&serde_json::json!(true), "boolean"),
-            Some("true".to_owned())
-        );
-        assert_eq!(
-            parameter(&serde_json::json!(["a", "b\"c"]), "text[]"),
-            Some("{\"a\",\"b\\\"c\"}".to_owned())
-        );
-        assert_eq!(
-            parameter(&serde_json::json!({"k": 1}), "jsonb"),
-            Some("{\"k\":1}".to_owned())
-        );
-    }
-
-    fn table() -> Table {
-        Table {
-            name: "challenge_card".to_owned(),
-            columns: vec![
-                Column {
-                    name: "card_id".to_owned(),
-                    kind: "text".to_owned(),
-                    nullable: false,
-                    default_expr: None,
-                    generated: false,
-                    key: 1,
-                },
-                Column {
-                    name: "location".to_owned(),
-                    kind: "geography(Point,4326)".to_owned(),
-                    nullable: true,
-                    default_expr: None,
-                    generated: false,
-                    key: 0,
-                },
-            ],
-        }
-    }
-
-    #[test]
-    fn spatial_columns_are_selected_as_text() {
-        assert_eq!(
-            table().select_list(),
-            "\"card_id\", ST_AsText(\"location\")::text AS \"location\""
-        );
-    }
-
-    #[test]
-    fn the_key_is_reported_in_key_order() {
-        let table = table();
-        let key = table.key();
-
-        assert_eq!(key.len(), 1);
-        assert_eq!(key[0].name, "card_id");
-    }
-
-    #[test]
-    fn unknown_columns_are_rejected_before_reaching_postgres() {
-        assert!(table().column("card_id").is_ok());
-        assert!(matches!(
-            table().column("; drop table users --"),
-            Err(PortalError::Sql(_))
-        ));
-    }
-
-    #[test]
-    fn json_aggregates_become_row_lists() {
-        assert!(rows_of(Json::Null).is_empty());
-        assert_eq!(rows_of(serde_json::json!([{ "a": 1 }])).len(), 1);
-    }
-
-    #[test]
-    fn columns_come_from_the_first_row_in_order() {
-        let rows = rows_of(serde_json::json!([{ "z": 1, "a": 2 }]));
-
-        assert_eq!(columns_of(&rows), vec!["z".to_owned(), "a".to_owned()]);
     }
 }

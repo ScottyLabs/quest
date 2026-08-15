@@ -187,10 +187,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    get: operations["library"];
     put?: never;
     post: operations["upload"];
-    delete?: never;
+    delete: operations["drop_asset"];
     options?: never;
     head?: never;
     patch?: never;
@@ -651,6 +651,18 @@ export interface components {
     AnonymousBody: {
       anonymous: boolean;
     };
+    AssetView: {
+      /** Format: int64 */
+      bytes: number;
+      content_type: string;
+      /** Format: date-time */
+      created_at: string;
+      filename?: string | null;
+      key: string;
+      kind: string;
+      uploaded_by: string;
+      url: string;
+    };
     AuthErrBody: {
       error: string;
     };
@@ -760,6 +772,9 @@ export interface components {
     DormBody: {
       dorm: string;
     };
+    DropBody: {
+      key: string;
+    };
     EditBody: {
       key: {
         [key: string]: unknown;
@@ -828,6 +843,20 @@ export interface components {
     };
     /** @enum {string} */
     Level: "none" | "read" | "edit" | "full";
+    Library: {
+      /** @description Content types the uploader accepts. */
+      accepts: string[];
+      assets: components["schemas"]["AssetView"][];
+      /** @description Prefixes an upload may be filed under. */
+      kinds: string[];
+      /**
+       * Format: int64
+       * @description Largest upload the backend will take, in bytes.
+       */
+      max_bytes: number;
+      /** @description False when the CDN credentials are missing, so uploads will refuse. */
+      ready: boolean;
+    };
     LinkBody: {
       /** Format: uuid */
       challenge_id: string;
@@ -1566,10 +1595,42 @@ export interface operations {
       };
     };
   };
+  library: {
+    parameters: {
+      query?: {
+        kind?: string | null;
+        limit?: number | null;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Library"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+    };
+  };
   upload: {
     parameters: {
       query: {
         kind: string;
+        /** @description Original file name, kept for display only. */
+        name?: string | null;
       };
       header?: never;
       path?: never;
@@ -1622,6 +1683,45 @@ export interface operations {
         };
       };
       503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+    };
+  };
+  drop_asset: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["DropBody"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Uploaded"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+      403: {
         headers: {
           [name: string]: unknown;
         };

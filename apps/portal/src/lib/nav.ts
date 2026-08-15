@@ -43,6 +43,12 @@ export const SECTIONS: readonly Section[] = [
     visible: () => me.can("trade_desk"),
   },
   {
+    href: resolve("/uploads"),
+    label: "Uploads",
+    detail: "Put files on the CDN and copy their URLs",
+    visible: () => me.can("assets"),
+  },
+  {
     href: resolve("/data"),
     label: "Data",
     detail: "Every table you may reach, row by row",

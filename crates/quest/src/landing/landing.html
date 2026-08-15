@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CMU Orientation Quest</title>
+    <meta
+      name="description"
+      content="Explore Carnegie Mellon during Orientation, tap challenges around campus, earn ScottyCoins and spend them at Terrier Trade."
+    />
+    <meta name="theme-color" content="#ffffff" />
+    <link rel="icon" href="/assets/icon.svg" />
+    <link
+      rel="preload"
+      href="/assets/open-sans.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin="anonymous"
+    />
+    <meta property="og:title" content="CMU Orientation Quest" />
+    <meta
+      property="og:description"
+      content="Tap challenges around campus, earn ScottyCoins, spend them at Terrier Trade."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://cmu.quest/" />
+    <style>
+      @font-face {
+        font-family: "Open Sans";
+        font-style: normal;
+        font-weight: 300 800;
+        font-stretch: 75% 100%;
+        font-display: swap;
+        src: url("/assets/open-sans.woff2") format("woff2");
+      }
+
+      :root {
+        --primary: #c41230;
+        --secondary: #000000;
+        --tertiary: #6d6e71;
+        --highlight: #ffffff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        display: grid;
+        margin: 0;
+        padding: 2rem 1.25rem;
+        background: var(--highlight);
+        color: var(--secondary);
+        font-family: "Open Sans", system-ui, sans-serif;
+        line-height: 1.6;
+        place-items: center;
+      }
+
+      main {
+        width: 100%;
+        max-width: 26rem;
+        text-align: center;
+      }
+
+      .icon {
+        display: block;
+        width: min(34vw, 132px);
+        height: auto;
+        margin: 0 auto 1.5rem;
+      }
+
+      h1 {
+        margin: 0 0 0.5rem;
+        font-size: 1.75rem;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        line-height: 1.2;
+      }
+
+      p {
+        margin: 0 0 2rem;
+        color: var(--tertiary);
+        font-size: 0.9375rem;
+        font-weight: 600;
+      }
+
+      .stores {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        justify-content: center;
+      }
+
+      .badge {
+        display: inline-flex;
+        border-radius: 8px;
+        line-height: 0;
+        text-decoration: none;
+      }
+
+      .badge svg {
+        display: block;
+        width: auto;
+        height: 52px;
+      }
+
+      .badge:hover {
+        opacity: 0.85;
+      }
+
+      .badge:focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img class="icon" src="/assets/icon.svg" alt="" width="1024" height="1024" />
+
+      <h1>CMU Orientation Quest</h1>
+      <p>
+        Explore campus, discover challenges, earn ScottyCoins, and get points for the Carnegie Cup!
+      </p>
+
+      <div class="stores">
+        <a
+          class="badge"
+          href="https://apps.apple.com/us/app/cmu-orientation-quest/id6800427422"
+          aria-label="Download CMU Orientation Quest on the App Store"
+        >
+          <svg viewBox="0 0 120 40" role="img" aria-hidden="true" focusable="false">
+            <rect width="120" height="40" rx="6.5" fill="#000000" />
+            <rect x="0.5" y="0.5" width="119" height="39" rx="6" fill="none" stroke="#a6a6a6" />
+            <path
+              fill="#ffffff"
+              d="M24.77 20.3a4.95 4.95 0 0 1 2.36-4.15 5.07 5.07 0 0 0-4-2.16c-1.68-.18-3.31 1-4.17 1-.88 0-2.2-.98-3.62-.95a5.32 5.32 0 0 0-4.48 2.73c-1.92 3.33-.5 8.26 1.37 10.97.92 1.32 2 2.8 3.42 2.75 1.37-.05 1.89-.88 3.55-.88 1.64 0 2.11.88 3.55.85 1.47-.03 2.4-1.34 3.3-2.68a12.1 12.1 0 0 0 1.5-3.08 4.78 4.78 0 0 1-2.9-4.4zM22.04 12.2a4.87 4.87 0 0 0 1.1-3.48 4.96 4.96 0 0 0-3.2 1.66 4.64 4.64 0 0 0-1.14 3.36 4.1 4.1 0 0 0 3.24-1.54z"
+            />
+            <text
+              x="41"
+              y="15"
+              fill="#ffffff"
+              font-family="-apple-system, system-ui, 'Segoe UI', sans-serif"
+              font-size="8"
+            >
+              Download on the
+            </text>
+            <text
+              x="40"
+              y="31"
+              fill="#ffffff"
+              font-family="-apple-system, system-ui, 'Segoe UI', sans-serif"
+              font-size="17"
+              font-weight="500"
+              letter-spacing="-0.5"
+            >
+              App Store
+            </text>
+          </svg>
+        </a>
+
+        <a
+          class="badge"
+          href="https://play.google.com/store/apps/details?id=quest.cmu.twa&amp;hl=en_US"
+          aria-label="Get CMU Orientation Quest on Google Play"
+        >
+          <svg viewBox="0 0 135 40" role="img" aria-hidden="true" focusable="false">
+            <defs>
+              <linearGradient
+                id="pb"
+                x1="21.8"
+                y1="8.71"
+                x2="5.02"
+                y2="25.49"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop offset="0" stop-color="#00a0ff" />
+                <stop offset="0.26" stop-color="#00a1ff" />
+                <stop offset="0.51" stop-color="#00beff" />
+                <stop offset="0.76" stop-color="#00d2ff" />
+                <stop offset="1" stop-color="#00e0ff" />
+              </linearGradient>
+              <linearGradient
+                id="py"
+                x1="33.83"
+                y1="20"
+                x2="9.64"
+                y2="20"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop offset="0" stop-color="#ffe000" />
+                <stop offset="0.41" stop-color="#ffbd00" />
+                <stop offset="0.78" stop-color="#ffa500" />
+                <stop offset="1" stop-color="#ff9c00" />
+              </linearGradient>
+              <linearGradient
+                id="pr"
+                x1="24.83"
+                y1="22.3"
+                x2="2.07"
+                y2="45.05"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop offset="0" stop-color="#ff3a44" />
+                <stop offset="1" stop-color="#c31162" />
+              </linearGradient>
+              <linearGradient
+                id="pg"
+                x1="0"
+                y1="-2.19"
+                x2="10.16"
+                y2="7.97"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop offset="0" stop-color="#32a071" />
+                <stop offset="0.07" stop-color="#2da771" />
+                <stop offset="0.48" stop-color="#15cf74" />
+                <stop offset="0.8" stop-color="#06e775" />
+                <stop offset="1" stop-color="#00f076" />
+              </linearGradient>
+            </defs>
+
+            <rect width="135" height="40" rx="5" fill="#000000" />
+            <rect x="0.5" y="0.5" width="134" height="39" rx="4.5" fill="none" stroke="#a6a6a6" />
+
+            <g transform="translate(9.5 9.5) scale(0.76)">
+              <path
+                fill="url(#pb)"
+                d="M.44.37A1.56 1.56 0 0 0 .08 1.47v17.06c0 .43.14.8.36 1.1l9.55-9.63z"
+              />
+              <path
+                fill="url(#py)"
+                d="M13.25 13.19 9.99 10l3.26-3.29 3.85 2.19c1.1.62 1.1 1.66 0 2.29z"
+              />
+              <path fill="url(#pr)" d="M13.25 13.19 9.99 10 .44 19.63c.36.39.96.44 1.63.05z" />
+              <path fill="url(#pg)" d="M13.25 6.71 2.07.32C1.4-.07.8-.02.44.37L9.99 10z" />
+            </g>
+
+            <text
+              x="30"
+              y="15"
+              fill="#ffffff"
+              font-family="Roboto, system-ui, 'Segoe UI', sans-serif"
+              font-size="7"
+              letter-spacing="1"
+            >
+              GET IT ON
+            </text>
+            <text
+              x="29.5"
+              y="31"
+              fill="#ffffff"
+              font-family="Roboto, system-ui, 'Segoe UI', sans-serif"
+              font-size="16.5"
+              font-weight="500"
+              letter-spacing="-0.2"
+            >
+              Google Play
+            </text>
+          </svg>
+        </a>
+      </div>
+    </main>
+  </body>
+</html>

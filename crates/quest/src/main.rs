@@ -8,6 +8,7 @@ mod day;
 mod db;
 mod devices;
 mod items;
+mod landing;
 mod leaderboard;
 mod legal;
 mod openapi;
@@ -219,6 +220,7 @@ async fn main() {
     };
 
     let app = app
+        .merge(landing::router())
         .merge(legal::router())
         .merge(updates::routes::router(updates))
         .merge(portal::serve::router(portal))

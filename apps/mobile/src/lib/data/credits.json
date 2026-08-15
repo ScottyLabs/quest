@@ -6,29 +6,14 @@
       "title": "2026 Team",
       "members": [
         {
+          "name": "John Cao",
+          "school": "DC '29",
+          "roles": ["Developer", "RA"]
+        },
+        {
           "name": "Kenechukwu Echezona",
           "school": "SCS '26, ETC '28",
           "roles": ["Project Lead", "Technology Coordinator"]
-        },
-        {
-          "name": "Jeffery Wang",
-          "school": "BXA '27",
-          "roles": ["Developer", "Head Art Designer"]
-        },
-        {
-          "name": "Sushrut Pola",
-          "school": "SCS '30",
-          "roles": ["Head Developer"]
-        },
-        {
-          "name": "Anish Pallati",
-          "school": "MCS '28",
-          "roles": ["Developer"]
-        },
-        {
-          "name": "Adrian Zhuang",
-          "school": "SCS '29",
-          "roles": ["Game Designer", "Technology Coordinator"]
         },
         {
           "name": "Anissa Li",
@@ -36,11 +21,32 @@
           "roles": ["Art Designer"]
         },
         {
-          "name": "John Cao",
-          "school": "DC '29",
-          "roles": ["Developer", "OC"]
+          "name": "Anish Pallati",
+          "school": "MCS '28",
+          "roles": ["Developer"]
+        },
+        {
+          "name": "Sushrut Pola",
+          "school": "SCS '30",
+          "roles": ["Head Developer"]
+        },
+        {
+          "name": "Jeffrey Wang",
+          "school": "BCSA '27",
+          "roles": ["Head Art Designer", "Developer"]
+        },
+        {
+          "name": "Bright Zheng",
+          "school": "CIT '29",
+          "roles": ["Developer"]
+        },
+        {
+          "name": "Adrian Zhuang",
+          "school": "SCS '29",
+          "roles": ["Game Designer", "Technology Coordinator"]
         }
-      ]
+      ],
+      "specialThanks": ["Kari Galensky", "Andrew Greenwald", "Sanjeev Naiek", "Meg Richards"]
     },
     {
       "id": "previous",

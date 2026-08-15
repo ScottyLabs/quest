@@ -17,6 +17,7 @@ csv = "1.4.0"
 dotenvy = "0.15.7"
 entity = { path = "../entity" }
 fred = { version = "10", features = ["unix-sockets"] }
+geo = "0.33.1"
 hex = "0.4.3"
 hmac = "0.13.0"
 migration = { path = "../migration" }

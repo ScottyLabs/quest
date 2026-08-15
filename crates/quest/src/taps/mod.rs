@@ -1,6 +1,8 @@
 pub mod routes;
 
 use std::sync::Arc;
+// Enables Geodesic distance calculation
+use geo::{Distance, Geodesic, Point as GeoPoint};
 
 use entity::geography::Point;
 use entity::{challenge, challenge_card, failed_taps, tap_events};
@@ -35,14 +37,38 @@ pub struct Fix {
     pub accuracy: Option<f32>,
 }
 
+// The farthest a phone can be to still be valid.
+const TAP_RADIUS_METERS: f64 = 50.0;
+// The greatest location uncertainty accepted.
+const MAX_LOCATION_ACCURACY_METERS: f32 = 50.0; 
 pub enum Proximity {
     Accept,
-    #[allow(dead_code)]
-    Reject(Option<&'static str>),
+    Reject(&'static str),
 }
 
-pub fn proximity(_challenge: Option<Point>, _tapped: Option<Point>) -> Proximity {
+pub fn proximity(card_location: Point, tapped: Option<Fix>) -> Proximity {
     //TODO: IMPLEMENT PROXIMIMITY CHECKING
+    let Some(tapped) = tapped else {
+        return Proximity::Reject("no_location_fix");
+    };
+
+    if !tapped.accuracy
+        .is_some_and(|accuracy| {
+            accuracy.is_finite() && (0.0..=MAX_LOCATION_ACCURACY_METERS).contains(&accuracy)
+        })
+    {
+        return Proximity::Reject("location_too_coarse");
+    };
+
+    let card_location = GeoPoint::new(card_location.lon, card_location.lat);
+    let tapped = GeoPoint::new(tapped.at.lon, tapped.at.lat);
+
+    let distance = Geodesic.distance(card_location, tapped);
+
+    if distance > TAP_RADIUS_METERS {
+        return Proximity::Reject("tap_out_of_range");
+    }
+
     Proximity::Accept
 }
 
@@ -51,7 +77,7 @@ pub fn locked(challenge: &challenge::Model) -> bool {
     challenge.open_from > chrono::Utc::now()
 }
 
-const REASONS: [&str; 9] = [
+const REASONS: [&str; 12] = [
     "tap_body_invalid",
     "tap_url_malformed",
     "tap_signature",
@@ -61,6 +87,9 @@ const REASONS: [&str; 9] = [
     "challenge_row_missing",
     "tap_out_of_range",
     "tap_replayed",
+    "card_location_unset",
+    "location_too_coarse",
+    "no_location_fix",
 ];
 
 const URL_LIMIT: usize = 512;
@@ -106,7 +135,7 @@ impl Taps {
         }
     }
 
-    pub async fn challenge_for(&self, card_id: &str) -> Result<challenge::Model, AuthError> {
+    pub async fn challenge_for(&self, card_id: &str) -> Result<(challenge_card::Model, challenge::Model), AuthError> {
         let (card, found) = challenge_card::Entity::find_by_id(card_id)
             .find_also_related(challenge::Entity)
             .one(&self.db)
@@ -118,7 +147,9 @@ impl Taps {
             return Err(AuthError::NotFound("card_retired"));
         }
 
-        found.ok_or(AuthError::Upstream("challenge_row_missing"))
+        let challenge = found.ok_or(AuthError::Upstream("challenge_row_missing"))?;
+
+        Ok((card, challenge))
     }
 
     pub async fn record(

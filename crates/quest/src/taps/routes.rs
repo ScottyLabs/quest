@@ -93,7 +93,7 @@ async fn register(
     attempt.card_id = Some(read.card_id.clone());
     attempt.counter = Some(read.counter);
 
-    let challenge = taps
+    let (card, challenge) = taps
         .audited(&attempt, taps.challenge_for(&read.card_id).await)
         .await?;
 
@@ -104,10 +104,15 @@ async fn register(
         return Err(taps.rejected(&attempt, shut).await);
     }
 
-    match proximity(challenge.location, fix.map(|fix| fix.at)) {
+    let Some(card_location) = card.location else {
+        let error = AuthError::Conflict("card_location_unset");
+        return Err(taps.rejected(&attempt, error).await);
+    };
+
+    match proximity(card_location, fix) {
         Proximity::Accept => {}
         Proximity::Reject(reason) => {
-            let out = AuthError::BadRequest(reason.unwrap_or("tap_out_of_range"));
+            let out = AuthError::BadRequest(reason);
             return Err(taps.rejected(&attempt, out).await);
         }
     }

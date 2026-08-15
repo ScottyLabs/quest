@@ -582,6 +582,52 @@
       }
     },
     "/api/portal/assets": {
+      "get": {
+        "tags": ["portal"],
+        "operationId": "library",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": ["string", "null"]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": ["integer", "null"],
+              "format": "int64",
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Library"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "tags": ["portal"],
         "operationId": "upload",
@@ -592,6 +638,15 @@
             "required": true,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Original file name, kept for display only.",
+            "required": false,
+            "schema": {
+              "type": ["string", "null"]
             }
           }
         ],
@@ -662,6 +717,52 @@
             }
           },
           "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["portal"],
+        "operationId": "drop_asset",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DropBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Uploaded"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "403": {
             "description": "",
             "content": {
               "application/json": {
@@ -2521,6 +2622,38 @@
           }
         }
       },
+      "AssetView": {
+        "type": "object",
+        "required": ["key", "url", "kind", "content_type", "bytes", "uploaded_by", "created_at"],
+        "properties": {
+          "bytes": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "content_type": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "filename": {
+            "type": ["string", "null"]
+          },
+          "key": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "uploaded_by": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
       "AuthErrBody": {
         "type": "object",
         "required": ["error"],
@@ -2838,6 +2971,15 @@
           }
         }
       },
+      "DropBody": {
+        "type": "object",
+        "required": ["key"],
+        "properties": {
+          "key": {
+            "type": "string"
+          }
+        }
+      },
       "EditBody": {
         "type": "object",
         "required": ["key", "set"],
@@ -3030,6 +3172,42 @@
       "Level": {
         "type": "string",
         "enum": ["none", "read", "edit", "full"]
+      },
+      "Library": {
+        "type": "object",
+        "required": ["assets", "kinds", "accepts", "max_bytes", "ready"],
+        "properties": {
+          "accepts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Content types the uploader accepts."
+          },
+          "assets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetView"
+            }
+          },
+          "kinds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Prefixes an upload may be filed under."
+          },
+          "max_bytes": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Largest upload the backend will take, in bytes.",
+            "minimum": 0
+          },
+          "ready": {
+            "type": "boolean",
+            "description": "False when the CDN credentials are missing, so uploads will refuse."
+          }
+        }
       },
       "LinkBody": {
         "type": "object",

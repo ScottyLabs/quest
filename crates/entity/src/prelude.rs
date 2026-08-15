@@ -1,3 +1,4 @@
+pub use super::asset::Entity as Asset;
 pub use super::challenge::Entity as Challenge;
 pub use super::challenge_card::Entity as ChallengeCard;
 pub use super::daily_challenge::Entity as DailyChallenge;

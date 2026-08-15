@@ -34,6 +34,7 @@
 
   const allowed = $derived(me.can("sql_console"));
   const statements = $derived(count(text));
+  const multiple = $derived(statements > 1);
 
   function count(source: string): number {
     let total = 0;
@@ -245,7 +246,8 @@
     if (event.key !== "Enter" || !(event.metaKey || event.ctrlKey)) return;
 
     event.preventDefault();
-    void run();
+    if (multiple) void runScript();
+    else void run();
   }
 
   async function copyJson(): Promise<void> {
@@ -277,7 +279,7 @@
 {:else}
   <div class="layout">
     <div class="main">
-      <Panel title="Statement" detail="Ctrl or Cmd plus Enter runs one statement">
+      <Panel title="Statement" detail="Ctrl or Cmd plus Enter runs it">
         {#snippet actions()}
           <Chip tone={statements > 1 ? "accent" : "neutral"}>
             {statements}
@@ -369,11 +371,23 @@
 
             <Button tone="ghost" onclick={clear} disabled={busy}>Clear</Button>
 
-            <Button tone="line" {busy} onclick={() => void runScript()}>
+            <Button
+              tone={multiple ? (write ? "danger" : "solid") : "line"}
+              {busy}
+              onclick={() => void runScript()}
+            >
               {write ? "Run script" : "Dry run script"}
             </Button>
 
-            <Button tone={write ? "danger" : "solid"} {busy} onclick={() => void run()}>
+            <Button
+              tone={multiple ? "line" : write ? "danger" : "solid"}
+              {busy}
+              disabled={multiple}
+              title={multiple
+                ? `Run sends one statement at a time; this is ${statements}. Use Run script.`
+                : undefined}
+              onclick={() => void run()}
+            >
               {confirming ? "Confirm write" : write ? "Run write" : "Run"}
             </Button>
           </div>

@@ -80,6 +80,8 @@ export type PassHolder = Schemas["PassHolder"];
 export type Script = Schemas["Script"];
 export type Step = Schemas["Step"];
 export type Uploaded = Schemas["Uploaded"];
+export type AssetLibrary = Schemas["Library"];
+export type AssetView = Schemas["AssetView"];
 
 export async function uploadAsset(kind: string, file: File): Promise<Uploaded> {
   const headers = new Headers({ "content-type": file.type });
@@ -87,7 +89,8 @@ export async function uploadAsset(kind: string, file: File): Promise<Uploaded> {
 
   if (id !== null) headers.set("authorization", `Bearer ${id}`);
 
-  const response = await fetch(`${apiBase}/api/portal/assets?kind=${encodeURIComponent(kind)}`, {
+  const query = new URLSearchParams({ kind, name: file.name });
+  const response = await fetch(`${apiBase}/api/portal/assets?${query}`, {
     method: "POST",
     credentials: "include",
     headers,

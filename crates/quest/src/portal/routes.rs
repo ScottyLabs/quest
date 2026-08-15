@@ -41,7 +41,7 @@ pub fn router(
         .routes(routes!(sql))
         .routes(routes!(sql_script))
         .routes(routes!(catalog_reload))
-        .routes(routes!(upload))
+        .routes(routes!(upload, library, drop_asset))
         .routes(routes!(trade_items))
         .routes(routes!(trade_pass))
         .routes(routes!(trade_orders, trade_buy))
@@ -515,12 +515,24 @@ async fn trade_pass(
 #[derive(Deserialize, ToSchema, utoipa::IntoParams)]
 pub struct UploadQuery {
     pub kind: String,
+    /// Original file name, kept for display only.
+    pub name: Option<String>,
 }
 
 #[derive(Serialize, ToSchema)]
 pub struct Uploaded {
     pub key: String,
     pub url: String,
+}
+
+fn asset_failed(err: AssetError) -> PortalError {
+    match err {
+        AssetError::Unconfigured => PortalError::Sql(
+            "asset uploads are off: the CDN_* Garage credentials are not set".to_owned(),
+        ),
+        AssetError::Rejected(code) => PortalError::Auth(AuthError::BadRequest(code)),
+        AssetError::Upstream(detail) => PortalError::Sql(detail),
+    }
 }
 
 #[utoipa::path(
@@ -554,19 +566,135 @@ async fn upload(
 
     let stored = console
         .assets
-        .put(&query.kind, content_type, bytes.to_vec())
+        .put(
+            &query.kind,
+            content_type,
+            query.name.as_deref(),
+            &access.user.andrew_id,
+            bytes.to_vec(),
+        )
         .await
-        .map_err(|err| match err {
-            AssetError::Unconfigured => PortalError::Sql(
-                "asset uploads are off: the CDN_* Garage credentials are not set".to_owned(),
-            ),
-            AssetError::Rejected(code) => PortalError::Auth(AuthError::BadRequest(code)),
-            AssetError::Upstream(detail) => PortalError::Sql(detail),
-        })?;
+        .map_err(asset_failed)?;
 
     Ok(Json(Uploaded {
         key: stored.key,
         url: stored.url,
+    }))
+}
+
+#[derive(Deserialize, ToSchema, utoipa::IntoParams)]
+pub struct AssetQuery {
+    pub kind: Option<String>,
+    pub limit: Option<u64>,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct AssetView {
+    pub key: String,
+    pub url: String,
+    pub kind: String,
+    pub content_type: String,
+    pub bytes: i64,
+    pub filename: Option<String>,
+    pub uploaded_by: String,
+    pub created_at: chrono::DateTime<chrono::FixedOffset>,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct Library {
+    pub assets: Vec<AssetView>,
+    /// Prefixes an upload may be filed under.
+    pub kinds: Vec<String>,
+    /// Content types the uploader accepts.
+    pub accepts: Vec<String>,
+    /// Largest upload the backend will take, in bytes.
+    pub max_bytes: u64,
+    /// False when the CDN credentials are missing, so uploads will refuse.
+    pub ready: bool,
+}
+
+#[utoipa::path(
+    get,
+    path = "/portal/assets",
+    tag = "portal",
+    params(AssetQuery),
+    responses(
+        (status = OK, body = Library),
+        (status = FORBIDDEN, body = PortalErrBody),
+    ),
+)]
+async fn library(
+    State(console): State<Console>,
+    access: Access,
+    Query(query): Query<AssetQuery>,
+) -> Result<Json<Library>, PortalError> {
+    access.require(Capability::Assets)?;
+
+    let found = console
+        .assets
+        .listing(query.kind.as_deref(), query.limit.unwrap_or(100))
+        .await
+        .map_err(asset_failed)?;
+
+    Ok(Json(Library {
+        assets: found
+            .into_iter()
+            .map(|row| AssetView {
+                key: row.key,
+                url: row.url,
+                kind: row.kind,
+                content_type: row.content_type,
+                bytes: row.bytes,
+                filename: row.filename,
+                uploaded_by: row.uploaded_by,
+                created_at: row.created_at,
+            })
+            .collect(),
+        kinds: crate::portal::assets::KIND_LIST
+            .iter()
+            .map(|kind| (*kind).to_owned())
+            .collect(),
+        accepts: crate::portal::assets::allowed_types()
+            .map(str::to_owned)
+            .collect(),
+        max_bytes: crate::portal::assets::MAX_BYTES as u64,
+        ready: console.assets.configured(),
+    }))
+}
+
+#[derive(Deserialize, ToSchema)]
+pub struct DropBody {
+    pub key: String,
+}
+
+#[utoipa::path(
+    delete,
+    path = "/portal/assets",
+    tag = "portal",
+    request_body = DropBody,
+    responses(
+        (status = OK, body = Uploaded),
+        (status = BAD_REQUEST, body = PortalErrBody),
+        (status = FORBIDDEN, body = PortalErrBody),
+    ),
+)]
+async fn drop_asset(
+    State(console): State<Console>,
+    access: Access,
+    payload: Result<Json<DropBody>, JsonRejection>,
+) -> Result<Json<Uploaded>, PortalError> {
+    access.require(Capability::Assets)?;
+
+    let payload = body(payload)?;
+    console
+        .assets
+        .remove(&payload.key)
+        .await
+        .map_err(asset_failed)?;
+
+    Ok(Json(Uploaded {
+        url: console.assets.url_for(&payload.key),
+        key: payload.key,
     }))
 }
 

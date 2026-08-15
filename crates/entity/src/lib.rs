@@ -1,5 +1,6 @@
 pub mod prelude;
 
+pub mod asset;
 pub mod challenge;
 pub mod challenge_card;
 pub mod daily_challenge;

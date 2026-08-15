@@ -3,15 +3,23 @@
   import QuestArt from "./QuestArt.svelte";
   import { unlockedAt, type Quest } from "$lib/quests.svelte";
 
-  let { quest }: { quest: Quest } = $props();
+  let { quest, onscan }: { quest: Quest; onscan?: (quest: Quest) => void } = $props();
 </script>
 
-<CardShell surface="#131f24" edge="color-mix(in srgb, #131f24 55%, #000000)">
+<CardShell
+  surface="#131f24"
+  edge="color-mix(in srgb, #131f24 55%, #000000)"
+  label={onscan === undefined ? undefined : `Provision ${quest.title}`}
+  onclick={onscan === undefined ? undefined : () => onscan(quest)}
+>
   <QuestArt fill="#000000" />
 
   <span class="copy">
     <span class="title">{quest.title}</span>
     <span class="when">{unlockedAt(quest)}</span>
+    {#if onscan !== undefined}
+      <span class="provision">Tap to link a card</span>
+    {/if}
   </span>
 </CardShell>
 
@@ -44,5 +52,18 @@
     -webkit-box-orient: vertical;
     line-clamp: 2;
     -webkit-line-clamp: 2;
+  }
+
+  .provision {
+    align-self: flex-start;
+    padding: calc(2 * var(--u)) calc(8 * var(--u));
+    border: 1px solid #6f8b96;
+    border-radius: calc(20 * var(--u));
+    color: #bcd6e0;
+    font-size: calc(10 * var(--u));
+    font-weight: 700;
+    letter-spacing: calc(0.4 * var(--u));
+    text-transform: uppercase;
+    white-space: nowrap;
   }
 </style>

@@ -4,6 +4,7 @@
   import LockedCard from "./LockedCard.svelte";
   import OpenCard from "./OpenCard.svelte";
   import type { Quest } from "$lib/quests.svelte";
+  import { staffMode } from "$lib/staff.svelte";
 
   let {
     quest,
@@ -19,7 +20,7 @@
 {:else if daily}
   <DailyCard {quest} {onscan} />
 {:else if locked}
-  <LockedCard {quest} />
+  <LockedCard {quest} onscan={staffMode.on ? onscan : undefined} />
 {:else}
   <OpenCard {quest} {onscan} />
 {/if}

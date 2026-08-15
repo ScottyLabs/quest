@@ -34,6 +34,12 @@
             </li>
           {/each}
         </ul>
+        {#if group.specialThanks}
+          <div class="thanks">
+            <strong>Special Thanks:</strong>
+            {group.specialThanks.join(", ")}
+          </div>
+        {/if}
       </section>
     {/each}
   </div>
@@ -156,6 +162,18 @@
     font-weight: 700;
     letter-spacing: calc(0.3 * var(--u));
   }
+
+  .thanks {
+  margin-top: calc(18 * var(--u));
+  color: var(--tertiary);
+  font-size: calc(13 * var(--u));
+  line-height: 1.5;
+}
+
+.thanks strong {
+  color: var(--secondary);
+  font-weight: 700;
+}
 
   .past > ul > li {
     background: #fbfafa;

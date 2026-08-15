@@ -53,6 +53,7 @@ impl Modify for Credentials {
         (name = "leaderboard", description = "Standings and the Carnegie Cup"),
         (name = "passes", description = "Apple Wallet passes"),
         (name = "staff", description = "Card placement for orientation staff"),
+        (name = "portal", description = "The staff portal: data console, SQL console and trade desk"),
     )
 )]
 pub struct ApiDoc;
@@ -68,6 +69,9 @@ pub struct Services {
     pub taps: crate::taps::Taps,
     pub passes: crate::passes::Passes,
     pub staff: crate::staff::Staff,
+    pub portal: crate::portal::Portal,
+    pub desk: crate::portal::trade::Desk,
+    pub assets: crate::portal::assets::Assets,
 }
 
 impl Services {
@@ -87,7 +91,13 @@ impl Services {
             tokens: crate::tokens::Tokens::new(db.clone()),
             passes,
             staff: crate::staff::Staff::new(db.clone()),
-            taps: crate::taps::Taps::new(db, std::sync::Arc::new(master)),
+            portal: crate::portal::Portal::new(db.clone()),
+            taps: crate::taps::Taps::new(db.clone(), std::sync::Arc::new(master)),
+            desk: crate::portal::trade::Desk::new(db.clone()),
+            assets: crate::portal::assets::Assets::from_env().unwrap_or_else(|err| {
+                eprintln!("asset uploads disabled: {err}");
+                crate::portal::assets::Assets::unconfigured()
+            }),
         }
     }
 
@@ -134,6 +144,23 @@ pub fn api_router(services: &Services) -> utoipa_axum::router::OpenApiRouter {
         ))
 }
 
+fn portal_paths(services: &Services) -> utoipa_axum::router::OpenApiRouter {
+    utoipa_axum::router::OpenApiRouter::new().nest(
+        "/api",
+        crate::portal::routes::router(
+            services.portal.clone(),
+            services.items.clone(),
+            services.desk.clone(),
+            services.passes.clone(),
+            services.assets.clone(),
+        ),
+    )
+}
+
+pub fn portal_router(services: &Services) -> axum::Router {
+    portal_paths(services).split_for_parts().0
+}
+
 pub fn split(services: &Services) -> (axum::Router, utoipa::openapi::OpenApi) {
     let (router, mut spec) = utoipa_axum::router::OpenApiRouter::with_openapi(ApiDoc::openapi())
         .nest("/api", api_router(services))
@@ -141,6 +168,7 @@ pub fn split(services: &Services) -> (axum::Router, utoipa::openapi::OpenApi) {
         .split_for_parts();
 
     spec.merge(crate::auth::routes::session_spec());
+    spec.merge(portal_paths(services).split_for_parts().1);
     (router, spec)
 }
 

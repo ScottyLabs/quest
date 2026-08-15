@@ -51,7 +51,7 @@ struct PlaceBody {
 }
 
 fn allowed(user: &crate::auth::session::SessionUser) -> Result<(), AuthError> {
-    user.staff()
+    crate::access::allows(user, crate::access::Capability::CardDesk)
         .then_some(())
         .ok_or(AuthError::Forbidden("staff_only"))
 }

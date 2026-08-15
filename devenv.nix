@@ -34,6 +34,12 @@ in
 
   services.postgres.extensions = extensions: [ extensions.postgis ];
 
+  enterShell = ''
+    (cd apps/portal && deno install && deno run -A npm:@sveltejs/kit/svelte-kit sync)
+  '';
+
+  processes.portal.exec = "deno task --cwd apps/portal dev";
+
   # normally logs are scoped to crates
   env.RUST_LOG = pkgs.lib.mkForce "info,quest=debug,ricochet=debug";
 

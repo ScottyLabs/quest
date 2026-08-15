@@ -1,3 +1,4 @@
+mod access;
 mod applinks;
 mod auth;
 mod challenges;
@@ -11,6 +12,7 @@ mod leaderboard;
 mod legal;
 mod openapi;
 mod passes;
+mod portal;
 mod staff;
 mod taps;
 mod tokens;
@@ -96,21 +98,21 @@ async fn log_request(
     response
 }
 
-fn bundle_source() -> Option<String> {
+fn flagged(flag: &str, variable: &str) -> Option<String> {
+    let prefixed = format!("--{flag}=");
+    let bare = format!("--{flag}");
     let mut args = std::env::args().skip(1);
 
     while let Some(arg) = args.next() {
-        if let Some(path) = arg.strip_prefix("--bundle=") {
-            return Some(path.to_owned());
+        if let Some(value) = arg.strip_prefix(&prefixed) {
+            return Some(value.to_owned());
         }
-        if arg == "--bundle" {
-            return Some(args.next().expect("--bundle needs a path"));
+        if arg == bare {
+            return Some(args.next().unwrap_or_else(|| panic!("{bare} needs a path")));
         }
     }
 
-    std::env::var("QUEST_BUNDLE")
-        .ok()
-        .filter(|path| !path.is_empty())
+    std::env::var(variable).ok().filter(|path| !path.is_empty())
 }
 
 #[tokio::main]
@@ -139,7 +141,7 @@ async fn main() {
         .await
         .expect("failed to connect to Postgres");
 
-    let updates = match bundle_source() {
+    let updates = match flagged("bundle", "QUEST_BUNDLE") {
         Some(path) => {
             let loaded = updates::Updates::load(std::path::Path::new(&path))
                 .unwrap_or_else(|err| panic!("bundle {path}: {err}"));
@@ -152,6 +154,23 @@ async fn main() {
             updates::Updates::disabled()
         }
     };
+
+    let portal = match flagged("portal", "QUEST_PORTAL") {
+        Some(path) => {
+            let loaded = portal::serve::Bundle::load(std::path::Path::new(&path))
+                .unwrap_or_else(|err| panic!("portal {path}: {err}"));
+            println!("serving {} from {path}", portal::serve::BASE);
+            loaded
+        }
+        None => {
+            eprintln!(
+                "no portal bundle configured; {} answers 503",
+                portal::serve::BASE
+            );
+            portal::serve::Bundle::disabled()
+        }
+    };
+
     let master = Arc::new(load_master_key());
 
     let app = Router::new()
@@ -176,6 +195,7 @@ async fn main() {
             let users = services.users.clone();
 
             let (routed, _) = openapi::split(&services);
+            let portal_api = openapi::portal_router(&services);
 
             app.merge(auth::routes::router(auth))
                 .merge(routed)
@@ -183,6 +203,7 @@ async fn main() {
                     devices.clone(),
                     devices::enforce,
                 ))
+                .merge(portal_api)
                 .layer(axum::Extension(devices))
                 .layer(axum::Extension(users))
                 .layer(sessions)
@@ -200,6 +221,7 @@ async fn main() {
     let app = app
         .merge(legal::router())
         .merge(updates::routes::router(updates))
+        .merge(portal::serve::router(portal))
         .merge(openapi::docs())
         .layer(cors::layer())
         .layer(axum::middleware::from_fn(log_request));

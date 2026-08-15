@@ -180,7 +180,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/passes/verify": {
+  "/api/portal/assets": {
     parameters: {
       query?: never;
       header?: never;
@@ -189,7 +189,199 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post: operations["verify"];
+    post: operations["upload"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/portal/catalog/reload": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["catalog_reload"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/portal/me": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["me"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/portal/sign-out": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["sign_out"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/portal/sql": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["sql"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/portal/sql/script": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["sql_script"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/portal/tables": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["tables"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/portal/tables/{table}/rows": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["rows"];
+    put?: never;
+    post: operations["insert_row"];
+    delete: operations["delete_row"];
+    options?: never;
+    head?: never;
+    patch: operations["update_row"];
+    trace?: never;
+  };
+  "/api/portal/trade/items": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["trade_items"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/portal/trade/orders": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["trade_orders"];
+    put?: never;
+    post: operations["trade_buy"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/portal/trade/orders/{purchase_id}/delivery": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put: operations["trade_fulfil"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/portal/trade/orders/{purchase_id}/refund": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["trade_refund"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/portal/trade/pass": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["trade_pass"];
     delete?: never;
     options?: never;
     head?: never;
@@ -474,10 +666,29 @@ export interface components {
       cleared: number;
       total: number;
     };
+    Bought: {
+      /** Format: int64 */
+      cost: number;
+      item: string;
+      /** Format: uuid */
+      item_id: string;
+      /** Format: int64 */
+      purchase_id: number;
+      /** Format: int64 */
+      quantity: number;
+      /** Format: int64 */
+      scottycoins: number;
+      /** Format: int64 */
+      spent: number;
+      /** Format: int64 */
+      stock: number;
+    };
     BuyBody: {
       /** Format: int64 */
       quantity?: number;
     };
+    /** @enum {string} */
+    Capability: "portal" | "sql_console" | "data_console" | "card_desk" | "trade_desk" | "assets";
     CardUrl: {
       url: string;
     };
@@ -507,6 +718,15 @@ export interface components {
       open_from: string;
       tagline: string;
     };
+    Column: {
+      default_expr?: string | null;
+      generated: boolean;
+      /** Format: int32 */
+      key: number;
+      kind: string;
+      name: string;
+      nullable: boolean;
+    };
     Cup: {
       community: string;
       /** Format: int64 */
@@ -520,6 +740,18 @@ export interface components {
       challenge?: null | components["schemas"]["ChallengeView"];
       day: string;
     };
+    DeskRefundBody: {
+      andrew_id: string;
+      /** Format: int64 */
+      quantity: number;
+    };
+    DeskSaleBody: {
+      andrew_id: string;
+      /** Format: uuid */
+      item_id: string;
+      /** Format: int64 */
+      quantity: number;
+    };
     DeviceView: {
       created_at: string;
       label?: string | null;
@@ -528,6 +760,14 @@ export interface components {
     DormBody: {
       dorm: string;
     };
+    EditBody: {
+      key: {
+        [key: string]: unknown;
+      };
+      set: {
+        [key: string]: unknown;
+      };
+    };
     Enroll: {
       ticket: string;
     };
@@ -535,8 +775,36 @@ export interface components {
       enrolled: boolean;
       public_key: string;
     };
+    FulfilBody: {
+      delivered: boolean;
+    };
+    Fulfilled: {
+      /** Format: int64 */
+      purchase_id: number;
+      /** Format: date */
+      received_item_date?: string | null;
+    };
+    GaveBack: {
+      /** Format: int64 */
+      refunded: number;
+      /** Format: int64 */
+      scottycoins: number;
+    };
+    Grant: {
+      level: components["schemas"]["Level"];
+      table: string;
+    };
     Health: {
       status: string;
+    };
+    Identity: {
+      andrew_id: string;
+      capabilities: components["schemas"]["Capability"][];
+      email?: string | null;
+      groups: string[];
+      name: string;
+      roles: components["schemas"]["Role"][];
+      tables: components["schemas"]["Grant"][];
     };
     IssueBody: {
       /** Format: int64 */
@@ -553,6 +821,13 @@ export interface components {
       /** Format: int64 */
       stock: number;
     };
+    KeyBody: {
+      key: {
+        [key: string]: unknown;
+      };
+    };
+    /** @enum {string} */
+    Level: "none" | "read" | "edit" | "full";
     LinkBody: {
       /** Format: uuid */
       challenge_id: string;
@@ -566,11 +841,68 @@ export interface components {
     LogoutResponse: {
       end_session_url?: string | null;
     };
+    Order: {
+      andrew_id: string;
+      /** Format: int64 */
+      cost: number;
+      item: string;
+      /** Format: uuid */
+      item_id: string;
+      /** Format: int64 */
+      purchase_id: number;
+      /** Format: int64 */
+      quantity: number;
+      /** Format: date */
+      received_item_date?: string | null;
+      /** Format: uuid */
+      user_id: string;
+    };
+    Outcome: {
+      columns: string[];
+      /** Format: int64 */
+      elapsed_ms: number;
+      read_only: boolean;
+      rows: components["schemas"]["Value"][];
+      /** Format: int64 */
+      rows_affected: number;
+      truncated: boolean;
+    };
+    Page: {
+      columns: components["schemas"]["Column"][];
+      key: string[];
+      /** Format: int64 */
+      limit: number;
+      /** Format: int64 */
+      offset: number;
+      rows: components["schemas"]["Value"][];
+      table: string;
+      /** Format: int64 */
+      total: number;
+    };
     PassChallenge: {
       andrew_id: string;
       /** Format: int64 */
       issued_at: number;
       message: string;
+    };
+    PassHolder: {
+      andrew_id: string;
+      dorm?: string | null;
+      /** Format: int64 */
+      issued_at?: number | null;
+      name: string;
+      orders: components["schemas"]["Order"][];
+      /** Format: int64 */
+      scottycoins: number;
+      /** Format: int64 */
+      thistlestones: number;
+      /** Format: uuid */
+      user_id: string;
+      verified: boolean;
+    };
+    PassLookup: {
+      andrew_id?: string | null;
+      token?: string | null;
     };
     PassToken: {
       andrew_id: string;
@@ -584,6 +916,10 @@ export interface components {
       lat: number;
       /** Format: double */
       lon: number;
+    };
+    PortalErrBody: {
+      detail?: string | null;
+      error: string;
     };
     Profile: {
       andrew_id: string;
@@ -638,9 +974,14 @@ export interface components {
       /** Format: int64 */
       place: number;
     };
+    Reloaded: {
+      tables: number;
+    };
     Revoked: {
       revoked: boolean;
     };
+    /** @enum {string} */
+    Role: "admins" | "orientation-staff" | "trade-admin" | "challenge-placer";
     Row: {
       community?: string | null;
       name: string;
@@ -650,15 +991,58 @@ export interface components {
       score: number;
       you: boolean;
     };
+    RowBody: {
+      row: {
+        [key: string]: unknown;
+      };
+    };
+    Script: {
+      committed: boolean;
+      /** Format: int64 */
+      elapsed_ms: number;
+      failed?: number | null;
+      read_only: boolean;
+      statements: number;
+      steps: components["schemas"]["Step"][];
+    };
     Shelf: {
       items: components["schemas"]["ItemView"][];
       total: number;
+    };
+    ShopItem: {
+      /** Format: int64 */
+      cost: number;
+      description: string;
+      /** Format: uuid */
+      id: string;
+      image_url?: string | null;
+      name: string;
+      /** Format: int64 */
+      stock: number;
+    };
+    SignedOut: {
+      signed_out: boolean;
+    };
+    SqlBody: {
+      sql: string;
+      write?: boolean;
     };
     Standings: {
       cup?: null | components["schemas"]["Cup"];
       metric: string;
       rows: components["schemas"]["Row"][];
       you?: null | components["schemas"]["You"];
+    };
+    Step: {
+      error?: string | null;
+      outcome?: null | components["schemas"]["Outcome"];
+      statement: string;
+    };
+    TableView: {
+      columns: components["schemas"]["Column"][];
+      key: string[];
+      level: components["schemas"]["Level"];
+      name: string;
     };
     TapBody: {
       /** Format: float */
@@ -674,6 +1058,10 @@ export interface components {
       expires_in: number;
       ticket: string;
     };
+    Uploaded: {
+      key: string;
+      url: string;
+    };
     UserView: {
       admin: boolean;
       andrew_id: string;
@@ -682,23 +1070,18 @@ export interface components {
       name: string;
       staff: boolean;
     };
-    Verified: {
-      andrew_id: string;
-      /** Format: int64 */
-      issued_at: number;
-      name: string;
-    };
+    Value: unknown;
     Verify: {
       label?: string | null;
       nonce: string;
       public_key: string;
       signature: string;
     };
-    VerifyBody: {
-      token: string;
-    };
     Wallet: {
       purchases: components["schemas"]["PurchaseView"][];
+    };
+    Written: {
+      rows: components["schemas"]["Value"][];
     };
     You: {
       community?: string | null;
@@ -1183,16 +1566,18 @@ export interface operations {
       };
     };
   };
-  verify: {
+  upload: {
     parameters: {
-      query?: never;
+      query: {
+        kind: string;
+      };
       header?: never;
       path?: never;
       cookie?: never;
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["VerifyBody"];
+        "application/octet-stream": number[];
       };
     };
     responses: {
@@ -1201,7 +1586,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["Verified"];
+          "application/json": components["schemas"]["Uploaded"];
         };
       };
       400: {
@@ -1209,15 +1594,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["AuthErrBody"];
-        };
-      };
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["AuthErrBody"];
+          "application/json": components["schemas"]["PortalErrBody"];
         };
       };
       403: {
@@ -1225,15 +1602,15 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["AuthErrBody"];
+          "application/json": components["schemas"]["PortalErrBody"];
         };
       };
-      404: {
+      413: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["AuthErrBody"];
+          "application/json": components["schemas"]["PortalErrBody"];
         };
       };
       502: {
@@ -1241,7 +1618,631 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["AuthErrBody"];
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+    };
+  };
+  catalog_reload: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Reloaded"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+    };
+  };
+  me: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Identity"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+    };
+  };
+  sign_out: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SignedOut"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+    };
+  };
+  sql: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SqlBody"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Outcome"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+    };
+  };
+  sql_script: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SqlBody"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Script"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+    };
+  };
+  tables: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TableView"][];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+    };
+  };
+  rows: {
+    parameters: {
+      query?: {
+        limit?: number | null;
+        offset?: number | null;
+        order?: string | null;
+        desc?: boolean | null;
+        search?: string | null;
+      };
+      header?: never;
+      path: {
+        /** @description Table name */
+        table: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Page"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+    };
+  };
+  insert_row: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Table name */
+        table: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["RowBody"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Written"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+    };
+  };
+  delete_row: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Table name */
+        table: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["KeyBody"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Written"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+    };
+  };
+  update_row: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Table name */
+        table: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["EditBody"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Written"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+    };
+  };
+  trade_items: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ShopItem"][];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+    };
+  };
+  trade_orders: {
+    parameters: {
+      query?: {
+        andrew_id?: string | null;
+        delivered?: boolean | null;
+        limit?: number | null;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Order"][];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+    };
+  };
+  trade_buy: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["DeskSaleBody"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Bought"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+    };
+  };
+  trade_fulfil: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Purchase id */
+        purchase_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["FulfilBody"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Fulfilled"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+    };
+  };
+  trade_refund: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Purchase id */
+        purchase_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["DeskRefundBody"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["GaveBack"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+    };
+  };
+  trade_pass: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["PassLookup"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PassHolder"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
         };
       };
     };

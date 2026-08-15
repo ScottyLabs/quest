@@ -20,7 +20,6 @@ pub fn router(passes: Passes) -> OpenApiRouter {
         .routes(routes!(challenge))
         .routes(routes!(issue))
         .routes(routes!(token))
-        .routes(routes!(verify))
         .with_state(passes)
 }
 
@@ -172,50 +171,4 @@ fn package(issued: super::Issued) -> Response {
         issued.pkpass,
     )
         .into_response()
-}
-
-#[derive(Deserialize, ToSchema)]
-struct VerifyBody {
-    token: String,
-}
-
-#[derive(Serialize, ToSchema)]
-struct Verified {
-    andrew_id: String,
-    name: String,
-    issued_at: i64,
-}
-
-#[utoipa::path(
-    post,
-    path = "/passes/verify",
-    tag = "passes",
-    request_body = VerifyBody,
-    responses(
-        (status = OK, body = Verified),
-        (status = BAD_REQUEST, body = AuthErrBody),
-        (status = UNAUTHORIZED, body = AuthErrBody),
-        (status = FORBIDDEN, body = AuthErrBody),
-        (status = NOT_FOUND, body = AuthErrBody),
-        (status = BAD_GATEWAY, body = AuthErrBody),
-    ),
-)]
-async fn verify(
-    State(passes): State<Passes>,
-    CurrentUser(user): CurrentUser,
-    body: Result<Json<VerifyBody>, JsonRejection>,
-) -> Result<Json<Verified>, AuthError> {
-    let Json(body) = body.map_err(|_| AuthError::BadRequest("pass_body_invalid"))?;
-
-    if !user.staff() {
-        return Err(AuthError::Forbidden("staff_only"));
-    }
-
-    let holder = passes.verify(&body.token).await?;
-
-    Ok(Json(Verified {
-        andrew_id: holder.andrew_id,
-        name: holder.name,
-        issued_at: holder.issued_at,
-    }))
 }

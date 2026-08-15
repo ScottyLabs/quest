@@ -1,8 +1,6 @@
 pub mod routes;
 
 use std::sync::Arc;
-// Enables Geodesic distance calculation
-use geo::{Distance, Geodesic, Point as GeoPoint};
 
 use entity::geography::Point;
 use entity::{challenge, challenge_card, failed_taps, tap_events};
@@ -40,7 +38,23 @@ pub struct Fix {
 // The farthest a phone can be to still be valid.
 const TAP_RADIUS_METERS: f64 = 50.0;
 // The greatest location uncertainty accepted.
-const MAX_LOCATION_ACCURACY_METERS: f32 = 50.0; 
+const MAX_LOCATION_ACCURACY_METERS: f32 = 50.0;
+
+const EARTH_RADIUS_METERS: f64 = 6_371_000.0;
+
+fn haversine_distance(a: &Point, b: &Point) -> f64 {
+    let lat1 = a.lat.to_radians();
+    let lat2 = b.lat.to_radians();
+
+    let delta_lat = (b.lat - a.lat).to_radians();
+    let delta_lon = (b.lon - a.lon).to_radians();
+
+    let h =
+        (delta_lat / 2.0).sin().powi(2) + lat1.cos() * lat2.cos() * (delta_lon / 2.0).sin().powi(2);
+
+    2.0 * EARTH_RADIUS_METERS * h.clamp(0.0, 1.0).sqrt().asin()
+}
+
 pub enum Proximity {
     Accept,
     Reject(&'static str),
@@ -49,21 +63,16 @@ pub enum Proximity {
 pub fn proximity(card_location: Point, tapped: Option<Fix>) -> Proximity {
     //TODO: IMPLEMENT PROXIMIMITY CHECKING
     let Some(tapped) = tapped else {
-        return Proximity::Reject("no_location_fix");
+        return Proximity::Accept;
     };
 
-    if !tapped.accuracy
-        .is_some_and(|accuracy| {
-            accuracy.is_finite() && (0.0..=MAX_LOCATION_ACCURACY_METERS).contains(&accuracy)
-        })
-    {
+    if !tapped.accuracy.is_some_and(|accuracy| {
+        accuracy.is_finite() && (0.0..=MAX_LOCATION_ACCURACY_METERS).contains(&accuracy)
+    }) {
         return Proximity::Reject("location_too_coarse");
     };
 
-    let card_location = GeoPoint::new(card_location.lon, card_location.lat);
-    let tapped = GeoPoint::new(tapped.at.lon, tapped.at.lat);
-
-    let distance = Geodesic.distance(card_location, tapped);
+    let distance = haversine_distance(&card_location, &tapped.at);
 
     if distance > TAP_RADIUS_METERS {
         return Proximity::Reject("tap_out_of_range");
@@ -77,7 +86,7 @@ pub fn locked(challenge: &challenge::Model) -> bool {
     challenge.open_from > chrono::Utc::now()
 }
 
-const REASONS: [&str; 12] = [
+const REASONS: [&str; 11] = [
     "tap_body_invalid",
     "tap_url_malformed",
     "tap_signature",
@@ -87,7 +96,6 @@ const REASONS: [&str; 12] = [
     "challenge_row_missing",
     "tap_out_of_range",
     "tap_replayed",
-    "card_location_unset",
     "location_too_coarse",
     "no_location_fix",
 ];
@@ -135,7 +143,10 @@ impl Taps {
         }
     }
 
-    pub async fn challenge_for(&self, card_id: &str) -> Result<(challenge_card::Model, challenge::Model), AuthError> {
+    pub async fn challenge_for(
+        &self,
+        card_id: &str,
+    ) -> Result<(challenge_card::Model, challenge::Model), AuthError> {
         let (card, found) = challenge_card::Entity::find_by_id(card_id)
             .find_also_related(challenge::Entity)
             .one(&self.db)

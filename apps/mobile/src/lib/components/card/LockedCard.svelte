@@ -15,7 +15,7 @@
   <QuestArt fill="#000000" />
 
   <span class="copy">
-    <span class="title">{quest.title}</span>
+    <span class="title">????</span>
     <span class="when">{unlockedAt(quest)}</span>
     {#if onscan !== undefined}
       <span class="provision">Tap to link a card</span>

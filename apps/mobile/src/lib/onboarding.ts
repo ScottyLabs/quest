@@ -102,7 +102,7 @@ export const STEPS: Step[] = [
     title: "Collect Gemstones",
     body: [
       {
-        text: "From Mon 08/17 through Fri 08/21, the first 10 Challenges you complete (starting at noon) will each grant you a ",
+        text: "The first 10 Challenges you complete each day (starting at noon) will each grant you a ",
       },
       { text: "Gemstone", strong: true },
       { text: ", and one daily bonus Challenge will grant " },

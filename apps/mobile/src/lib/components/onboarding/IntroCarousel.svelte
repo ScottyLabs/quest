@@ -197,14 +197,29 @@
   }
 
   .media :global(img) {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    /* a native image drag swallows the pointerup that ends a swipe */
-    pointer-events: none;
-    user-select: none;
-    -webkit-user-drag: none;
-  }
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  /* a native image drag swallows the pointerup that ends a swipe */
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.claim {
+  width: 140px;
+  height: 160px;
+}
+
+.gem {
+  width: 115px;
+  height: 115px;
+}
+
+.cup {
+  width: 150px;
+  height: 150px;
+}
 
   .copy {
     display: flex;

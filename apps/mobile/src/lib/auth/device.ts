@@ -49,6 +49,16 @@ export function devicePublicKey(): Promise<string> {
   return cached;
 }
 
+export async function resetDeviceKey(): Promise<void> {
+  cached = null;
+
+  try {
+    await CryptoApi.deleteKey({ tag: KEY_TAG, algorithm: "ecdsa" });
+  } catch (error) {
+    console.error("device key reset failed", error);
+  }
+}
+
 async function sign(message: string): Promise<Uint8Array> {
   const { signature } = await CryptoApi.sign({ tag: KEY_TAG, data: message });
 

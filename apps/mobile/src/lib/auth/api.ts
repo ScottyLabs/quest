@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 
 import type { components } from "$lib/api/schema";
-import { deviceProof, devicePublicKey, signChallenge } from "./device";
+import { deviceProof, devicePublicKey, resetDeviceKey, signChallenge } from "./device";
 import { AuthError } from "./types";
 import type { AuthErrorCode, QuestUser } from "./types";
 
@@ -112,7 +112,7 @@ function parseUser(raw: UserBody | undefined): QuestUser {
   };
 }
 
-export async function loginTicket(): Promise<string> {
+async function attest(): Promise<Response> {
   const challenge = await send("/auth/challenge", null);
   if (!challenge.ok) throw new AuthError(await responseError(challenge));
 
@@ -121,7 +121,7 @@ export async function loginTicket(): Promise<string> {
     throw new AuthError("nonce_invalid", "challenge carried no nonce");
   }
 
-  const response = await send("/auth/device", null, {
+  return await send("/auth/device", null, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
@@ -130,6 +130,16 @@ export async function loginTicket(): Promise<string> {
       signature: await signChallenge(nonce),
     }),
   });
+}
+
+export async function loginTicket(): Promise<string> {
+  let response = await attest();
+
+  if (response.status === 401) {
+    await resetDeviceKey();
+    response = await attest();
+  }
+
   if (!response.ok) throw new AuthError(await responseError(response));
 
   const ticket = (await readJson<TicketBody>(response))?.ticket;

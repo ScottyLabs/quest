@@ -10,6 +10,7 @@ pub struct Model {
     pub andrew_id: String,
     pub dorm: Option<Dorm>,
     pub anonymous: bool,
+    pub player: bool,
     pub created_at: DateTimeWithTimeZone,
 }
 

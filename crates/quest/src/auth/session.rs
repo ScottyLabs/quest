@@ -24,6 +24,8 @@ pub struct SessionUser {
     #[serde(default)]
     pub groups: Vec<String>,
     pub admin: bool,
+    #[serde(default)]
+    pub first_year: bool,
 }
 
 impl SessionUser {

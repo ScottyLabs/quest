@@ -1,6 +1,6 @@
 <script lang="ts">
   import { untrack } from "svelte";
-  import type { Order } from "$lib/api/client";
+  import type { OrderView } from "$lib/api/client";
   import { api, message, unwrap } from "$lib/api/client";
   import Button from "$lib/components/Button.svelte";
   import Chip from "$lib/components/Chip.svelte";
@@ -21,7 +21,7 @@
     onfilters,
     onreload,
   }: {
-    orders: Order[];
+    orders: OrderView[];
     loading: boolean;
     fault: string | null;
     filters: Filters;
@@ -33,7 +33,7 @@
 
   let text = $state(untrack(() => filters.andrew));
   let busy = $state<number | null>(null);
-  let refunding = $state<Order | null>(null);
+  let refunding = $state<OrderView | null>(null);
   let timer: number | undefined;
 
   $effect(() => () => clearTimeout(timer));
@@ -52,11 +52,11 @@
     return value === "false" ? false : null;
   }
 
-  function handedOn(order: Order): string | null {
+  function handedOn(order: OrderView): string | null {
     return order.received_item_date ?? null;
   }
 
-  async function deliver(order: Order, delivered: boolean): Promise<void> {
+  async function deliver(order: OrderView, delivered: boolean): Promise<void> {
     busy = order.purchase_id;
 
     try {
@@ -158,7 +158,19 @@
             <tr>
               <td class="id">{order.purchase_id}</td>
               <td>{order.andrew_id}</td>
-              <td>{order.item}</td>
+              <td>
+                {order.item}
+                {#if order.options.length > 0}
+                  <span class="picks">
+                    {#each order.options as pick, index (index)}
+                      <span class="pick">
+                        <span class="key">{pick.label}</span>
+                        <span class="val">{pick.value}</span>
+                      </span>
+                    {/each}
+                  </span>
+                {/if}
+              </td>
               <td class="figure">{order.quantity}</td>
               <td class="figure">{order.cost}</td>
               <td class="figure strong">{order.cost * order.quantity}</td>
@@ -275,5 +287,37 @@
     display: flex;
     gap: 6px;
     justify-content: flex-end;
+  }
+
+  .picks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+  }
+
+  .pick {
+    display: inline-flex;
+    gap: 5px;
+    align-items: baseline;
+    max-width: 34ch;
+    padding: 1px 8px;
+    border-radius: var(--radius);
+    background: var(--tertiary-normal);
+    font-size: 11px;
+    line-height: 1.6;
+  }
+
+  .key {
+    flex: none;
+    color: var(--tertiary);
+  }
+
+  .val {
+    min-width: 0;
+    color: var(--ink-shade);
+    font-weight: 800;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 </style>

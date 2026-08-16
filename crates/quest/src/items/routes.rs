@@ -7,6 +7,7 @@ use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
+use super::options::{self, Choice};
 use super::{Items, Ledger, Receipt, Stocked};
 use crate::auth::extract::CurrentUser;
 use crate::auth::{AuthErrBody, AuthError};
@@ -22,24 +23,53 @@ pub fn router(items: Items) -> OpenApiRouter {
 }
 
 #[derive(Serialize, ToSchema)]
+pub struct OptionView {
+    id: String,
+    label: String,
+    kind: String,
+    choices: Vec<String>,
+    required: bool,
+}
+
+impl From<entity::item_option::Model> for OptionView {
+    fn from(row: entity::item_option::Model) -> Self {
+        Self {
+            id: row.id.to_string(),
+            label: row.label.clone(),
+            kind: options::kind_name(row.kind).to_owned(),
+            choices: options::choices_of(&row),
+            required: row.required,
+        }
+    }
+}
+
+#[derive(Serialize, ToSchema)]
 pub struct ItemView {
     id: String,
     name: String,
     description: String,
     cost: i64,
     image_url: Option<String>,
+    background_url: Option<String>,
+    icon_tint: Option<String>,
+    icon_shade: Option<String>,
     stock: i64,
+    options: Vec<OptionView>,
 }
 
-impl From<Stocked> for ItemView {
-    fn from(row: Stocked) -> Self {
+impl ItemView {
+    fn build(row: Stocked, options: Vec<OptionView>) -> Self {
         Self {
             id: row.id.to_string(),
             name: row.name,
             description: row.description,
             cost: row.cost,
             image_url: row.image_url,
+            background_url: row.background_url,
+            icon_tint: row.icon_tint,
+            icon_shade: row.icon_shade,
             stock: row.stock,
+            options,
         }
     }
 }
@@ -65,11 +95,16 @@ async fn list(
     State(items): State<Items>,
     CurrentUser(_user): CurrentUser,
 ) -> Result<Json<Shelf>, AuthError> {
-    let views: Vec<ItemView> = items
-        .list()
-        .await?
+    let rows = items.list().await?;
+    let ids: Vec<Uuid> = rows.iter().map(|row| row.id).collect();
+    let mut defined = items.options_of(&ids).await?;
+
+    let views: Vec<ItemView> = rows
         .into_iter()
-        .map(ItemView::from)
+        .map(|row| {
+            let mine = defined.remove(&row.id).unwrap_or_default();
+            ItemView::build(row, mine.into_iter().map(OptionView::from).collect())
+        })
         .collect();
 
     Ok(Json(Shelf {
@@ -79,13 +114,27 @@ async fn list(
 }
 
 #[derive(Deserialize, ToSchema)]
+struct PickBody {
+    option_id: String,
+    value: String,
+}
+
+#[derive(Deserialize, ToSchema)]
 struct BuyBody {
     #[serde(default = "one")]
     quantity: i64,
+    #[serde(default)]
+    options: Vec<PickBody>,
 }
 
 fn one() -> i64 {
     1
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct PickedView {
+    label: String,
+    value: String,
 }
 
 #[derive(Serialize, ToSchema)]
@@ -98,6 +147,7 @@ struct Purchased {
     spent: i64,
     stock: i64,
     scottycoins: i64,
+    options: Vec<PickedView>,
 }
 
 impl From<Receipt> for Purchased {
@@ -111,6 +161,14 @@ impl From<Receipt> for Purchased {
             spent: receipt.spent,
             stock: receipt.stock,
             scottycoins: receipt.scottycoins,
+            options: receipt
+                .chosen
+                .into_iter()
+                .map(|pick| PickedView {
+                    label: pick.label,
+                    value: pick.value,
+                })
+                .collect(),
         }
     }
 }
@@ -138,15 +196,26 @@ async fn buy(
     body: Result<Json<BuyBody>, JsonRejection>,
 ) -> Result<Json<Purchased>, AuthError> {
     let id = Uuid::parse_str(&id).map_err(|_| AuthError::BadRequest("item_id_invalid"))?;
-    let quantity = match body {
-        Ok(Json(body)) => body.quantity,
-        Err(JsonRejection::MissingJsonContentType(_)) => 1,
+    let (quantity, picks) = match body {
+        Ok(Json(body)) => (body.quantity, body.options),
+        Err(JsonRejection::MissingJsonContentType(_)) => (1, Vec::new()),
         Err(_) => return Err(AuthError::BadRequest("purchase_body_invalid")),
     };
 
+    let mut chosen = Vec::with_capacity(picks.len());
+    for pick in picks {
+        chosen.push(Choice {
+            option_id: Uuid::parse_str(&pick.option_id)
+                .map_err(|_| AuthError::BadRequest("option_id_invalid"))?,
+            value: pick.value,
+        });
+    }
+
     let row = users.row(&user).await?;
 
-    Ok(Json(items.purchase(row.id, id, quantity).await?.into()))
+    Ok(Json(
+        items.purchase(row.id, id, quantity, &chosen).await?.into(),
+    ))
 }
 
 #[derive(Serialize, ToSchema)]
@@ -156,18 +225,22 @@ struct PurchaseView {
     name: String,
     quantity: i64,
     cost: i64,
+    image_url: Option<String>,
     delivered: bool,
+    options: Vec<PickedView>,
 }
 
-impl From<Ledger> for PurchaseView {
-    fn from(row: Ledger) -> Self {
+impl PurchaseView {
+    fn build(row: Ledger, options: Vec<PickedView>) -> Self {
         Self {
             purchase_id: row.purchase_id,
             item_id: row.item_id.to_string(),
             name: row.name,
             quantity: row.quantity,
             cost: row.cost,
+            image_url: row.image_url,
             delivered: row.delivered,
+            options,
         }
     }
 }
@@ -193,13 +266,25 @@ async fn mine(
     CurrentUser(user): CurrentUser,
 ) -> Result<Json<Wallet>, AuthError> {
     let row = users.row(&user).await?;
+    let rows = items.purchases(row.id).await?;
+    let ids: Vec<i64> = rows.iter().map(|entry| entry.purchase_id).collect();
+    let mut picked = items.picks_of(&ids).await?;
 
     Ok(Json(Wallet {
-        purchases: items
-            .purchases(row.id)
-            .await?
+        purchases: rows
             .into_iter()
-            .map(PurchaseView::from)
+            .map(|entry| {
+                let mine = picked.remove(&entry.purchase_id).unwrap_or_default();
+                PurchaseView::build(
+                    entry,
+                    mine.into_iter()
+                        .map(|pick| PickedView {
+                            label: pick.label,
+                            value: pick.value,
+                        })
+                        .collect(),
+                )
+            })
             .collect(),
     }))
 }

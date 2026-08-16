@@ -41,10 +41,10 @@
     justify-content: center;
     gap: calc(10 * var(--u));
     padding: calc(8 * var(--u)) calc(10 * var(--u));
-    border: 1px solid #676767;
+    border: 1px solid var(--trade-control);
     border-radius: calc(35 * var(--u));
     background: var(--highlight);
-    filter: drop-shadow(0 calc(4 * var(--u)) 0 #676767);
+    filter: drop-shadow(0 calc(4 * var(--u)) 0 var(--trade-control));
   }
 
   .step {
@@ -67,11 +67,12 @@
   .step img {
     display: block;
     width: calc(16 * var(--u));
+    height: auto;
   }
 
   .value {
     min-width: calc(24 * var(--u));
-    color: var(--accent);
+    color: var(--primary);
     font-size: calc(15 * var(--u));
     font-weight: 600;
     text-align: center;

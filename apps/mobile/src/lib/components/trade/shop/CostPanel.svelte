@@ -10,7 +10,7 @@
     <CoinAmount amount={total} size={20} />
   </div>
   <div class="band low">
-    <span class="label lean">Remaining ScottyCoins:</span>
+    <span class="label lean">ScottyCoins After Purchase:</span>
     <CoinAmount amount={remaining} size={20} before />
   </div>
 </div>
@@ -19,7 +19,7 @@
   .panel {
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow: clip;
     width: 100%;
     border-radius: calc(19 * var(--u));
     color: var(--highlight);
@@ -33,12 +33,12 @@
 
   .top {
     padding: 0 calc(21 * var(--u));
-    background: #9b0113;
+    background: var(--trade-total);
   }
 
   .low {
     padding: calc(2 * var(--u)) calc(12 * var(--u));
-    background: #730c1a;
+    background: var(--trade-after);
   }
 
   .label {

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ItemTile from "../ItemTile.svelte";
   import PricePill from "./PricePill.svelte";
   import type { Offer } from "$lib/trade.svelte";
 
@@ -7,12 +8,13 @@
   const gone = $derived(offer.stock <= 0);
 </script>
 
-<button class="row" class:gone type="button" disabled={gone} onclick={() => onpick?.(offer)}>
+<button class="row" class:gone type="button" onclick={() => onpick?.(offer)}>
   <span class="thumb">
-    <span
-      class="tile"
-      style:background-image={offer.art === null ? null : `url(${offer.art})`}
-    ></span>
+    <ItemTile
+      art={offer.art}
+      size={54.551}
+      face={gone ? "var(--trade-sold-tile)" : (offer.tint ?? "var(--skibo)")}
+    />
   </span>
 
   <span class="copy">
@@ -31,8 +33,6 @@
 
 <style>
   .row {
-    --skibo: #9a1023;
-
     display: flex;
     align-items: center;
     width: 100%;
@@ -51,8 +51,7 @@
   }
 
   .gone {
-    background: #e0e0e0;
-    cursor: default;
+    background: var(--trade-sold);
   }
 
   .thumb {
@@ -61,22 +60,6 @@
     width: calc(61.811 * var(--u));
     height: calc(57.872 * var(--u));
     place-items: center;
-  }
-
-  .tile {
-    width: calc(54.551 * var(--u));
-    height: calc(51.269 * var(--u));
-    border-radius: calc(12 * var(--u));
-    background-color: var(--skibo);
-    background-position: center;
-    background-size: cover;
-    rotate: -7.57deg;
-    transform: skewX(1.1deg);
-  }
-
-  .gone .tile {
-    background-color: #808080;
-    background-image: none;
   }
 
   .copy {

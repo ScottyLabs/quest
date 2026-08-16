@@ -9,10 +9,11 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::assets::{AssetError, Assets};
-use super::trade::{Desk, Fulfilled, Order, PassHolder};
+use super::trade::{Desk, DeskPickView, Fulfilled, OrderView, PassHolder};
 use super::{Browse, Column, Outcome, Page, Portal, PortalErrBody, PortalError, Script};
 use crate::access::{Access, CAPABILITIES, Capability, Level, Role};
 use crate::auth::AuthError;
+use crate::items::options::{self, Choice, Spec};
 use crate::items::{Items, Receipt, Refunded, Stocked};
 use crate::passes::Passes;
 
@@ -43,6 +44,7 @@ pub fn router(
         .routes(routes!(catalog_reload))
         .routes(routes!(upload, library, drop_asset))
         .routes(routes!(trade_items))
+        .routes(routes!(trade_options))
         .routes(routes!(trade_pass))
         .routes(routes!(trade_orders, trade_buy))
         .routes(routes!(trade_fulfil))
@@ -413,24 +415,53 @@ async fn catalog_reload(
 }
 
 #[derive(Serialize, ToSchema)]
+pub struct ShopOption {
+    pub id: Uuid,
+    pub label: String,
+    pub kind: String,
+    pub choices: Vec<String>,
+    pub required: bool,
+}
+
+impl From<entity::item_option::Model> for ShopOption {
+    fn from(row: entity::item_option::Model) -> Self {
+        Self {
+            id: row.id,
+            label: row.label.clone(),
+            kind: options::kind_name(row.kind).to_owned(),
+            choices: options::choices_of(&row),
+            required: row.required,
+        }
+    }
+}
+
+#[derive(Serialize, ToSchema)]
 pub struct ShopItem {
     pub id: Uuid,
     pub name: String,
     pub description: String,
     pub cost: i64,
     pub image_url: Option<String>,
+    pub background_url: Option<String>,
+    pub icon_tint: Option<String>,
+    pub icon_shade: Option<String>,
     pub stock: i64,
+    pub options: Vec<ShopOption>,
 }
 
-impl From<Stocked> for ShopItem {
-    fn from(item: Stocked) -> Self {
+impl ShopItem {
+    fn build(item: Stocked, options: Vec<ShopOption>) -> Self {
         Self {
             id: item.id,
             name: item.name,
             description: item.description,
             cost: item.cost,
             image_url: item.image_url,
+            background_url: item.background_url,
+            icon_tint: item.icon_tint,
+            icon_shade: item.icon_shade,
             stock: item.stock,
+            options,
         }
     }
 }
@@ -451,7 +482,80 @@ async fn trade_items(
     access.require(Capability::TradeDesk)?;
 
     let items = console.items.list().await?;
-    Ok(Json(items.into_iter().map(ShopItem::from).collect()))
+    let ids: Vec<Uuid> = items.iter().map(|item| item.id).collect();
+    let mut defined = console.items.options_of(&ids).await?;
+
+    Ok(Json(
+        items
+            .into_iter()
+            .map(|item| {
+                let mine = defined.remove(&item.id).unwrap_or_default();
+                ShopItem::build(item, mine.into_iter().map(ShopOption::from).collect())
+            })
+            .collect(),
+    ))
+}
+
+#[derive(Deserialize, ToSchema)]
+pub struct OptionBody {
+    pub label: String,
+    pub kind: String,
+    #[serde(default)]
+    pub choices: Vec<String>,
+    #[serde(default = "yes")]
+    pub required: bool,
+}
+
+fn yes() -> bool {
+    true
+}
+
+#[derive(Deserialize, ToSchema)]
+pub struct OptionsBody {
+    pub options: Vec<OptionBody>,
+}
+
+#[utoipa::path(
+    put,
+    path = "/portal/trade/items/{id}/options",
+    tag = "portal",
+    params(("id" = Uuid, Path, description = "Item id")),
+    request_body = OptionsBody,
+    responses(
+        (status = OK, body = Vec<ShopOption>),
+        (status = BAD_REQUEST, body = PortalErrBody),
+        (status = FORBIDDEN, body = PortalErrBody),
+        (status = NOT_FOUND, body = PortalErrBody),
+    ),
+)]
+async fn trade_options(
+    State(console): State<Console>,
+    access: Access,
+    Path(id): Path<Uuid>,
+    payload: Result<Json<OptionsBody>, JsonRejection>,
+) -> Result<Json<Vec<ShopOption>>, PortalError> {
+    access.require(Capability::TradeDesk)?;
+    access.require_table("item_option", Level::Edit)?;
+
+    let payload = body(payload)?;
+
+    let mut specs = Vec::with_capacity(payload.options.len());
+    for spec in payload.options {
+        let kind = options::kind_from(&spec.kind).ok_or(PortalError::Auth(
+            AuthError::BadRequest("option_kind_unknown"),
+        ))?;
+
+        specs.push(Spec {
+            label: spec.label,
+            kind,
+            choices: spec.choices,
+            required: spec.required,
+        });
+    }
+
+    let saved = console.items.set_options(id, specs).await?;
+
+    Ok(Json(saved.into_iter().map(ShopOption::from).collect()))
 }
 
 #[derive(Deserialize, ToSchema)]
@@ -515,7 +619,6 @@ async fn trade_pass(
 #[derive(Deserialize, ToSchema, utoipa::IntoParams)]
 pub struct UploadQuery {
     pub kind: String,
-    /// Original file name, kept for display only.
     pub name: Option<String>,
 }
 
@@ -603,13 +706,9 @@ pub struct AssetView {
 #[derive(Serialize, ToSchema)]
 pub struct Library {
     pub assets: Vec<AssetView>,
-    /// Prefixes an upload may be filed under.
     pub kinds: Vec<String>,
-    /// Content types the uploader accepts.
     pub accepts: Vec<String>,
-    /// Largest upload the backend will take, in bytes.
     pub max_bytes: u64,
-    /// False when the CDN credentials are missing, so uploads will refuse.
     pub ready: bool,
 }
 
@@ -711,7 +810,7 @@ pub struct OrderQuery {
     tag = "portal",
     params(OrderQuery),
     responses(
-        (status = OK, body = Vec<Order>),
+        (status = OK, body = Vec<OrderView>),
         (status = FORBIDDEN, body = PortalErrBody),
     ),
 )]
@@ -719,14 +818,41 @@ async fn trade_orders(
     State(console): State<Console>,
     access: Access,
     Query(query): Query<OrderQuery>,
-) -> Result<Json<Vec<Order>>, PortalError> {
+) -> Result<Json<Vec<OrderView>>, PortalError> {
     access.require(Capability::TradeDesk)?;
 
+    let orders = console
+        .desk
+        .orders(query.andrew_id.as_deref(), query.delivered, query.limit)
+        .await?;
+
+    let ids: Vec<i64> = orders.iter().map(|order| order.purchase_id).collect();
+    let mut picked = console.items.picks_of(&ids).await?;
+
     Ok(Json(
-        console
-            .desk
-            .orders(query.andrew_id.as_deref(), query.delivered, query.limit)
-            .await?,
+        orders
+            .into_iter()
+            .map(|order| {
+                let mine = picked.remove(&order.purchase_id).unwrap_or_default();
+                OrderView {
+                    purchase_id: order.purchase_id,
+                    user_id: order.user_id,
+                    andrew_id: order.andrew_id,
+                    item_id: order.item_id,
+                    item: order.item,
+                    cost: order.cost,
+                    quantity: order.quantity,
+                    received_item_date: order.received_item_date,
+                    options: mine
+                        .into_iter()
+                        .map(|pick| DeskPickView {
+                            label: pick.label,
+                            value: pick.value,
+                        })
+                        .collect(),
+                }
+            })
+            .collect(),
     ))
 }
 
@@ -735,6 +861,14 @@ pub struct DeskSaleBody {
     pub andrew_id: String,
     pub item_id: Uuid,
     pub quantity: i64,
+    #[serde(default)]
+    pub options: Vec<DeskPickBody>,
+}
+
+#[derive(Deserialize, ToSchema)]
+pub struct DeskPickBody {
+    pub option_id: Uuid,
+    pub value: String,
 }
 
 #[derive(Serialize, ToSchema)]
@@ -747,6 +881,7 @@ pub struct Bought {
     pub spent: i64,
     pub stock: i64,
     pub scottycoins: i64,
+    pub options: Vec<DeskPickView>,
 }
 
 impl From<Receipt> for Bought {
@@ -760,6 +895,14 @@ impl From<Receipt> for Bought {
             spent: receipt.spent,
             stock: receipt.stock,
             scottycoins: receipt.scottycoins,
+            options: receipt
+                .chosen
+                .into_iter()
+                .map(|pick| DeskPickView {
+                    label: pick.label,
+                    value: pick.value,
+                })
+                .collect(),
         }
     }
 }
@@ -785,9 +928,18 @@ async fn trade_buy(
 
     let payload = body(payload)?;
     let user = console.portal.user_id(&payload.andrew_id).await?;
+    let chosen: Vec<Choice> = payload
+        .options
+        .into_iter()
+        .map(|pick| Choice {
+            option_id: pick.option_id,
+            value: pick.value,
+        })
+        .collect();
+
     let receipt = console
         .items
-        .purchase(user, payload.item_id, payload.quantity)
+        .purchase(user, payload.item_id, payload.quantity, &chosen)
         .await?;
 
     Ok(Json(receipt.into()))

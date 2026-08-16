@@ -38,6 +38,17 @@
   import { handleTap, tapScan } from "$lib/tap";
   import { closeTapFail, tapfail } from "$lib/tapfail.svelte";
   import { hideTicket, ticket } from "$lib/ticket.svelte";
+  import {
+    closeBought,
+    closeOffer,
+    closeRefund,
+    sheet,
+    showBought,
+  } from "$lib/trade.svelte";
+  import { refresh, wallet } from "$lib/wallet.svelte";
+  import ItemSheet from "$lib/components/trade/shop/ItemSheet.svelte";
+  import PurchasedDialog from "$lib/components/trade/shop/PurchasedDialog.svelte";
+  import RefundDialog from "$lib/components/trade/receipt/RefundDialog.svelte";
   import { FALLBACK, theme, vars } from "$lib/theme";
   import { active } from "$lib/theme.svelte";
 
@@ -223,6 +234,33 @@
 
   {#if celebration.current}
     <TapResultSheet cleared={celebration.current} onclose={closeCelebration} />
+  {/if}
+
+  {#if sheet.picked}
+    <ItemSheet
+      offer={sheet.picked}
+      balance={wallet.scottycoins}
+      onclose={closeOffer}
+      onbought={(done) => {
+        showBought(done);
+        void refresh();
+      }}
+    />
+  {/if}
+
+  {#if sheet.bought}
+    <PurchasedDialog bought={sheet.bought} onclose={closeBought} />
+  {/if}
+
+  {#if sheet.refunding}
+    <RefundDialog
+      row={sheet.refunding}
+      onclose={closeRefund}
+      ondone={() => {
+        closeRefund();
+        void refresh();
+      }}
+    />
   {/if}
 
   {#if ticket.current}

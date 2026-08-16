@@ -9,6 +9,8 @@
   import RowEditor from "$lib/components/RowEditor.svelte";
   import Spinner from "$lib/components/Spinner.svelte";
   import ImagePicker from "$lib/components/trade/ImagePicker.svelte";
+  import ItemPreview from "$lib/components/trade/ItemPreview.svelte";
+  import OptionEditor from "$lib/components/trade/OptionEditor.svelte";
   import { me } from "$lib/identity.svelte";
   import { announce } from "$lib/notice.svelte";
   import { listRows } from "$lib/rows";
@@ -41,11 +43,15 @@
   const mayCreate = $derived(me.allows("items", "full"));
   const mayUpload = $derived(mayEdit && me.can("assets"));
   const level = $derived(me.level("items"));
+  const mayReadOptions = $derived(me.allows("item_option", "read"));
+  const mayEditOptions = $derived(me.allows("item_option", "edit"));
 
   let sort = $state<Sort>("name");
   let rows = $state<Row[]>([]);
   let editing = $state<Row | null>(null);
   let creating = $state(false);
+  let tuning = $state<string | null>(null);
+  let peeking = $state<string | null>(null);
 
   const sorted = $derived(
     [...items].sort((left, right) => {
@@ -57,6 +63,8 @@
   );
 
   const byId = $derived(new Map(rows.map((row) => [String(row["id"] ?? ""), row])));
+  const tuned = $derived(items.find((entry) => entry.id === tuning) ?? null);
+  const peeked = $derived(items.find((entry) => entry.id === peeking) ?? null);
 
   async function loadRows(): Promise<void> {
     try {
@@ -92,6 +100,12 @@
 
   function readSort(value: string): Sort {
     return value === "cost" || value === "stock" ? value : "name";
+  }
+
+  function optionsLabel(entry: ShopItem): string {
+    const verb = mayEditOptions ? "Options" : "See options";
+
+    return entry.options.length === 0 ? verb : `${verb} \u00b7 ${entry.options.length}`;
   }
 </script>
 
@@ -129,9 +143,12 @@
         {@const row = byId.get(item.id)}
         <article class="card">
           <div class="shot">
+            {#if item.background_url}
+              <img class="bg" src={item.background_url} alt="" loading="lazy" />
+            {/if}
             {#if item.image_url}
-              <img src={item.image_url} alt={item.name} loading="lazy" />
-            {:else}
+              <img class="icon" src={item.image_url} alt={item.name} loading="lazy" />
+            {:else if !item.background_url}
               <span class="void">No image</span>
             {/if}
           </div>
@@ -144,11 +161,33 @@
             <Chip tone={toneFor(item.stock)}>{labelFor(item.stock)}</Chip>
           </div>
 
-          {#if mayEdit}
-            <div class="act">
-              {#if mayUpload}
-                <ImagePicker {item} onsaved={saved} />
-              {/if}
+          {#if item.options.length > 0}
+            <ul class="opts">
+              {#each item.options as option (option.id)}
+                <li>
+                  <Chip tone={option.required ? "accent" : "neutral"}>{option.label}</Chip>
+                </li>
+              {/each}
+            </ul>
+          {/if}
+
+          {#if mayEdit && mayUpload}
+            <div class="pickers">
+              <ImagePicker {item} slot="icon" onsaved={saved} />
+              <ImagePicker {item} slot="background" onsaved={saved} />
+            </div>
+          {/if}
+
+          <div class="act">
+            <Button size="small" tone="ghost" onclick={() => (peeking = item.id)}>Preview</Button>
+
+            {#if mayReadOptions}
+              <Button size="small" tone="ghost" onclick={() => (tuning = item.id)}>
+                {optionsLabel(item)}
+              </Button>
+            {/if}
+
+            {#if mayEdit}
               <Button
                 size="small"
                 tone="line"
@@ -158,8 +197,8 @@
               >
                 Edit
               </Button>
-            </div>
-          {/if}
+            {/if}
+          </div>
         </article>
       {/each}
     </div>
@@ -190,6 +229,19 @@
   />
 {/if}
 
+{#if tuned !== null}
+  <OptionEditor
+    item={tuned}
+    editable={mayEditOptions}
+    onclose={() => (tuning = null)}
+    onsaved={onchanged}
+  />
+{/if}
+
+{#if peeked !== null}
+  <ItemPreview item={peeked} onclose={() => (peeking = null)} />
+{/if}
+
 <style>
   .tools {
     display: flex;
@@ -216,6 +268,7 @@
 
   .shot {
     display: grid;
+    position: relative;
     height: 8rem;
     border-radius: var(--radius);
     background: var(--tertiary-normal);
@@ -223,10 +276,26 @@
     place-items: center;
   }
 
-  .shot img {
+  .shot .bg {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+
+  .shot .icon {
+    position: relative;
+    width: 62%;
+    height: 62%;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 6px rgb(0 0 0 / 0.28));
+  }
+
+  .pickers {
+    display: grid;
+    gap: 6px;
+    margin: 0 0 8px;
   }
 
   .void {
@@ -274,8 +343,18 @@
     background: var(--coin);
   }
 
+  .opts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
   .act {
     display: flex;
+    gap: 6px;
     justify-content: flex-end;
   }
 </style>

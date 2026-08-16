@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Order, ShopItem, TableView } from "$lib/api/client";
+  import type { OrderView, ShopItem, TableView } from "$lib/api/client";
   import { api, message, unwrap } from "$lib/api/client";
   import Empty from "$lib/components/Empty.svelte";
   import OrdersTab from "$lib/components/trade/OrdersTab.svelte";
@@ -29,7 +29,7 @@
   let itemsFault = $state<string | null>(null);
   let itemsTable = $state<TableView | null>(null);
 
-  let orders = $state<Order[]>([]);
+  let orders = $state<OrderView[]>([]);
   let ordersBusy = $state(true);
   let ordersFault = $state<string | null>(null);
   let filters = $state<Filters>({ andrew: "", delivered: false, limit: 100 });

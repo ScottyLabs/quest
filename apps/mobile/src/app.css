@@ -40,6 +40,17 @@
   --quest-done-ink: #54b751;
   --quest-coin: #fdb813;
 
+  --skibo: #9a1023;
+  --trade-nav: #831421;
+  --trade-sold: #e0e0e0;
+  --trade-sold-tile: #808080;
+  --trade-pill: #f0f0f0;
+  --trade-pill-shade: #d7d7d7;
+  --trade-total: #9b0113;
+  --trade-after: #730c1a;
+  --trade-buy-shade: #360101;
+  --trade-control: #676767;
+
   --safe-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
   --safe-right: var(--safe-area-inset-right, env(safe-area-inset-right, 0px));
   --safe-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));

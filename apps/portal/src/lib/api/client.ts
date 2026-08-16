@@ -71,7 +71,7 @@ export type PortalColumn = Schemas["Column"];
 export type Page = Schemas["Page"];
 export type Outcome = Schemas["Outcome"];
 export type Written = Schemas["Written"];
-export type Order = Schemas["Order"];
+export type OrderView = Schemas["OrderView"];
 export type ShopItem = Schemas["ShopItem"];
 export type Bought = Schemas["Bought"];
 export type GaveBack = Schemas["GaveBack"];
@@ -122,4 +122,16 @@ export function message(error: unknown): string {
   }
 
   return error instanceof Error ? error.message : "Something went wrong.";
+}
+
+export type ShopOption = Schemas["ShopOption"];
+export type OptionBody = Schemas["OptionBody"];
+
+export async function setItemOptions(id: string, options: OptionBody[]): Promise<ShopOption[]> {
+  return unwrap(
+    await api.PUT("/api/portal/trade/items/{id}/options", {
+      params: { path: { id } },
+      body: { options },
+    }),
+  );
 }

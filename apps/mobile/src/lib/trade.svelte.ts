@@ -18,6 +18,12 @@ export function openTab(id: TradeTab): void {
   tab.id = id;
 }
 
+export type ItemOption = components["schemas"]["OptionView"];
+
+export type Answer = components["schemas"]["PickBody"];
+
+export type Picked = components["schemas"]["PickedView"];
+
 export interface Offer {
   id: string;
   name: string;
@@ -25,6 +31,9 @@ export interface Offer {
   cost: number;
   stock: number;
   art: string | null;
+  backdrop: string | null;
+  shade: string | null;
+  options: ItemOption[];
 }
 
 type ItemView = components["schemas"]["ItemView"];
@@ -46,11 +55,20 @@ async function load(): Promise<Offer[]> {
     cost: row.cost,
     stock: row.stock,
     art: row.image_url ?? null,
+    backdrop: row.background_url ?? null,
+    shade: row.icon_shade ?? null,
+    options: row.options ?? [],
   }));
 }
 
 function revive(raw: unknown): Offer[] | null {
-  return Array.isArray(raw) ? (raw as Offer[]) : null;
+  if (!Array.isArray(raw)) return null;
+
+  return raw.map((row: Offer) => ({
+    ...row,
+    shade: row.shade ?? null,
+    options: Array.isArray(row.options) ? row.options : [],
+  }));
 }
 
 export const offers = new Resource<Offer[]>({
@@ -66,7 +84,9 @@ export interface Purchase {
   name: string;
   quantity: number;
   cost: number;
+  art: string | null;
   delivered: boolean;
+  options: Picked[];
 }
 
 type PurchaseView = components["schemas"]["PurchaseView"];
@@ -85,12 +105,19 @@ async function loadPurchases(): Promise<Purchase[]> {
     name: row.name,
     quantity: row.quantity,
     cost: row.cost,
+    art: row.image_url ?? null,
     delivered: row.delivered,
+    options: row.options ?? [],
   }));
 }
 
 function revivePurchases(raw: unknown): Purchase[] | null {
-  return Array.isArray(raw) ? (raw as Purchase[]) : null;
+  if (!Array.isArray(raw)) return null;
+
+  return raw.map((row: Purchase) => ({
+    ...row,
+    options: Array.isArray(row.options) ? row.options : [],
+  }));
 }
 
 export const purchases = new Resource<Purchase[]>({
@@ -111,10 +138,10 @@ export class TradeError extends Error {
   }
 }
 
-export async function purchase(id: string, quantity: number): Promise<Bought> {
+export async function purchase(id: string, quantity: number, options: Answer[]): Promise<Bought> {
   const { data, error, response } = await api.POST("/api/items/{id}/purchase", {
     params: { path: { id } },
-    body: { quantity },
+    body: { quantity, options },
   });
   if (!response.ok || !data) throw new TradeError(error?.error ?? "unknown");
 
@@ -131,4 +158,35 @@ export async function refund(id: number, quantity: number): Promise<void> {
   if (!response.ok) throw new TradeError(error?.error ?? "unknown");
 
   await Promise.all([offers.reload(), purchases.reload()]);
+}
+
+export const sheet = $state<{
+  picked: Offer | null;
+  bought: Bought | null;
+  refunding: Purchase | null;
+}>({ picked: null, bought: null, refunding: null });
+
+export function pickOffer(offer: Offer): void {
+  sheet.picked = offer;
+}
+
+export function closeOffer(): void {
+  sheet.picked = null;
+}
+
+export function showBought(done: Bought): void {
+  sheet.picked = null;
+  sheet.bought = done;
+}
+
+export function closeBought(): void {
+  sheet.bought = null;
+}
+
+export function startRefund(row: Purchase): void {
+  sheet.refunding = row;
+}
+
+export function closeRefund(): void {
+  sheet.refunding = null;
 }

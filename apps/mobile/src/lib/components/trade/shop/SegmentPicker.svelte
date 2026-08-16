@@ -1,21 +1,27 @@
 <script lang="ts">
   let {
-    sizes,
+    label,
+    choices,
     value,
     onpick,
-  }: { sizes: readonly string[]; value: string; onpick: (size: string) => void } = $props();
+  }: {
+    label: string;
+    choices: readonly string[];
+    value: string;
+    onpick: (choice: string) => void;
+  } = $props();
 </script>
 
-<div class="control" role="group" aria-label="Size">
-  {#each sizes as size (size)}
+<div class="control" role="group" aria-label={label}>
+  {#each choices as choice (choice)}
     <button
       class="seg"
-      class:on={size === value}
+      class:on={choice === value}
       type="button"
-      aria-pressed={size === value}
-      onclick={() => onpick(size)}
+      aria-pressed={choice === value}
+      onclick={() => onpick(choice)}
     >
-      {size}
+      {choice}
     </button>
   {/each}
 </div>
@@ -28,10 +34,10 @@
     width: 100%;
     height: calc(35 * var(--u));
     padding: calc(2 * var(--u));
-    border: 1px solid #676767;
+    border: 1px solid var(--trade-control);
     border-radius: calc(8 * var(--u));
     background: var(--tertiary-normal);
-    filter: drop-shadow(0 calc(4 * var(--u)) 0 #676767);
+    filter: drop-shadow(0 calc(4 * var(--u)) 0 var(--trade-control));
   }
 
   .seg {
@@ -53,6 +59,6 @@
 
   .on {
     background: var(--highlight);
-    box-shadow: 0 calc(1 * var(--u)) calc(1 * var(--u)) rgb(0 0 0 / 0.16);
+    filter: drop-shadow(0 calc(1 * var(--u)) calc(1 * var(--u)) rgb(0 0 0 / 0.16));
   }
 </style>

@@ -20,6 +20,8 @@ import type { AuthPhase, QuestUser, Session } from "./types";
 
 const NATIVE_TARGET = "org.scottylabs.quest://oauth";
 
+const FALLBACK_TTL = 90 * 24 * 60 * 60;
+
 export type OpenUrl = (url: string) => void | Promise<void>;
 
 export interface LoginOptions {
@@ -32,6 +34,14 @@ export interface LogoutOptions {
   openUrl?: OpenUrl;
 }
 
+function pause(ms: number): Promise<void> {
+  const { promise, resolve } = Promise.withResolvers<void>();
+
+  setTimeout(resolve, ms);
+
+  return promise;
+}
+
 type Fragment = { id: string; expiresAt: number } | { error: AuthError };
 
 function parseFragment(hash: string): Fragment | null {
@@ -41,16 +51,20 @@ function parseFragment(hash: string): Fragment | null {
   if (failure !== null) return { error: new AuthError(errorCode(failure)) };
 
   const id = params.get("session");
-  const expiresIn = Number(params.get("expires_in"));
-  if (id === null || !Number.isFinite(expiresIn)) return null;
+  if (id === null) return null;
 
-  return { id, expiresAt: Date.now() + expiresIn * 1000 };
+  const raw = params.get("expires_in");
+  const expiresIn = raw === null ? NaN : Number(raw);
+  const window = Number.isFinite(expiresIn) && expiresIn > 0 ? expiresIn : FALLBACK_TTL;
+
+  return { id, expiresAt: Date.now() + window * 1000 };
 }
 
 class SessionStore {
   #session = $state<Session | null>(null);
   #phase = $state<AuthPhase>("restoring");
   #deviceOwned = $state(false);
+  #enrolled = $state(true);
   readonly #storage: SessionStorage = localSessionStorage;
   #adopting: { hash: string; user: Promise<QuestUser | null> } | null = null;
   #restored: Promise<void> | null = null;
@@ -58,6 +72,10 @@ class SessionStore {
 
   get user(): QuestUser | null {
     return this.#session?.user ?? null;
+  }
+
+  get enrolled(): boolean {
+    return this.#enrolled;
   }
 
   get phase(): AuthPhase {
@@ -84,14 +102,14 @@ class SessionStore {
       const stored = browser ? await this.#storage.load() : null;
 
       if (this.#session !== null) return;
-      if (!stored || stored.expiresAt <= Date.now()) {
+      if (!stored) {
         this.clear();
         return;
       }
 
       this.#session = stored;
       this.#phase = "signedIn";
-      await enrollDevice(stored.id).catch(() => false);
+      await this.#enrol(stored.id);
       await this.#recheck(stored);
     } catch (error) {
       console.error("session restore failed", error);
@@ -99,9 +117,39 @@ class SessionStore {
     }
   }
 
+  async #enrol(id: string): Promise<void> {
+    for (const attempt of [0, 1]) {
+      const enrolled = await enrollDevice(id).catch((error: unknown) => {
+        this.#blocked(error);
+        return false;
+      });
+
+      if (enrolled) {
+        this.#enrolled = true;
+        return;
+      }
+
+      if (this.#deviceOwned) break;
+      if (attempt === 0) await pause(400);
+    }
+
+    this.#enrolled = false;
+    console.error("device enrolment failed; signed in but the API will refuse this device");
+  }
+
   async #recheck(stored: Session): Promise<void> {
-    const fresh = await fetchStatus(stored.id).catch(() => null);
-    if (fresh === null) return;
+    let fresh: QuestUser | null;
+
+    try {
+      fresh = await fetchStatus(stored.id);
+    } catch {
+      return;
+    }
+
+    if (fresh === null) {
+      this.clear();
+      return;
+    }
 
     this.#adopt({ ...stored, user: fresh });
   }
@@ -125,7 +173,13 @@ class SessionStore {
     }
 
     try {
-      const user = await fetchStatus(parsed.id);
+      let user = await fetchStatus(parsed.id);
+
+      if (user === null) {
+        await this.#enrol(parsed.id);
+        user = await fetchStatus(parsed.id);
+      }
+
       if (user === null) throw new AuthError("unauthorized");
 
       this.#adopt({ id: parsed.id, expiresAt: parsed.expiresAt, user });
@@ -204,10 +258,6 @@ class SessionStore {
   get id(): string {
     const current = this.#session;
     if (!current) throw new AuthError("unauthorized", "not signed in");
-    if (current.expiresAt <= Date.now()) {
-      this.clear();
-      throw new AuthError("unauthorized", "session expired");
-    }
     return current.id;
   }
 
@@ -215,6 +265,7 @@ class SessionStore {
     this.#session = null;
     this.#phase = "signedOut";
     this.#deviceOwned = false;
+    this.#enrolled = true;
     void this.#storage.clear();
   }
 

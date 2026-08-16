@@ -52,9 +52,13 @@ impl Staff {
             .db
             .query_one_raw(Statement::from_sql_and_values(
                 DbBackend::Postgres,
-                r#"SELECT ST_Y("location"::geometry) AS "lat", ST_X("location"::geometry) AS "lon"
-                   FROM "challenge_card"
-                   WHERE "card_id" = $1 AND "location" IS NOT NULL"#,
+                r#"SELECT ST_Y("challenge"."location"::geometry) AS "lat",
+          ST_X("challenge"."location"::geometry) AS "lon"
+   FROM "challenge"
+   JOIN "challenge_card"
+     ON "challenge_card"."challenge_id" = "challenge"."id"
+   WHERE "challenge_card"."card_id" = $1
+     AND "challenge"."location" IS NOT NULL"#,
                 [card_id.into()],
             ))
             .await
@@ -118,9 +122,12 @@ impl Staff {
             .db
             .execute_raw(Statement::from_sql_and_values(
                 DbBackend::Postgres,
-                r#"UPDATE "challenge_card"
+                r#"UPDATE "challenge"
                    SET "location" = ST_SetSRID(ST_MakePoint($2, $3), 4326)::geography
-                   WHERE "card_id" = $1"#,
+                   WHERE "id" = (
+                        SELECT "challenge_id"
+                        FROM "challenge_card"
+                        WHERE "card_id" = $1)"#,
                 [card_id.into(), at.lon.into(), at.lat.into()],
             ))
             .await

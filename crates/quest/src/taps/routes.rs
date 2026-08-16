@@ -104,10 +104,10 @@ async fn register(
         return Err(taps.rejected(&attempt, shut).await);
     }
 
-    match proximity(challenge.location, fix.map(|fix| fix.at)) {
+    match proximity(challenge.location, attempt.fix) {
         Proximity::Accept => {}
         Proximity::Reject(reason) => {
-            let out = AuthError::BadRequest(reason.unwrap_or("tap_out_of_range"));
+            let out = AuthError::BadRequest(reason);
             return Err(taps.rejected(&attempt, out).await);
         }
     }

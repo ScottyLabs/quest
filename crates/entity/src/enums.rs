@@ -39,3 +39,14 @@ pub enum ChallengeCategory {
     #[sea_orm(string_value = "residence_relaxation")]
     ResidenceAndRelaxation,
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, EnumIter, DeriveActiveEnum)]
+#[sea_orm(rs_type = "String", db_type = "String(StringLen::N(255))")]
+pub enum OptionKind {
+    #[sea_orm(string_value = "select")]
+    Select,
+    #[sea_orm(string_value = "dropdown")]
+    Dropdown,
+    #[sea_orm(string_value = "text")]
+    Text,
+}

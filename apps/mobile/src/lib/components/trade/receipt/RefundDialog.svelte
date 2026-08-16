@@ -50,7 +50,7 @@
     tabindex="-1"
     onclick={(event) => event.stopPropagation()}
   >
-    <span class="thumb"><ItemThumb label={row.name} /></span>
+    <span class="thumb"><ItemThumb label={row.name} art={row.art} /></span>
 
     <div class="head">
       <img class="pencil" src="/img/trade/receipt-refund-pencil.svg" alt="" />
@@ -62,6 +62,17 @@
         <span class="what">{row.name}</span>
         <span class="count">x{row.quantity}</span>
       </p>
+
+      {#if row.options.length > 0}
+        <div class="picks">
+          {#each row.options as pick, index (index)}
+            <span class="tag">
+              <span class="key">{pick.label}</span>
+              <span class="val">{pick.value}</span>
+            </span>
+          {/each}
+        </div>
+      {/if}
 
       <p class="money">
         <span>for</span>
@@ -221,6 +232,39 @@
   .keep strong {
     color: var(--accent);
     font-weight: 800;
+  }
+
+  .picks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(6 * var(--u));
+    margin-top: calc(-2 * var(--u));
+  }
+
+  .tag {
+    display: inline-flex;
+    gap: calc(6 * var(--u));
+    align-items: baseline;
+    max-width: 100%;
+    padding: calc(3 * var(--u)) calc(10 * var(--u));
+    border-radius: calc(11 * var(--u));
+    background: var(--trade-pill);
+    font-size: calc(16 * var(--u));
+    font-weight: 600;
+    letter-spacing: calc(0.32 * var(--u));
+    line-height: calc(22 * var(--u));
+  }
+
+  .key {
+    flex: none;
+    color: var(--tertiary);
+  }
+
+  .val {
+    min-width: 0;
+    color: var(--secondary);
+    font-weight: 700;
+    word-break: break-word;
   }
 
   .pick {

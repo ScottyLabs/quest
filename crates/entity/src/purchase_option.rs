@@ -1,27 +1,27 @@
 use sea_orm::entity::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel)]
-#[sea_orm(table_name = "items")]
+#[sea_orm(table_name = "purchase_option")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
-    pub id: Uuid,
+    pub purchase_id: i64,
+    #[sea_orm(primary_key, auto_increment = false)]
+    pub position: i32,
     #[sea_orm(column_type = "Text")]
-    pub name: String,
+    pub label: String,
     #[sea_orm(column_type = "Text")]
-    pub description: String,
-    pub cost: i64,
-    #[sea_orm(column_type = "Text", nullable)]
-    pub image_url: Option<String>,
-    #[sea_orm(column_type = "Text", nullable)]
-    pub background_url: Option<String>,
-    #[sea_orm(column_type = "Text", nullable)]
-    pub icon_shade: Option<String>,
-    pub quantity_available: i64,
+    pub value: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(has_many = "super::purchases::Entity")]
+    #[sea_orm(
+        belongs_to = "super::purchases::Entity",
+        from = "Column::PurchaseId",
+        to = "super::purchases::Column::PurchaseId",
+        on_update = "NoAction",
+        on_delete = "Cascade"
+    )]
     Purchases,
 }
 

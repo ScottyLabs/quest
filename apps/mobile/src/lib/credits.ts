@@ -12,6 +12,7 @@ export interface CreditGroup {
   title: string;
   past?: boolean;
   members: Member[];
+  specialThanks?: string[];
 }
 
 export const INTRO: string = doc.intro;

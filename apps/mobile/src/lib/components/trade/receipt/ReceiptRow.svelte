@@ -8,10 +8,24 @@
   }: { row: Purchase; refundable: boolean; onrefund?: (row: Purchase) => void } = $props();
 
   const canRefund = $derived(refundable && !row.delivered);
+  const picks = $derived(row.options);
 </script>
 
-<div class="row" class:done={!canRefund}>
-  <span class="name">{row.name}</span>
+<div class="row" class:done={!canRefund} class:picked={picks.length > 0}>
+  <span class="main">
+    <span class="name">{row.name}</span>
+
+    {#if picks.length > 0}
+      <span class="picks">
+        {#each picks as pick, index (index)}
+          <span class="pick">
+            <span class="key">{pick.label}</span>
+            <span class="val">{pick.value}</span>
+          </span>
+        {/each}
+      </span>
+    {/if}
+  </span>
 
   <span class="tail">
     <span class="qty">x{row.quantity}</span>
@@ -45,13 +59,60 @@
     text-decoration-skip-ink: none;
   }
 
-  .name {
+  .row.picked {
+    align-items: flex-start;
+  }
+
+  .main {
+    display: flex;
     flex: 1;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .name {
     min-width: 0;
     padding: calc(4 * var(--u));
     font-size: calc(20 * var(--u));
     letter-spacing: calc(0.4 * var(--u));
     word-break: break-word;
+  }
+
+  .picks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(4 * var(--u)) calc(6 * var(--u));
+    padding: 0 calc(4 * var(--u)) calc(3 * var(--u));
+  }
+
+  .pick {
+    display: inline-flex;
+    gap: calc(5 * var(--u));
+    align-items: baseline;
+    max-width: 100%;
+    padding: calc(2 * var(--u)) calc(8 * var(--u));
+    border-radius: calc(9 * var(--u));
+    background: var(--trade-pill);
+    font-size: calc(14 * var(--u));
+    font-weight: 600;
+    letter-spacing: calc(0.28 * var(--u));
+    line-height: calc(19 * var(--u));
+  }
+
+  .key {
+    flex: none;
+    color: var(--tertiary);
+  }
+
+  .val {
+    min-width: 0;
+    color: var(--secondary);
+    font-weight: 700;
+    word-break: break-word;
+  }
+
+  .row.done .val {
+    color: var(--tertiary);
   }
 
   .tail {

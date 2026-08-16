@@ -78,7 +78,7 @@
     </div>
 
     <div class="hero">
-      <div class="media">
+      <div class:ticket-media={step.media.kind === "claim"} class="media">
         {#if step.media.kind === "coin"}
           <ScottyCoin size={MEDIA_BOX} />
         {:else if step.media.kind === "offer"}
@@ -196,6 +196,10 @@
     height: 163px;
   }
 
+  .media.ticket-media {
+  height: 230px;
+}
+
   .media :global(img) {
   max-width: 100%;
   max-height: 100%;
@@ -207,8 +211,8 @@
 }
 
 .claim {
-  width: 140px;
-  height: 160px;
+  width: auto;
+  height: 220px;
 }
 
 .gem {
@@ -217,8 +221,8 @@
 }
 
 .cup {
-  width: 150px;
-  height: 150px;
+  width: 160px;
+  height: 160px;
 }
 
   .copy {

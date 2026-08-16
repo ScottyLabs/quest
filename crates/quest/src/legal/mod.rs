@@ -13,11 +13,14 @@ static TERMS: LazyLock<String> =
 
 static SUPPORT: LazyLock<String> = LazyLock::new(|| page("Support", include_str!("support.md")));
 
+static FAQ: LazyLock<String> = LazyLock::new(|| page("FAQ", include_str!("faq.md")));
+
 pub fn router() -> Router {
     Router::new()
         .route("/privacy-policy", get(privacy))
         .route("/terms-of-service", get(terms))
         .route("/support", get(support))
+        .route("/faq", get(faq))
 }
 
 async fn privacy() -> Response {
@@ -30,6 +33,10 @@ async fn terms() -> Response {
 
 async fn support() -> Response {
     served(&SUPPORT)
+}
+
+async fn faq() -> Response {
+    served(&FAQ)
 }
 
 fn served(body: &'static str) -> Response {
@@ -78,6 +85,7 @@ fn page(title: &str, markdown: &str) -> String {
 <a href="/support">Support</a> &middot;
 <a href="/privacy-policy">Privacy Policy</a> &middot;
 <a href="/terms-of-service">Terms of Service</a>
+<a href="/faq">FAQ</a> &middot;
 </footer>
 </body>
 </html>

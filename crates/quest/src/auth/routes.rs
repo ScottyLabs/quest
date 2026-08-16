@@ -225,8 +225,8 @@ async fn login(
         .ok_or(AuthError::Upstream("session_no_id"))?
         .to_string();
 
-    if device.is_some() {
-        auth.sessions.bind(&andrew_id, &id).await?;
+    if let Some(device) = device.as_deref() {
+        auth.sessions.bind(&andrew_id, device, &id).await?;
     }
 
     Ok(handoff(
@@ -371,11 +371,16 @@ async fn logout(
     session: Session,
     CurrentUser(user): CurrentUser,
 ) -> Result<Json<LogoutResponse>, AuthError> {
+    let device = session.get::<String>(DEVICE_KEY).await.ok().flatten();
+
     session
         .flush()
         .await
         .map_err(|_| AuthError::Upstream("session_store_unavailable"))?;
-    auth.sessions.release(&user.andrew_id).await?;
+
+    if let Some(device) = device.as_deref() {
+        auth.sessions.release(&user.andrew_id, device).await?;
+    }
 
     Ok(Json(LogoutResponse {
         end_session_url: auth

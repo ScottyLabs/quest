@@ -180,6 +180,7 @@ async fn login(
         name: claims.display_name(),
         andrew_id,
         admin: auth.is_admin(&claims.groups),
+        first_year: claims.first_year(),
         email: claims.email,
         groups: claims.groups,
     };

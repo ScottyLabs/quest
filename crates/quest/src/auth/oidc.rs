@@ -48,9 +48,33 @@ impl OidcConfig {
 pub const NATIVE_RETURN: &str = "org.scottylabs.quest://oauth";
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum Class {
+    #[default]
+    Unset,
+    One(String),
+    Many(Vec<String>),
+    Other(serde_json::Value),
+}
+
+pub const FIRST_YEAR: &str = "First-Year";
+
+impl Class {
+    fn has(&self, want: &str) -> bool {
+        match self {
+            Self::One(value) => value == want,
+            Self::Many(values) => values.iter().any(|value| value == want),
+            Self::Unset | Self::Other(_) => false,
+        }
+    }
+}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct GroupClaims {
     #[serde(default)]
     pub groups: Vec<String>,
+    #[serde(default)]
+    pub class: Class,
 }
 
 impl openidconnect::AdditionalClaims for GroupClaims {}
@@ -172,6 +196,7 @@ pub struct IdClaims {
     pub name: Option<String>,
     pub preferred_username: Option<String>,
     pub groups: Vec<String>,
+    pub class: Class,
 }
 
 impl From<&OidcClaims<GroupClaims>> for IdClaims {
@@ -186,6 +211,7 @@ impl From<&OidcClaims<GroupClaims>> for IdClaims {
                 .preferred_username()
                 .map(|user| user.as_str().to_owned()),
             groups: claims.additional_claims().groups.clone(),
+            class: claims.additional_claims().class.clone(),
         }
     }
 }
@@ -206,6 +232,10 @@ impl IdClaims {
             .or(self.preferred_username.as_deref())
             .map(str::to_owned)
             .filter(|id| !id.is_empty())
+    }
+
+    pub fn first_year(&self) -> bool {
+        self.class.has(FIRST_YEAR)
     }
 }
 

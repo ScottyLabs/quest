@@ -151,12 +151,13 @@
     title="Accounts"
     detail="Pick a row to correct it. Sort by clicking a column heading."
     group="orientation-staff or trade-admin"
-    columns={["andrew_id", "dorm", "anonymous", "created_at", "id"]}
+    columns={["andrew_id", "dorm", "player", "anonymous", "created_at", "id"]}
     searchHint="Andrew ID or dorm"
   >
     <p class="legend">
-      <code>anonymous</code> set to true hides the account from the leaderboard. <code>dorm</code> is
-      checked by the database, so it must be exactly one of these or empty:
+      Only accounts with <code>player</code> true appear on the leaderboard, and sign-in sets it for
+      first years. <code>anonymous</code> set to true hides the account from the leaderboard.
+      <code>dorm</code> is checked by the database, so it must be exactly one of these or empty:
     </p>
 
     <ul class="values">

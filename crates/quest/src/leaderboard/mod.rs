@@ -91,6 +91,7 @@ totals AS (
     LEFT JOIN bonus ON bonus."user_id" = "users"."id"
     LEFT JOIN coins ON coins."user_id" = "users"."id"
     LEFT JOIN spent ON spent."user_id" = "users"."id"
+    WHERE "users"."player"
 ),
 scored AS (
     SELECT

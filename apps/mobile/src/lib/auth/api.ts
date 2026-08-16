@@ -41,6 +41,7 @@ const KNOWN_CODES: readonly AuthErrorCode[] = [
   "proof_required",
   "proof_invalid",
   "proof_replayed",
+  "device_required",
   "device_mismatch",
   "device_owned",
   "device_unverified",

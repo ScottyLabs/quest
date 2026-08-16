@@ -60,10 +60,13 @@ pub enum Proximity {
     Reject(&'static str),
 }
 
-pub fn proximity(card_location: Point, tapped: Option<Fix>) -> Proximity {
-    //TODO: IMPLEMENT PROXIMIMITY CHECKING
-    let Some(tapped) = tapped else {
+pub fn proximity(challenge: Option<Point>, tapped: Option<Fix>) -> Proximity {
+    let Some(challenge) = challenge else {
         return Proximity::Accept;
+    };
+
+    let Some(tapped) = tapped else {
+        return Proximity::Reject("no_location_fix");
     };
 
     if !tapped.accuracy.is_some_and(|accuracy| {
@@ -72,7 +75,7 @@ pub fn proximity(card_location: Point, tapped: Option<Fix>) -> Proximity {
         return Proximity::Reject("location_too_coarse");
     };
 
-    let distance = haversine_distance(&card_location, &tapped.at);
+    let distance = haversine_distance(&challenge, &tapped.at);
 
     if distance > TAP_RADIUS_METERS {
         return Proximity::Reject("tap_out_of_range");
@@ -143,10 +146,7 @@ impl Taps {
         }
     }
 
-    pub async fn challenge_for(
-        &self,
-        card_id: &str,
-    ) -> Result<(challenge_card::Model, challenge::Model), AuthError> {
+    pub async fn challenge_for(&self, card_id: &str) -> Result<challenge::Model, AuthError> {
         let (card, found) = challenge_card::Entity::find_by_id(card_id)
             .find_also_related(challenge::Entity)
             .one(&self.db)
@@ -158,9 +158,7 @@ impl Taps {
             return Err(AuthError::NotFound("card_retired"));
         }
 
-        let challenge = found.ok_or(AuthError::Upstream("challenge_row_missing"))?;
-
-        Ok((card, challenge))
+        found.ok_or(AuthError::Upstream("challenge_row_missing"))
     }
 
     pub async fn record(

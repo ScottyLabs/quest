@@ -1,6 +1,6 @@
 <script lang="ts">
   import { untrack } from "svelte";
-  import type { Order } from "$lib/api/client";
+  import type { OrderView } from "$lib/api/client";
   import { api, message, unwrap } from "$lib/api/client";
   import Button from "$lib/components/Button.svelte";
   import Dialog from "$lib/components/Dialog.svelte";
@@ -11,7 +11,7 @@
     order,
     onclose,
     ondone,
-  }: { order: Order; onclose: () => void; ondone: () => void } = $props();
+  }: { order: OrderView; onclose: () => void; ondone: () => void } = $props();
 
   let quantity = $state<number | null>(untrack(() => order.quantity));
   let busy = $state(false);
@@ -59,6 +59,17 @@
       Refunding returns the coins and puts the units back on the shelf.
     </p>
 
+    {#if order.options.length > 0}
+      <div class="picks">
+        {#each order.options as pick, index (index)}
+          <span class="pick">
+            <span class="key">{pick.label}</span>
+            <span class="val">{pick.value}</span>
+          </span>
+        {/each}
+      </div>
+    {/if}
+
     <Field label="Units to refund" hint="1 to {order.quantity}">
       <input type="number" min="1" max={order.quantity} step="1" bind:value={quantity} />
     </Field>
@@ -87,6 +98,35 @@
     color: var(--tertiary);
     font-size: 13px;
     line-height: 1.6;
+  }
+
+  .picks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .pick {
+    display: inline-flex;
+    gap: 5px;
+    align-items: baseline;
+    max-width: 100%;
+    padding: 3px 10px;
+    border-radius: var(--radius);
+    background: var(--tertiary-normal);
+    font-size: 12px;
+  }
+
+  .key {
+    flex: none;
+    color: var(--tertiary);
+  }
+
+  .val {
+    min-width: 0;
+    color: var(--ink-shade);
+    font-weight: 800;
+    overflow-wrap: anywhere;
   }
 
   .total {

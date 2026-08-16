@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use sea_orm::prelude::{Date, Uuid};
 use sea_orm::{ConnectionTrait, DatabaseConnection, DbBackend, FromQueryResult, Statement};
 use serde::Serialize;
@@ -5,6 +7,7 @@ use utoipa::ToSchema;
 
 use super::{PortalError, db_down, sql_failed};
 use crate::auth::AuthError;
+use crate::items::options;
 
 const LEDGER_CAP: u64 = 500;
 
@@ -43,8 +46,8 @@ WHERE "purchase_id" = $1
 RETURNING "received_item_date"
 "#;
 
-#[derive(Debug, FromQueryResult, Serialize, ToSchema)]
-pub struct Order {
+#[derive(Debug, FromQueryResult)]
+struct OrderRow {
     pub purchase_id: i64,
     pub user_id: Uuid,
     pub andrew_id: String,
@@ -53,6 +56,25 @@ pub struct Order {
     pub cost: i64,
     pub quantity: i64,
     pub received_item_date: Option<Date>,
+}
+
+#[derive(Debug, Serialize, ToSchema)]
+pub struct DeskPickView {
+    pub label: String,
+    pub value: String,
+}
+
+#[derive(Debug, Serialize, ToSchema)]
+pub struct OrderView {
+    pub purchase_id: i64,
+    pub user_id: Uuid,
+    pub andrew_id: String,
+    pub item_id: Uuid,
+    pub item: String,
+    pub cost: i64,
+    pub quantity: i64,
+    pub received_item_date: Option<Date>,
+    pub options: Vec<DeskPickView>,
 }
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -76,7 +98,7 @@ pub struct PassHolder {
     pub issued_at: Option<i64>,
     pub scottycoins: i64,
     pub thistlestones: i64,
-    pub orders: Vec<Order>,
+    pub orders: Vec<OrderView>,
 }
 
 impl Desk {
@@ -89,10 +111,10 @@ impl Desk {
         andrew_id: Option<&str>,
         delivered: Option<bool>,
         limit: Option<u64>,
-    ) -> Result<Vec<Order>, PortalError> {
+    ) -> Result<Vec<OrderView>, PortalError> {
         let limit = limit.unwrap_or(100).clamp(1, LEDGER_CAP) as i64;
 
-        Order::find_by_statement(Statement::from_sql_and_values(
+        let rows = OrderRow::find_by_statement(Statement::from_sql_and_values(
             DbBackend::Postgres,
             LEDGER,
             [
@@ -103,7 +125,38 @@ impl Desk {
         ))
         .all(&self.db)
         .await
-        .map_err(sql_failed)
+        .map_err(sql_failed)?;
+
+        let ids: Vec<i64> = rows.iter().map(|row| row.purchase_id).collect();
+
+        let mut picked: HashMap<i64, Vec<DeskPickView>> = HashMap::new();
+        for pick in options::of_purchases(&self.db, &ids)
+            .await
+            .map_err(PortalError::Auth)?
+        {
+            picked
+                .entry(pick.purchase_id)
+                .or_default()
+                .push(DeskPickView {
+                    label: pick.label,
+                    value: pick.value,
+                });
+        }
+
+        Ok(rows
+            .into_iter()
+            .map(|row| OrderView {
+                options: picked.remove(&row.purchase_id).unwrap_or_default(),
+                purchase_id: row.purchase_id,
+                user_id: row.user_id,
+                andrew_id: row.andrew_id,
+                item_id: row.item_id,
+                item: row.item,
+                cost: row.cost,
+                quantity: row.quantity,
+                received_item_date: row.received_item_date,
+            })
+            .collect())
     }
 
     pub async fn fulfil(&self, purchase: i64, delivered: bool) -> Result<Fulfilled, PortalError> {

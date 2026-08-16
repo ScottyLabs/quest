@@ -1,4 +1,7 @@
+pub mod options;
 pub mod routes;
+
+use std::collections::HashMap;
 
 use entity::{items, purchases};
 use sea_orm::prelude::Uuid;
@@ -16,7 +19,10 @@ SELECT
     "items"."name"        AS "name",
     "items"."description" AS "description",
     "items"."cost"        AS "cost",
-    "items"."image_url"   AS "image_url",
+    "items"."image_url"      AS "image_url",
+    "items"."background_url" AS "background_url",
+    "items"."icon_tint"      AS "icon_tint",
+    "items"."icon_shade"     AS "icon_shade",
     GREATEST(
         "items"."quantity_available" - COALESCE(SUM("purchases"."quantity"), 0),
         0
@@ -40,6 +46,7 @@ SELECT
     "items"."name"                               AS "name",
     "purchases"."quantity"                       AS "quantity",
     "items"."cost"                               AS "cost",
+    "items"."image_url"                          AS "image_url",
     "purchases"."received_item_date" IS NOT NULL AS "delivered"
 FROM "purchases"
 JOIN "items" ON "items"."id" = "purchases"."item_id"
@@ -59,12 +66,20 @@ pub struct Stocked {
     pub description: String,
     pub cost: i64,
     pub image_url: Option<String>,
+    pub background_url: Option<String>,
+    pub icon_tint: Option<String>,
+    pub icon_shade: Option<String>,
     pub stock: i64,
 }
 
 #[derive(Debug, FromQueryResult)]
 struct Sold {
     sold: i64,
+}
+
+pub struct Chose {
+    pub label: String,
+    pub value: String,
 }
 
 pub struct Receipt {
@@ -76,6 +91,7 @@ pub struct Receipt {
     pub spent: i64,
     pub stock: i64,
     pub scottycoins: i64,
+    pub chosen: Vec<Chose>,
 }
 
 #[derive(Debug, FromQueryResult)]
@@ -85,6 +101,7 @@ pub struct Ledger {
     pub name: String,
     pub quantity: i64,
     pub cost: i64,
+    pub image_url: Option<String>,
     pub delivered: bool,
 }
 
@@ -105,11 +122,46 @@ impl Items {
             .map_err(db_down)
     }
 
+    pub async fn options_of(
+        &self,
+        items: &[Uuid],
+    ) -> Result<HashMap<Uuid, Vec<entity::item_option::Model>>, AuthError> {
+        let mut grouped: HashMap<Uuid, Vec<entity::item_option::Model>> = HashMap::new();
+
+        for row in options::of_items(&self.db, items).await? {
+            grouped.entry(row.item_id).or_default().push(row);
+        }
+
+        Ok(grouped)
+    }
+
+    pub async fn set_options(
+        &self,
+        item: Uuid,
+        specs: Vec<options::Spec>,
+    ) -> Result<Vec<entity::item_option::Model>, AuthError> {
+        options::replace(&self.db, item, specs).await
+    }
+
+    pub async fn picks_of(
+        &self,
+        purchases: &[i64],
+    ) -> Result<HashMap<i64, Vec<entity::purchase_option::Model>>, AuthError> {
+        let mut grouped: HashMap<i64, Vec<entity::purchase_option::Model>> = HashMap::new();
+
+        for row in options::of_purchases(&self.db, purchases).await? {
+            grouped.entry(row.purchase_id).or_default().push(row);
+        }
+
+        Ok(grouped)
+    }
+
     pub async fn purchase(
         &self,
         user: Uuid,
         item: Uuid,
         quantity: i64,
+        chosen: &[options::Choice],
     ) -> Result<Receipt, AuthError> {
         if quantity < 1 {
             return Err(AuthError::BadRequest("quantity_invalid"));
@@ -149,6 +201,9 @@ impl Items {
             return Err(AuthError::Conflict("insufficient_coins"));
         }
 
+        let defined = options::of_item(&txn, item).await?;
+        let picked = options::resolve(&defined, chosen)?;
+
         let saved = purchases::ActiveModel {
             user_id: ActiveValue::Set(user),
             item_id: ActiveValue::Set(item),
@@ -158,6 +213,16 @@ impl Items {
         .insert(&txn)
         .await
         .map_err(db_down)?;
+
+        let chosen: Vec<Chose> = picked
+            .iter()
+            .map(|pick| Chose {
+                label: pick.label.clone(),
+                value: pick.value.clone(),
+            })
+            .collect();
+
+        options::attach(&txn, saved.purchase_id, picked).await?;
 
         txn.commit().await.map_err(db_down)?;
 
@@ -170,6 +235,7 @@ impl Items {
             spent,
             stock: stock - quantity,
             scottycoins: balance.scottycoins - spent,
+            chosen,
         })
     }
 

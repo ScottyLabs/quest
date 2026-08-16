@@ -324,6 +324,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/portal/trade/items/{id}/options": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put: operations["trade_options"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/portal/trade/orders": {
     parameters: {
       query?: never;
@@ -684,6 +700,7 @@ export interface components {
       item: string;
       /** Format: uuid */
       item_id: string;
+      options: components["schemas"]["DeskPickView"][];
       /** Format: int64 */
       purchase_id: number;
       /** Format: int64 */
@@ -696,6 +713,7 @@ export interface components {
       stock: number;
     };
     BuyBody: {
+      options?: components["schemas"]["PickBody"][];
       /** Format: int64 */
       quantity?: number;
     };
@@ -752,6 +770,15 @@ export interface components {
       challenge?: null | components["schemas"]["ChallengeView"];
       day: string;
     };
+    DeskPickBody: {
+      /** Format: uuid */
+      option_id: string;
+      value: string;
+    };
+    DeskPickView: {
+      label: string;
+      value: string;
+    };
     DeskRefundBody: {
       andrew_id: string;
       /** Format: int64 */
@@ -761,6 +788,7 @@ export interface components {
       andrew_id: string;
       /** Format: uuid */
       item_id: string;
+      options?: components["schemas"]["DeskPickBody"][];
       /** Format: int64 */
       quantity: number;
     };
@@ -827,12 +855,16 @@ export interface components {
       signature?: string | null;
     };
     ItemView: {
+      background_url?: string | null;
       /** Format: int64 */
       cost: number;
       description: string;
+      icon_shade?: string | null;
+      icon_tint?: string | null;
       id: string;
       image_url?: string | null;
       name: string;
+      options: components["schemas"]["OptionView"][];
       /** Format: int64 */
       stock: number;
     };
@@ -844,17 +876,11 @@ export interface components {
     /** @enum {string} */
     Level: "none" | "read" | "edit" | "full";
     Library: {
-      /** @description Content types the uploader accepts. */
       accepts: string[];
       assets: components["schemas"]["AssetView"][];
-      /** @description Prefixes an upload may be filed under. */
       kinds: string[];
-      /**
-       * Format: int64
-       * @description Largest upload the backend will take, in bytes.
-       */
+      /** Format: int64 */
       max_bytes: number;
-      /** @description False when the CDN credentials are missing, so uploads will refuse. */
       ready: boolean;
     };
     LinkBody: {
@@ -870,13 +896,30 @@ export interface components {
     LogoutResponse: {
       end_session_url?: string | null;
     };
-    Order: {
+    OptionBody: {
+      choices?: string[];
+      kind: string;
+      label: string;
+      required?: boolean;
+    };
+    OptionView: {
+      choices: string[];
+      id: string;
+      kind: string;
+      label: string;
+      required: boolean;
+    };
+    OptionsBody: {
+      options: components["schemas"]["OptionBody"][];
+    };
+    OrderView: {
       andrew_id: string;
       /** Format: int64 */
       cost: number;
       item: string;
       /** Format: uuid */
       item_id: string;
+      options: components["schemas"]["DeskPickView"][];
       /** Format: int64 */
       purchase_id: number;
       /** Format: int64 */
@@ -920,7 +963,7 @@ export interface components {
       /** Format: int64 */
       issued_at?: number | null;
       name: string;
-      orders: components["schemas"]["Order"][];
+      orders: components["schemas"]["OrderView"][];
       /** Format: int64 */
       scottycoins: number;
       /** Format: int64 */
@@ -939,6 +982,14 @@ export interface components {
       issued_at: number;
       name: string;
       token: string;
+    };
+    PickBody: {
+      option_id: string;
+      value: string;
+    };
+    PickedView: {
+      label: string;
+      value: string;
     };
     PlaceBody: {
       /** Format: double */
@@ -960,8 +1011,10 @@ export interface components {
       /** Format: int64 */
       cost: number;
       delivered: boolean;
+      image_url?: string | null;
       item_id: string;
       name: string;
+      options: components["schemas"]["PickedView"][];
       /** Format: int64 */
       purchase_id: number;
       /** Format: int64 */
@@ -972,6 +1025,7 @@ export interface components {
       cost: number;
       item_id: string;
       name: string;
+      options: components["schemas"]["PickedView"][];
       /** Format: int64 */
       purchase_id: number;
       /** Format: int64 */
@@ -1039,15 +1093,27 @@ export interface components {
       total: number;
     };
     ShopItem: {
+      background_url?: string | null;
       /** Format: int64 */
       cost: number;
       description: string;
+      icon_shade?: string | null;
+      icon_tint?: string | null;
       /** Format: uuid */
       id: string;
       image_url?: string | null;
       name: string;
+      options: components["schemas"]["ShopOption"][];
       /** Format: int64 */
       stock: number;
+    };
+    ShopOption: {
+      choices: string[];
+      /** Format: uuid */
+      id: string;
+      kind: string;
+      label: string;
+      required: boolean;
     };
     SignedOut: {
       signed_out: boolean;
@@ -1629,7 +1695,6 @@ export interface operations {
     parameters: {
       query: {
         kind: string;
-        /** @description Original file name, kept for display only. */
         name?: string | null;
       };
       header?: never;
@@ -2122,6 +2187,56 @@ export interface operations {
       };
     };
   };
+  trade_options: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Item id */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["OptionsBody"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ShopOption"][];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+    };
+  };
   trade_orders: {
     parameters: {
       query?: {
@@ -2140,7 +2255,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["Order"][];
+          "application/json": components["schemas"]["OrderView"][];
         };
       };
       403: {

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Order, Schemas } from "$lib/api/client";
+  import type { OrderView, Schemas } from "$lib/api/client";
   import { ApiError, api, message, unwrap } from "$lib/api/client";
   import Button from "$lib/components/Button.svelte";
   import Chip from "$lib/components/Chip.svelte";
@@ -80,7 +80,7 @@
     onchanged();
   }
 
-  async function deliver(order: Order, delivered: boolean): Promise<void> {
+  async function deliver(order: OrderView, delivered: boolean): Promise<void> {
     working = order.purchase_id;
 
     try {
@@ -244,6 +244,7 @@
       <ul class="items">
         {#each sorted as order (order.purchase_id)}
           {@const done = order.received_item_date ?? null}
+          {@const picks = order.options ?? []}
           <li class:done={done !== null}>
             <label class="tick">
               <input
@@ -254,6 +255,16 @@
               />
               <span class="what">
                 <span class="name">{order.item}</span>
+                {#if picks.length > 0}
+                  <span class="picks">
+                    {#each picks as pick, index (index)}
+                      <span class="pick">
+                        <span class="key">{pick.label}</span>
+                        <span class="val">{pick.value}</span>
+                      </span>
+                    {/each}
+                  </span>
+                {/if}
                 <span class="sub">
                   {order.quantity} &times; {order.cost} coins &middot; purchase {order.purchase_id}
                 </span>
@@ -419,5 +430,36 @@
     flex: none;
     gap: 10px;
     align-items: center;
+  }
+
+  .picks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 3px 0 1px;
+  }
+
+  .pick {
+    display: inline-flex;
+    gap: 5px;
+    align-items: baseline;
+    max-width: 34ch;
+    padding: 1px 8px;
+    border-radius: var(--radius);
+    background: var(--tertiary-normal);
+    font-size: 11px;
+    line-height: 1.6;
+  }
+
+  .key {
+    flex: none;
+    color: var(--tertiary);
+  }
+
+  .val {
+    min-width: 0;
+    color: var(--ink-shade);
+    font-weight: 800;
+    overflow-wrap: anywhere;
   }
 </style>

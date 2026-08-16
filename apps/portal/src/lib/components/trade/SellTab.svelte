@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { SvelteMap } from "svelte/reactivity";
   import type { ShopItem } from "$lib/api/client";
   import { ApiError, api, message, unwrap } from "$lib/api/client";
   import Button from "$lib/components/Button.svelte";
@@ -26,20 +27,41 @@
     out_of_stock: "There is not enough stock left for that quantity.",
     insufficient_coins: "They don't have enough ScottyCoins.",
     quantity_invalid: "That quantity is not a whole number of units.",
+    option_missing: "Fill in every required choice for this item.",
+    option_answer_invalid: "One of those choices is not offered any more. Reload the tab.",
+    option_answer_too_long: "Keep a written answer to 120 characters or fewer.",
+    option_unknown: "This item's choices just changed. Reload the tab.",
+    option_id_invalid: "This item's choices just changed. Reload the tab.",
   };
 
   let andrew = $state("");
   let chosen = $state("");
   let quantity = $state<number | null>(1);
   let busy = $state(false);
+  const answers = new SvelteMap<string, string>();
 
   const picked = $derived(items.find((item) => item.id === chosen) ?? null);
   const ceiling = $derived(Math.max(picked?.stock ?? 1, 1));
   const wanted = $derived(Math.min(Math.max(Math.trunc(quantity ?? 1) || 1, 1), ceiling));
   const total = $derived((picked?.cost ?? 0) * wanted);
-  const ready = $derived(
-    andrew.trim().length > 0 && picked !== null && picked.stock > 0 && wanted <= picked.stock,
+
+  const options = $derived(picked?.options ?? []);
+
+  const unanswered = $derived(
+    options.filter((option) => option.required && (answers.get(option.id) ?? "").trim() === ""),
   );
+
+  const ready = $derived(
+    andrew.trim().length > 0 &&
+      picked !== null &&
+      picked.stock > 0 &&
+      wanted <= picked.stock &&
+      unanswered.length === 0,
+  );
+
+  function retarget(): void {
+    answers.clear();
+  }
 
   function reason(error: unknown): string {
     if (error instanceof ApiError) return REASONS[error.code] ?? message(error);
@@ -51,23 +73,31 @@
     if (picked === null) return;
 
     busy = true;
-    const payload: { andrew_id: string; item_id: string; quantity: number } = {
+    const payload = {
       andrew_id: andrew.trim(),
       item_id: picked.id,
       quantity: wanted,
+      options: options
+        .map((option) => ({ option_id: option.id, value: (answers.get(option.id) ?? "").trim() }))
+        .filter((pick) => pick.value !== ""),
     };
 
     try {
       const bought = await unwrap(await api.POST("/api/portal/trade/orders", { body: payload }));
       const sold = `${bought.quantity} \u00d7 ${bought.item}`;
+      const how =
+        bought.options.length > 0
+          ? ` (${bought.options.map((pick) => `${pick.label} ${pick.value}`).join(", ")})`
+          : "";
 
       announce(
-        `Sold ${sold} to ${payload.andrew_id} for ${bought.spent} coins.` +
+        `Sold ${sold}${how} to ${payload.andrew_id} for ${bought.spent} coins.` +
           ` They have ${bought.scottycoins} ScottyCoins left.`,
         "good",
         9000,
       );
       quantity = 1;
+      retarget();
       onbought();
     } catch (error) {
       announce(reason(error), "bad", 10000);
@@ -95,7 +125,7 @@
       </Field>
 
       <Field label="Item">
-        <select bind:value={chosen}>
+        <select bind:value={chosen} onchange={retarget}>
           <option value="">Pick an item</option>
           {#each items as item (item.id)}
             <option value={item.id} disabled={item.stock <= 0}>
@@ -109,6 +139,37 @@
         <input type="number" min="1" max={ceiling} step="1" bind:value={quantity} />
       </Field>
     </div>
+
+    {#if options.length > 0}
+      <div class="picks">
+        {#each options as option (option.id)}
+          <Field
+            label={option.label}
+            hint={option.required ? "required" : "optional"}
+          >
+            {#if option.kind === "text"}
+              <input
+                type="text"
+                maxlength="120"
+                autocomplete="off"
+                value={answers.get(option.id) ?? ""}
+                oninput={(event) => answers.set(option.id, event.currentTarget.value)}
+              />
+            {:else}
+              <select
+                value={answers.get(option.id) ?? ""}
+                onchange={(event) => answers.set(option.id, event.currentTarget.value)}
+              >
+                <option value="">{option.required ? `Choose ${option.label}` : "No preference"}</option>
+                {#each option.choices as choice, index (index)}
+                  <option value={choice}>{choice}</option>
+                {/each}
+              </select>
+            {/if}
+          </Field>
+        {/each}
+      </div>
+    {/if}
 
     <div class="close">
       <div class="total">
@@ -129,6 +190,16 @@
 </Panel>
 
 <style>
+  .picks {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    margin: 14px 0 0;
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    background: var(--canvas);
+  }
+
   .form {
     display: grid;
     gap: 14px;

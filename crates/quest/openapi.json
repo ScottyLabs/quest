@@ -643,7 +643,6 @@
           {
             "name": "name",
             "in": "query",
-            "description": "Original file name, kept for display only.",
             "required": false,
             "schema": {
               "type": ["string", "null"]
@@ -1291,6 +1290,79 @@
         }
       }
     },
+    "/api/portal/trade/items/{id}/options": {
+      "put": {
+        "tags": ["portal"],
+        "operationId": "trade_options",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Item id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OptionsBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ShopOption"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/portal/trade/orders": {
       "get": {
         "tags": ["portal"],
@@ -1331,7 +1403,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Order"
+                    "$ref": "#/components/schemas/OrderView"
                   }
                 }
               }
@@ -2710,7 +2782,8 @@
           "quantity",
           "spent",
           "stock",
-          "scottycoins"
+          "scottycoins",
+          "options"
         ],
         "properties": {
           "cost": {
@@ -2723,6 +2796,12 @@
           "item_id": {
             "type": "string",
             "format": "uuid"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeskPickView"
+            }
           },
           "purchase_id": {
             "type": "integer",
@@ -2749,6 +2828,12 @@
       "BuyBody": {
         "type": "object",
         "properties": {
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PickBody"
+            }
+          },
           "quantity": {
             "type": "integer",
             "format": "int64"
@@ -2917,6 +3002,31 @@
           }
         }
       },
+      "DeskPickBody": {
+        "type": "object",
+        "required": ["option_id", "value"],
+        "properties": {
+          "option_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+      "DeskPickView": {
+        "type": "object",
+        "required": ["label", "value"],
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
       "DeskRefundBody": {
         "type": "object",
         "required": ["andrew_id", "quantity"],
@@ -2940,6 +3050,12 @@
           "item_id": {
             "type": "string",
             "format": "uuid"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeskPickBody"
+            }
           },
           "quantity": {
             "type": "integer",
@@ -3132,14 +3248,23 @@
       },
       "ItemView": {
         "type": "object",
-        "required": ["id", "name", "description", "cost", "stock"],
+        "required": ["id", "name", "description", "cost", "stock", "options"],
         "properties": {
+          "background_url": {
+            "type": ["string", "null"]
+          },
           "cost": {
             "type": "integer",
             "format": "int64"
           },
           "description": {
             "type": "string"
+          },
+          "icon_shade": {
+            "type": ["string", "null"]
+          },
+          "icon_tint": {
+            "type": ["string", "null"]
           },
           "id": {
             "type": "string"
@@ -3149,6 +3274,12 @@
           },
           "name": {
             "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OptionView"
+            }
           },
           "stock": {
             "type": "integer",
@@ -3181,8 +3312,7 @@
             "type": "array",
             "items": {
               "type": "string"
-            },
-            "description": "Content types the uploader accepts."
+            }
           },
           "assets": {
             "type": "array",
@@ -3194,18 +3324,15 @@
             "type": "array",
             "items": {
               "type": "string"
-            },
-            "description": "Prefixes an upload may be filed under."
+            }
           },
           "max_bytes": {
             "type": "integer",
             "format": "int64",
-            "description": "Largest upload the backend will take, in bytes.",
             "minimum": 0
           },
           "ready": {
-            "type": "boolean",
-            "description": "False when the CDN credentials are missing, so uploads will refuse."
+            "type": "boolean"
           }
         }
       },
@@ -3241,9 +3368,75 @@
           }
         }
       },
-      "Order": {
+      "OptionBody": {
         "type": "object",
-        "required": ["purchase_id", "user_id", "andrew_id", "item_id", "item", "cost", "quantity"],
+        "required": ["label", "kind"],
+        "properties": {
+          "choices": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "kind": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean"
+          }
+        }
+      },
+      "OptionView": {
+        "type": "object",
+        "required": ["id", "label", "kind", "choices", "required"],
+        "properties": {
+          "choices": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean"
+          }
+        }
+      },
+      "OptionsBody": {
+        "type": "object",
+        "required": ["options"],
+        "properties": {
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OptionBody"
+            }
+          }
+        }
+      },
+      "OrderView": {
+        "type": "object",
+        "required": [
+          "purchase_id",
+          "user_id",
+          "andrew_id",
+          "item_id",
+          "item",
+          "cost",
+          "quantity",
+          "options"
+        ],
         "properties": {
           "andrew_id": {
             "type": "string"
@@ -3258,6 +3451,12 @@
           "item_id": {
             "type": "string",
             "format": "uuid"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeskPickView"
+            }
           },
           "purchase_id": {
             "type": "integer",
@@ -3396,7 +3595,7 @@
           "orders": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Order"
+              "$ref": "#/components/schemas/OrderView"
             }
           },
           "scottycoins": {
@@ -3442,6 +3641,30 @@
             "type": "string"
           },
           "token": {
+            "type": "string"
+          }
+        }
+      },
+      "PickBody": {
+        "type": "object",
+        "required": ["option_id", "value"],
+        "properties": {
+          "option_id": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+      "PickedView": {
+        "type": "object",
+        "required": ["label", "value"],
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "value": {
             "type": "string"
           }
         }
@@ -3492,7 +3715,7 @@
       },
       "PurchaseView": {
         "type": "object",
-        "required": ["purchase_id", "item_id", "name", "quantity", "cost", "delivered"],
+        "required": ["purchase_id", "item_id", "name", "quantity", "cost", "delivered", "options"],
         "properties": {
           "cost": {
             "type": "integer",
@@ -3501,11 +3724,20 @@
           "delivered": {
             "type": "boolean"
           },
+          "image_url": {
+            "type": ["string", "null"]
+          },
           "item_id": {
             "type": "string"
           },
           "name": {
             "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PickedView"
+            }
           },
           "purchase_id": {
             "type": "integer",
@@ -3527,7 +3759,8 @@
           "quantity",
           "spent",
           "stock",
-          "scottycoins"
+          "scottycoins",
+          "options"
         ],
         "properties": {
           "cost": {
@@ -3539,6 +3772,12 @@
           },
           "name": {
             "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PickedView"
+            }
           },
           "purchase_id": {
             "type": "integer",
@@ -3717,14 +3956,23 @@
       },
       "ShopItem": {
         "type": "object",
-        "required": ["id", "name", "description", "cost", "stock"],
+        "required": ["id", "name", "description", "cost", "stock", "options"],
         "properties": {
+          "background_url": {
+            "type": ["string", "null"]
+          },
           "cost": {
             "type": "integer",
             "format": "int64"
           },
           "description": {
             "type": "string"
+          },
+          "icon_shade": {
+            "type": ["string", "null"]
+          },
+          "icon_tint": {
+            "type": ["string", "null"]
           },
           "id": {
             "type": "string",
@@ -3736,9 +3984,40 @@
           "name": {
             "type": "string"
           },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShopOption"
+            }
+          },
           "stock": {
             "type": "integer",
             "format": "int64"
+          }
+        }
+      },
+      "ShopOption": {
+        "type": "object",
+        "required": ["id", "label", "kind", "choices", "required"],
+        "properties": {
+          "choices": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean"
           }
         }
       },

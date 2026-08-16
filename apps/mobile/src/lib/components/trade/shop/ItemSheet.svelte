@@ -132,16 +132,15 @@
 
 <div class="stack" style:--roof="{roof}px" style:--lift="{lift}px">
   <div class="hero">
-    {#if offer.backdrop === null}
-      <div class="plate"></div>
-    {:else}
+    <span class="plate"></span>
+    {#if offer.backdrop !== null}
       <img class="shot" src={offer.backdrop} alt="" />
     {/if}
 
-    <div class="badge" style:--plate={offer.tint} style:--plate-shade={offer.shade}>
-      <span class="back"></span>
-      <span class="front"></span>
-      {#if offer.art !== null}
+    <div class="badge">
+      {#if offer.art === null}
+        <span class="blank"></span>
+      {:else}
         <img class="glyph" src={offer.art} alt="" />
       {/if}
     </div>
@@ -233,68 +232,61 @@
 
   .hero {
     position: relative;
-    flex: 0 1 calc(224.156 * var(--u));
-    min-height: 0;
+    flex: 0 0 auto;
+    min-height: calc(120 * var(--u));
     pointer-events: auto;
   }
 
-  .shot,
   .plate {
+    position: absolute;
+    inset: 0;
     display: block;
-    width: 100%;
-    height: 100%;
     border-radius: calc(26 * var(--u)) calc(26 * var(--u)) 0 0;
+    background: var(--tertiary-normal);
   }
 
   .shot {
-    object-fit: cover;
-  }
-
-  .plate {
-    background: var(--tertiary-normal);
+    position: relative;
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: calc(224.156 * var(--u));
+    border-radius: calc(26 * var(--u)) calc(26 * var(--u)) 0 0;
+    object-fit: contain;
   }
 
   .badge {
     position: absolute;
-    right: calc(8.186 * var(--u));
-    bottom: calc(-29.107 * var(--u));
+    right: calc(7.63 * var(--u));
+    bottom: calc(-49.29 * var(--u));
     z-index: 2;
-    width: calc(91.785 * var(--u));
-    height: calc(86.263 * var(--u));
+    width: calc(117.34 * var(--u));
+    height: calc(106.45 * var(--u));
+    display: grid;
+    place-items: center;
     pointer-events: none;
   }
 
-  .back,
-  .front {
-    position: absolute;
+  .glyph,
+  .blank {
+    grid-area: 1 / 1;
     display: block;
-    border-radius: calc(12 * var(--u));
-  }
-
-  .back {
-    top: calc(18.56 * var(--u));
-    left: calc(10.88 * var(--u));
-    width: calc(93.774 * var(--u));
-    height: calc(78.117 * var(--u));
-    background: var(--plate-shade, var(--trade-after));
-    transform: rotate(-6.69deg) skewX(3.13deg);
-  }
-
-  .front {
-    inset: 0;
-    background: var(--plate, var(--skibo));
-    transform: rotate(-7.57deg) skewX(1.1deg);
   }
 
   .glyph {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    display: block;
-    width: calc(73.7 * var(--u));
-    height: calc(52.6 * var(--u));
+    align-self: stretch;
+    justify-self: stretch;
+    width: 100%;
+    height: 100%;
     object-fit: contain;
-    translate: -50% -50%;
+  }
+
+  .blank {
+    width: calc(91.785 * var(--u));
+    height: calc(86.263 * var(--u));
+    border-radius: calc(12 * var(--u));
+    background: var(--tertiary-normal);
+    transform: rotate(-7.57deg) skewX(1.1deg);
   }
 
   .sheet {

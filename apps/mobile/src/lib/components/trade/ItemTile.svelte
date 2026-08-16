@@ -2,29 +2,18 @@
   let {
     art,
     size,
-    face = "var(--skibo)",
-    shade = null,
-    tilt = "front",
+    dimmed = false,
   }: {
     art: string | null;
     size: number;
-    face?: string;
-    shade?: string | null;
-    tilt?: "front" | "back";
+    dimmed?: boolean;
   } = $props();
-
-  const FRONT = "rotate(-7.57deg) skewX(1.1deg)";
-  const BACK = "rotate(-6.69deg) skewX(3.13deg)";
-
-  const turn = $derived(tilt === "back" ? BACK : FRONT);
 </script>
 
-<span class="tile" style:--tile={size}>
-  {#if shade !== null}
-    <span class="plate" style:background={shade} style:transform={BACK}></span>
-  {/if}
-  <span class="plate front" style:background={face} style:transform={turn}></span>
-  {#if art !== null}
+<span class="tile" class:dimmed style:--tile={size}>
+  {#if art === null}
+    <span class="empty"></span>
+  {:else}
     <img src={art} alt="" />
   {/if}
 </span>
@@ -38,29 +27,25 @@
     place-items: center;
   }
 
-  .plate,
+  .empty,
   img {
     grid-area: 1 / 1;
-  }
-
-  .plate {
     display: block;
     width: 100%;
     height: 100%;
-    border-radius: calc(12 * var(--u));
-    translate: calc(-2.5 * var(--u)) calc(2.5 * var(--u));
   }
 
-  .front {
-    translate: none;
+  .empty {
+    border-radius: calc(12 * var(--u));
+    background: var(--tertiary-normal);
   }
 
   img {
-    position: relative;
-    z-index: 1;
-    display: block;
-    width: 62%;
-    height: 62%;
     object-fit: contain;
+  }
+
+  .dimmed img {
+    filter: grayscale(1);
+    opacity: 0.55;
   }
 </style>

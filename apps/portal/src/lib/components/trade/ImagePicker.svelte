@@ -4,6 +4,7 @@
   import Button from "$lib/components/Button.svelte";
   import { announce } from "$lib/notice.svelte";
   import { updateRow } from "$lib/rows";
+  import { normalizeSvgFile } from "$lib/svg";
 
   let {
     item,
@@ -60,10 +61,21 @@
       } else {
         busy = true;
 
+        const svg = file.type === "image/svg+xml" || file.name.toLowerCase().endsWith(".svg");
+        const shaped = svg ? await normalizeSvgFile(file) : file;
+        const untouched = shaped === null;
+
         try {
-          const asset = await uploadAsset("items", file);
+          const asset = await uploadAsset("items", shaped ?? file);
+
           await updateRow("items", { id: item.id }, { [COLUMN[slot]]: asset.url });
-          announce(`${LABEL[slot]} saved for ${item.name}.`, "good");
+          announce(
+            untouched
+              ? `${LABEL[slot]} saved for ${item.name}, but the art could not be measured, so it went up untouched and may sit off-centre.`
+              : `${LABEL[slot]} saved for ${item.name}.`,
+            untouched ? "info" : "good",
+            untouched ? 10000 : 6000,
+          );
           onsaved();
         } catch (error) {
           announce(message(error), "bad", 10000);

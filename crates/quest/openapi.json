@@ -3260,12 +3260,6 @@
           "description": {
             "type": "string"
           },
-          "icon_shade": {
-            "type": ["string", "null"]
-          },
-          "icon_tint": {
-            "type": ["string", "null"]
-          },
           "id": {
             "type": "string"
           },
@@ -3967,12 +3961,6 @@
           },
           "description": {
             "type": "string"
-          },
-          "icon_shade": {
-            "type": ["string", "null"]
-          },
-          "icon_tint": {
-            "type": ["string", "null"]
           },
           "id": {
             "type": "string",

@@ -32,8 +32,6 @@ export interface Offer {
   stock: number;
   art: string | null;
   backdrop: string | null;
-  tint: string | null;
-  shade: string | null;
   options: ItemOption[];
 }
 
@@ -57,8 +55,6 @@ async function load(): Promise<Offer[]> {
     stock: row.stock,
     art: row.image_url ?? null,
     backdrop: row.background_url ?? null,
-    tint: row.icon_tint ?? null,
-    shade: row.icon_shade ?? null,
     options: row.options ?? [],
   }));
 }
@@ -68,8 +64,6 @@ function revive(raw: unknown): Offer[] | null {
 
   return raw.map((row: Offer) => ({
     ...row,
-    tint: row.tint ?? null,
-    shade: row.shade ?? null,
     options: Array.isArray(row.options) ? row.options : [],
   }));
 }

@@ -1,99 +1,19 @@
 <script lang="ts">
-  import { untrack } from "svelte";
-  import type { ShopItem, ShopOption } from "$lib/api/client";
-  import { message } from "$lib/api/client";
+  import type { ShopItem } from "$lib/api/client";
   import Button from "$lib/components/Button.svelte";
   import Dialog from "$lib/components/Dialog.svelte";
-  import Field from "$lib/components/Field.svelte";
-  import { announce } from "$lib/notice.svelte";
-  import { updateRow } from "$lib/rows";
 
   let {
     item,
-    editable,
     onclose,
-    onsaved,
   }: {
     item: ShopItem;
-    editable: boolean;
     onclose: () => void;
-    onsaved: () => void;
   } = $props();
-
-  const TINT = "#9a1023";
-  const SHADE = "#730c1a";
-  const HEX = /^#[0-9a-f]{6}$/iu;
-
-  function paint(value: string | null | undefined, fallback: string): string {
-    return typeof value === "string" && HEX.test(value) ? value : fallback;
-  }
-
-  function ink(hex: string): string {
-    const value = Number.parseInt(hex.slice(1), 16);
-    const red = (value >> 16) & 255;
-    const green = (value >> 8) & 255;
-    const weighed = 0.299 * red + 0.587 * green + 0.114 * (value & 255);
-
-    return weighed > 150 ? "rgb(0 0 0 / 0.6)" : "rgb(255 255 255 / 0.75)";
-  }
-
-  function segments(option: ShopOption): string[] {
-    return option.choices.filter((choice) => choice.trim() !== "");
-  }
-
-  function typed(value: string | null | undefined): string {
-    return typeof value === "string" ? value : "";
-  }
-
-  function trouble(draft: string): string | null {
-    if (draft.trim() === "") return null;
-
-    return HEX.test(draft.trim()) ? null : "Six hex digits after a hash, like #642c8f.";
-  }
-
-  function column(draft: string): string | null {
-    const value = draft.trim().toLowerCase();
-
-    return value === "" ? null : value;
-  }
-
-  let front = $state(untrack(() => typed(item.icon_tint)));
-  let behind = $state(untrack(() => typed(item.icon_shade)));
-  let busy = $state(false);
-  let fault = $state<string | null>(null);
 
   const hero = $derived(item.background_url ?? null);
   const glyph = $derived(item.image_url ?? null);
   const blurb = $derived(item.description.trim());
-  const tint = $derived(paint(front, TINT));
-  const shade = $derived(paint(behind, SHADE));
-  const hint = $derived(ink(tint));
-  const frontFault = $derived(trouble(front));
-  const behindFault = $derived(trouble(behind));
-  const dirty = $derived(
-    column(front) !== (item.icon_tint ?? null) || column(behind) !== (item.icon_shade ?? null),
-  );
-
-  async function save(): Promise<void> {
-    if (frontFault !== null || behindFault !== null) return;
-
-    busy = true;
-    fault = null;
-
-    try {
-      await updateRow(
-        "items",
-        { id: item.id },
-        { icon_tint: column(front), icon_shade: column(behind) },
-      );
-      announce(`Icon colours saved for ${item.name}.`, "good");
-      onsaved();
-    } catch (error) {
-      fault = message(error);
-    } finally {
-      busy = false;
-    }
-  }
 </script>
 
 <Dialog title="Preview of {item.name}" {onclose}>
@@ -104,7 +24,7 @@
 
   <div class="stage">
     <div class="frame">
-      <div class="sheet" style="--tint: {tint}; --shade: {shade}; --hint: {hint}">
+      <div class="sheet">
         <div class="hero">
           {#if hero !== null}
             <img src={hero} alt="" />
@@ -128,7 +48,7 @@
             {/if}
 
             {#each item.options as option (option.id)}
-              {@const choices = segments(option)}
+              {@const choices = option.choices.filter((choice) => choice.trim() !== "")}
               <div class="ask">
                 <p class="tag quiet">
                   {option.label}:
@@ -176,8 +96,6 @@
         </div>
 
         <div class="badge">
-          <span class="plate back"></span>
-          <span class="plate front"></span>
           {#if glyph !== null}
             <img class="mark" src={glyph} alt="" />
           {:else}
@@ -188,74 +106,8 @@
     </div>
   </div>
 
-  {#if editable}
-    <div class="tune">
-      <p class="head">
-        Icon colours
-        <span>The two tilted plates behind the icon. Leave a box empty for the app default.</span>
-      </p>
-
-      {#if fault !== null}
-        <p class="alarm" role="alert">{fault}</p>
-      {/if}
-
-      <div class="pair">
-        <Field label="Icon colour" hint="default {TINT}" error={frontFault}>
-          <div class="mix">
-            <input
-              type="color"
-              value={tint}
-              aria-label="Pick the icon colour"
-              oninput={(event) => (front = event.currentTarget.value)}
-            />
-            <input
-              bind:value={front}
-              type="text"
-              placeholder={TINT}
-              spellcheck="false"
-              aria-label="Icon colour hex"
-            />
-            <Button size="small" tone="ghost" disabled={front === ""} onclick={() => (front = "")}>
-              Default
-            </Button>
-          </div>
-        </Field>
-
-        <Field label="Icon shadow" hint="default {SHADE}" error={behindFault}>
-          <div class="mix">
-            <input
-              type="color"
-              value={shade}
-              aria-label="Pick the icon shadow colour"
-              oninput={(event) => (behind = event.currentTarget.value)}
-            />
-            <input
-              bind:value={behind}
-              type="text"
-              placeholder={SHADE}
-              spellcheck="false"
-              aria-label="Icon shadow hex"
-            />
-            <Button size="small" tone="ghost" disabled={behind === ""} onclick={() => (behind = "")}>
-              Default
-            </Button>
-          </div>
-        </Field>
-      </div>
-    </div>
-  {/if}
-
   {#snippet actions()}
     <Button tone="line" onclick={onclose}>Close</Button>
-    {#if editable}
-      <Button
-        disabled={!dirty || frontFault !== null || behindFault !== null}
-        {busy}
-        onclick={() => void save()}
-      >
-        Save colours
-      </Button>
-    {/if}
   {/snippet}
 </Dialog>
 
@@ -270,70 +122,6 @@
   .stage {
     display: flex;
     justify-content: center;
-  }
-
-  .tune {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 20px;
-    padding-top: 16px;
-    border-top: 1px solid var(--line);
-  }
-
-  .head {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin: 0;
-    color: var(--ink-shade);
-    font-size: 13px;
-    font-weight: 800;
-  }
-
-  .head span {
-    color: var(--tertiary);
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 1.5;
-  }
-
-  .alarm {
-    margin: 0;
-    padding: 8px 10px;
-    border-radius: var(--radius);
-    background: var(--danger-fill);
-    color: var(--danger);
-    font-size: 12px;
-    font-weight: 600;
-  }
-
-  .pair {
-    display: grid;
-    gap: 12px;
-    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-  }
-
-  .mix {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-
-  .mix input[type="color"] {
-    flex: none;
-    width: 34px;
-    height: 32px;
-    padding: 2px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: var(--highlight);
-    cursor: pointer;
-  }
-
-  .mix input[type="text"] {
-    min-width: 0;
-    font-family: var(--mono);
   }
 
   .frame {
@@ -599,39 +387,20 @@
     height: calc(86.263 * var(--p));
   }
 
-  .plate {
-    position: absolute;
-    border-radius: calc(12 * var(--p));
-  }
-
-  .plate.back {
-    top: calc(19 * var(--p));
-    right: calc(-9 * var(--p));
-    width: calc(93.774 * var(--p));
-    height: calc(78.117 * var(--p));
-    background: var(--shade);
-    transform: rotate(-6.69deg) skewX(3.13deg);
-  }
-
-  .plate.front {
-    inset: 0;
-    background: var(--tint);
-    box-shadow: 0 calc(4 * var(--p)) calc(10 * var(--p)) rgb(0 0 0 / 0.28);
-    transform: rotate(-7.57deg) skewX(1.1deg);
-  }
-
   .mark {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    padding: calc(14 * var(--p));
     object-fit: contain;
   }
 
   .mark.none {
     display: grid;
-    color: var(--hint);
+    border: 1px solid var(--line);
+    border-radius: calc(12 * var(--p));
+    background: var(--tertiary-normal);
+    color: var(--tertiary);
     font-size: calc(11 * var(--p));
     font-weight: 700;
     text-align: center;

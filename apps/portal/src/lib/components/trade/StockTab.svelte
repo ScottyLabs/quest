@@ -239,12 +239,7 @@
 {/if}
 
 {#if peeked !== null}
-  <ItemPreview
-    item={peeked}
-    editable={mayEdit}
-    onclose={() => (peeking = null)}
-    onsaved={saved}
-  />
+  <ItemPreview item={peeked} onclose={() => (peeking = null)} />
 {/if}
 
 <style>

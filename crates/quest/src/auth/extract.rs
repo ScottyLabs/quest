@@ -87,13 +87,34 @@ pub async fn session_binding(
 }
 
 pub async fn binding_error(parts: &mut Parts) -> AuthError {
+    let path = parts.uri.path().to_owned();
+    let presented = bearer(&parts.headers).is_some();
+    let cookied = parts.headers.get(COOKIE).is_some();
+
     let Ok(session) = session_of(parts).await else {
+        eprintln!(
+            "auth: unauthorized path={path} bearer={presented} cookie={cookied} session=unreadable"
+        );
         return AuthError::Unauthorized("unauthorized");
     };
 
-    match session.get::<SessionUser>(USER_KEY).await {
-        Ok(Some(_)) => AuthError::Unauthorized("device_required"),
-        _ => AuthError::Unauthorized("unauthorized"),
+    let user = session.get::<SessionUser>(USER_KEY).await.ok().flatten();
+    let device = session.get::<String>(DEVICE_KEY).await.ok().flatten();
+    let found = session
+        .id()
+        .map(|id| id.to_string())
+        .map(|id| id[..id.len().min(6)].to_owned());
+
+    eprintln!(
+        "auth: unauthorized path={path} bearer={presented} cookie={cookied} session={found:?} \
+         andrew={:?} device={}",
+        user.as_ref().map(|row| row.andrew_id.as_str()),
+        device.is_some()
+    );
+
+    match user {
+        Some(_) => AuthError::Unauthorized("device_required"),
+        None => AuthError::Unauthorized("unauthorized"),
     }
 }
 

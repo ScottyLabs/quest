@@ -110,7 +110,8 @@ class SessionStore {
       this.#session = stored;
       this.#phase = "signedIn";
       await this.#enrol(stored.id);
-      await this.#recheck(stored);
+
+      if (this.#current(stored)) await this.#recheck(stored);
     } catch (error) {
       console.error("session restore failed", error);
       if (this.#session === null) this.#phase = "signedOut";
@@ -137,6 +138,10 @@ class SessionStore {
     console.error("device enrolment failed; signed in but the API will refuse this device");
   }
 
+  #current(stored: Session): boolean {
+    return this.#session?.id === stored.id;
+  }
+
   async #recheck(stored: Session): Promise<void> {
     let fresh: QuestUser | null;
 
@@ -145,6 +150,8 @@ class SessionStore {
     } catch {
       return;
     }
+
+    if (!this.#current(stored)) return;
 
     if (fresh === null) {
       this.clear();

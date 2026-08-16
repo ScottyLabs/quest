@@ -18,7 +18,7 @@ use sea_orm::{
 };
 
 use crate::auth::AuthError;
-use crate::auth::extract::session_binding;
+use crate::auth::extract::{binding_error, session_binding};
 use key::DeviceKey;
 use proof::{PROOF_HEADER, request_url};
 
@@ -186,9 +186,10 @@ impl Devices {
     }
 
     async fn check(&self, parts: &mut Parts) -> Result<(), AuthError> {
-        let (_, bound) = session_binding(parts)
-            .await?
-            .ok_or(AuthError::Unauthorized("unauthorized"))?;
+        let bound = match session_binding(parts).await? {
+            Some((_, bound)) => bound,
+            None => return Err(binding_error(parts).await),
+        };
 
         let invalid = AuthError::Unauthorized("proof_invalid");
         let header = parts

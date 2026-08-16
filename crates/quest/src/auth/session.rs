@@ -70,7 +70,6 @@ impl Sessions {
             .with_secure(self.secure_cookies)
             .with_same_site(SameSite::Lax)
             .with_expiry(Expiry::OnInactivity(SESSION_TTL))
-            .with_always_save(true)
     }
 
     pub fn pool(&self) -> Pool {

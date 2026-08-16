@@ -86,10 +86,22 @@ pub async fn session_binding(
     Ok(user.zip(device))
 }
 
+pub async fn binding_error(parts: &mut Parts) -> AuthError {
+    let Ok(session) = session_of(parts).await else {
+        return AuthError::Unauthorized("unauthorized");
+    };
+
+    match session.get::<SessionUser>(USER_KEY).await {
+        Ok(Some(_)) => AuthError::Unauthorized("device_required"),
+        _ => AuthError::Unauthorized("unauthorized"),
+    }
+}
+
 async fn current(parts: &mut Parts) -> Result<(SessionUser, String), AuthError> {
-    session_binding(parts)
-        .await?
-        .ok_or(AuthError::Unauthorized("unauthorized"))
+    match session_binding(parts).await? {
+        Some(bound) => Ok(bound),
+        None => Err(binding_error(parts).await),
+    }
 }
 
 impl<S> FromRequestParts<S> for CurrentUser

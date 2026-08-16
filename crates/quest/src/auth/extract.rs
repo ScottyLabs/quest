@@ -36,7 +36,7 @@ pub async fn bearer_id(mut request: Request, next: Next) -> Response {
         })
         .and_then(|id| HeaderValue::from_str(&format!("{COOKIE_NAME}={id}")).ok())
     {
-        request.headers_mut().append(COOKIE, header);
+        request.headers_mut().insert(COOKIE, header);
     }
 
     next.run(request).await

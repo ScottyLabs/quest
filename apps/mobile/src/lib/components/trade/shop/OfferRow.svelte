@@ -9,9 +9,7 @@
 </script>
 
 <button class="row" class:gone type="button" onclick={() => onpick?.(offer)}>
-  <span class="thumb">
-    <ItemTile art={offer.art} size={54.551} dimmed={gone} />
-  </span>
+  <ItemTile art={offer.art} size={61.811} height={57.872} dimmed={gone} />
 
   <span class="copy">
     <span class="name">{offer.name}</span>
@@ -32,7 +30,7 @@
     display: flex;
     align-items: center;
     width: 100%;
-    height: calc(87 * var(--u));
+    min-height: calc(87 * var(--u));
     padding: 0 calc(8.64 * var(--u)) 0 calc(18.21 * var(--u));
     border: 0;
     border-radius: calc(20 * var(--u));
@@ -50,14 +48,6 @@
     background: var(--trade-sold);
   }
 
-  .thumb {
-    display: grid;
-    flex: none;
-    width: calc(61.811 * var(--u));
-    height: calc(57.872 * var(--u));
-    place-items: center;
-  }
-
   .copy {
     display: flex;
     flex: 1;
@@ -69,13 +59,17 @@
   }
 
   .name {
+    display: -webkit-box;
     overflow: hidden;
     color: var(--secondary);
     font-size: calc(16 * var(--u));
     font-weight: 700;
     letter-spacing: calc(0.32 * var(--u));
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    line-height: calc(20 * var(--u));
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
   }
 
   .left {

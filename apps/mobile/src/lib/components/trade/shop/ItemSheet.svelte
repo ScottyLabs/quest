@@ -137,10 +137,11 @@
       <img class="shot" src={offer.backdrop} alt="" />
     {/if}
 
-    <div class="badge">
+    <div class="badge" style:--shade={offer.shade}>
       {#if offer.art === null}
         <span class="blank"></span>
       {:else}
+        <span class="cast"></span>
         <img class="glyph" src={offer.art} alt="" />
       {/if}
     </div>
@@ -232,8 +233,8 @@
 
   .hero {
     position: relative;
-    flex: 0 0 auto;
-    min-height: calc(120 * var(--u));
+    flex: none;
+    height: calc(224.156 * var(--u));
     pointer-events: auto;
   }
 
@@ -246,47 +247,61 @@
   }
 
   .shot {
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
     display: block;
     width: 100%;
-    height: auto;
-    max-height: calc(224.156 * var(--u));
+    height: calc(142 * var(--u));
     border-radius: calc(26 * var(--u)) calc(26 * var(--u)) 0 0;
     object-fit: contain;
+    object-position: top center;
   }
 
   .badge {
     position: absolute;
-    right: calc(7.63 * var(--u));
-    bottom: calc(-49.29 * var(--u));
+    top: calc(89 * var(--u));
+    right: calc(7.633 * var(--u));
     z-index: 2;
-    width: calc(117.34 * var(--u));
-    height: calc(106.45 * var(--u));
     display: grid;
+    width: calc(124.338 * var(--u));
+    height: calc(106.454 * var(--u));
     place-items: center;
     pointer-events: none;
   }
 
+  .cast,
   .glyph,
   .blank {
+    position: relative;
     grid-area: 1 / 1;
     display: block;
   }
 
-  .glyph {
-    align-self: stretch;
-    justify-self: stretch;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
-
+  .cast,
   .blank {
+    z-index: 0;
     width: calc(91.785 * var(--u));
     height: calc(86.263 * var(--u));
     border-radius: calc(12 * var(--u));
+  }
+
+  .cast {
+    background: var(--shade, var(--trade-after));
+    transform: translate(calc(11 * var(--u)), calc(18 * var(--u))) rotate(-6.69deg)
+      skewX(3.13deg);
+  }
+
+  .blank {
     background: var(--tertiary-normal);
-    transform: rotate(-7.57deg) skewX(1.1deg);
+    transform: rotate(-6.69deg) skewX(3.13deg);
+  }
+
+  .glyph {
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
   }
 
   .sheet {
@@ -297,7 +312,7 @@
     flex-direction: column;
     gap: calc(17 * var(--u));
     min-height: 0;
-    margin-top: calc(-49 * var(--u));
+    margin-top: calc(-82.156 * var(--u));
     padding: calc(18 * var(--u)) calc(18 * var(--u)) calc(21 * var(--u));
     border-radius: calc(20 * var(--u));
     background: var(--highlight);

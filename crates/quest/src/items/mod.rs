@@ -21,6 +21,7 @@ SELECT
     "items"."cost"        AS "cost",
     "items"."image_url"      AS "image_url",
     "items"."background_url" AS "background_url",
+    "items"."icon_shade"     AS "icon_shade",
     GREATEST(
         "items"."quantity_available" - COALESCE(SUM("purchases"."quantity"), 0),
         0
@@ -65,6 +66,7 @@ pub struct Stocked {
     pub cost: i64,
     pub image_url: Option<String>,
     pub background_url: Option<String>,
+    pub icon_shade: Option<String>,
     pub stock: i64,
 }
 

@@ -14,6 +14,8 @@ pub struct Model {
     pub image_url: Option<String>,
     #[sea_orm(column_type = "Text", nullable)]
     pub background_url: Option<String>,
+    #[sea_orm(column_type = "Text", nullable)]
+    pub icon_shade: Option<String>,
     pub quantity_available: i64,
 }
 

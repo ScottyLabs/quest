@@ -443,6 +443,7 @@ pub struct ShopItem {
     pub cost: i64,
     pub image_url: Option<String>,
     pub background_url: Option<String>,
+    pub icon_shade: Option<String>,
     pub stock: i64,
     pub options: Vec<ShopOption>,
 }
@@ -456,6 +457,7 @@ impl ShopItem {
             cost: item.cost,
             image_url: item.image_url,
             background_url: item.background_url,
+            icon_shade: item.icon_shade,
             stock: item.stock,
             options,
         }

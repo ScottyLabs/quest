@@ -1,7 +1,6 @@
-use crate::geography::Point;
 use sea_orm::entity::prelude::*;
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel)]
+#[derive(Clone, Debug, Eq, PartialEq, DeriveEntityModel)]
 #[sea_orm(table_name = "challenge_card")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false, column_type = "Text")]
@@ -9,13 +8,6 @@ pub struct Model {
     pub challenge_id: Uuid,
     pub created_at: DateTimeWithTimeZone,
     pub retired_at: Option<DateTimeWithTimeZone>,
-
-    #[sea_orm(
-        column_type = "custom(\"geography(Point, 4326)\")",
-        select_as = "text",
-        save_as = "geography",
-        nullable)]
-    pub location: Option<Point>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

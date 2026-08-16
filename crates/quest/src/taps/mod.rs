@@ -35,14 +35,52 @@ pub struct Fix {
     pub accuracy: Option<f32>,
 }
 
-pub enum Proximity {
-    Accept,
-    #[allow(dead_code)]
-    Reject(Option<&'static str>),
+// The farthest a phone can be to still be valid.
+const TAP_RADIUS_METERS: f64 = 50.0;
+// The greatest location uncertainty accepted.
+const MAX_LOCATION_ACCURACY_METERS: f32 = 50.0;
+
+const EARTH_RADIUS_METERS: f64 = 6_371_000.0;
+
+fn haversine_distance(a: &Point, b: &Point) -> f64 {
+    let lat1 = a.lat.to_radians();
+    let lat2 = b.lat.to_radians();
+
+    let delta_lat = (b.lat - a.lat).to_radians();
+    let delta_lon = (b.lon - a.lon).to_radians();
+
+    let h =
+        (delta_lat / 2.0).sin().powi(2) + lat1.cos() * lat2.cos() * (delta_lon / 2.0).sin().powi(2);
+
+    2.0 * EARTH_RADIUS_METERS * h.clamp(0.0, 1.0).sqrt().asin()
 }
 
-pub fn proximity(_challenge: Option<Point>, _tapped: Option<Point>) -> Proximity {
-    //TODO: IMPLEMENT PROXIMIMITY CHECKING
+pub enum Proximity {
+    Accept,
+    Reject(&'static str),
+}
+
+pub fn proximity(challenge: Option<Point>, tapped: Option<Fix>) -> Proximity {
+    let Some(challenge) = challenge else {
+        return Proximity::Accept;
+    };
+
+    let Some(tapped) = tapped else {
+        return Proximity::Reject("no_location_fix");
+    };
+
+    if !tapped.accuracy.is_some_and(|accuracy| {
+        accuracy.is_finite() && (0.0..=MAX_LOCATION_ACCURACY_METERS).contains(&accuracy)
+    }) {
+        return Proximity::Reject("location_too_coarse");
+    };
+
+    let distance = haversine_distance(&challenge, &tapped.at);
+
+    if distance > TAP_RADIUS_METERS {
+        return Proximity::Reject("tap_out_of_range");
+    }
+
     Proximity::Accept
 }
 
@@ -51,7 +89,7 @@ pub fn locked(challenge: &challenge::Model) -> bool {
     challenge.open_from > chrono::Utc::now()
 }
 
-const REASONS: [&str; 9] = [
+const REASONS: [&str; 11] = [
     "tap_body_invalid",
     "tap_url_malformed",
     "tap_signature",
@@ -61,6 +99,8 @@ const REASONS: [&str; 9] = [
     "challenge_row_missing",
     "tap_out_of_range",
     "tap_replayed",
+    "location_too_coarse",
+    "no_location_fix",
 ];
 
 const URL_LIMIT: usize = 512;

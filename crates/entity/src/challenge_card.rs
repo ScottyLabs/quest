@@ -1,6 +1,6 @@
 use sea_orm::entity::prelude::*;
 
-#[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel)]
+#[derive(Clone, Debug, Eq, PartialEq, DeriveEntityModel)]
 #[sea_orm(table_name = "challenge_card")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false, column_type = "Text")]

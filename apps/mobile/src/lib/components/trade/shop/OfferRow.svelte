@@ -10,11 +10,7 @@
 
 <button class="row" class:gone type="button" onclick={() => onpick?.(offer)}>
   <span class="thumb">
-    <ItemTile
-      art={offer.art}
-      size={54.551}
-      face={gone ? "var(--trade-sold-tile)" : (offer.tint ?? "var(--skibo)")}
-    />
+    <ItemTile art={offer.art} size={54.551} dimmed={gone} />
   </span>
 
   <span class="copy">

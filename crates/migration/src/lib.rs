@@ -16,7 +16,6 @@ mod m20260815_000100_portal_assets;
 mod m20260815_000200_challenge_code;
 mod m20260815_000300_item_background;
 mod m20260815_000400_item_options;
-mod m20260815_000500_item_tints;
 
 pub struct Migrator;
 
@@ -38,7 +37,6 @@ impl MigratorTrait for Migrator {
             Box::new(m20260815_000200_challenge_code::Migration),
             Box::new(m20260815_000300_item_background::Migration),
             Box::new(m20260815_000400_item_options::Migration),
-            Box::new(m20260815_000500_item_tints::Migration),
             Box::new(m20260810_000200_seed_challenges::Migration),
             Box::new(m20260810_000300_seed_items::Migration),
         ]

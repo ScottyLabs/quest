@@ -51,8 +51,6 @@ pub struct ItemView {
     cost: i64,
     image_url: Option<String>,
     background_url: Option<String>,
-    icon_tint: Option<String>,
-    icon_shade: Option<String>,
     stock: i64,
     options: Vec<OptionView>,
 }
@@ -66,8 +64,6 @@ impl ItemView {
             cost: row.cost,
             image_url: row.image_url,
             background_url: row.background_url,
-            icon_tint: row.icon_tint,
-            icon_shade: row.icon_shade,
             stock: row.stock,
             options,
         }

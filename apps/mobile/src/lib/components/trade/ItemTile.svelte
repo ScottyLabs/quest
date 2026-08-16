@@ -2,15 +2,17 @@
   let {
     art,
     size,
+    height = size,
     dimmed = false,
   }: {
     art: string | null;
     size: number;
+    height?: number;
     dimmed?: boolean;
   } = $props();
 </script>
 
-<span class="tile" class:dimmed style:--tile={size}>
+<span class="tile" class:dimmed style:--tile={size} style:--tall={height}>
   {#if art === null}
     <span class="empty"></span>
   {:else}
@@ -20,16 +22,17 @@
 
 <style>
   .tile {
-    display: grid;
+    position: relative;
+    display: block;
     flex: none;
     width: calc(var(--tile) * var(--u));
-    height: calc(var(--tile) * var(--u));
-    place-items: center;
+    height: calc(var(--tall) * var(--u));
   }
 
   .empty,
   img {
-    grid-area: 1 / 1;
+    position: absolute;
+    inset: 0;
     display: block;
     width: 100%;
     height: 100%;

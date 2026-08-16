@@ -859,6 +859,7 @@ export interface components {
       /** Format: int64 */
       cost: number;
       description: string;
+      icon_shade?: string | null;
       id: string;
       image_url?: string | null;
       name: string;
@@ -1095,6 +1096,7 @@ export interface components {
       /** Format: int64 */
       cost: number;
       description: string;
+      icon_shade?: string | null;
       /** Format: uuid */
       id: string;
       image_url?: string | null;

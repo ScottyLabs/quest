@@ -1,5 +1,4 @@
 <script lang="ts">
-  import ClaimedCard from "$lib/components/store/ClaimedCard.svelte";
   import OfferCard from "$lib/components/store/OfferCard.svelte";
   import Button from "$lib/components/ui/Button.svelte";
   import PagerDots from "$lib/components/ui/PagerDots.svelte";
@@ -91,7 +90,13 @@
             art={step.media.art}
           />
         {:else if step.media.kind === "claim"}
-          <ClaimedCard name={step.media.name} progress={step.media.progress} />
+          <img class="claim" src="/img/quest/ticket.svg" alt="" />
+        {:else if step.media.kind === "tap"}
+          <img class="tap" src="/img/quest/tap.svg" alt="" />
+        {:else if step.media.kind === "gem"}
+          <img class="gem" src="/img/quest/daily-gem.svg" alt="" />
+        {:else if step.media.kind === "cup"}
+          <img class="cup" src="/img/quest/daily-collection.svg" alt="" />
         {:else}
           <img src={step.media.src} alt="" width={step.media.size} height={step.media.size} />
         {/if}

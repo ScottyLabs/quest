@@ -229,6 +229,13 @@ async fn login(
         auth.sessions.bind(&andrew_id, device, &id).await?;
     }
 
+    eprintln!(
+        "auth: signed in andrew={andrew_id} session={} device={} portal={}",
+        &id[..id.len().min(6)],
+        device.is_some(),
+        query.portal()
+    );
+
     Ok(handoff(
         &format!(
             "{target}#session={id}&expires_in={}",

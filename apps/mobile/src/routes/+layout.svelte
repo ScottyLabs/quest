@@ -93,11 +93,12 @@
 
 {#if session.phase !== "restoring" && announcementOpen}
     <WarningDialog
-        title="O-Quest Weather Update"
-        body="Due to rain, O-Quest is delayed until 12:00 PM Monday, August 17."
-        dismiss="Got it"
-        ondismiss={() => (announcementOpen = false)}
-    />
+      image="/img/weather_delay.svg"
+      title="O-Quest Weather Update"
+      body="Due to inclement weather, O-Quest commencement is delayed to 12:00 PM Monday, August 17."
+      dismiss="Got it"
+      ondismiss={() => (announcementOpen = false)}
+/>
 {/if}
 
 <Toast />

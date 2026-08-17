@@ -90,9 +90,21 @@ async fn verify(
     let key =
         DeviceKey::parse(&body.public_key).ok_or(AuthError::BadRequest("public_key_invalid"))?;
 
-    let signature = decode(&body.signature).ok_or(AuthError::Unauthorized("proof_invalid"))?;
+    let Some(signature) = decode(&body.signature) else {
+        eprintln!(
+            "devices: attest signature undecodable pk={}",
+            &body.public_key[..body.public_key.len().min(8)]
+        );
+        return Err(AuthError::Unauthorized("proof_invalid"));
+    };
+
     let message = format!("{LOGIN_CONTEXT}{}", body.nonce);
     if !key.verifies(message.as_bytes(), &signature) {
+        eprintln!(
+            "devices: attest signature mismatch pk={} sig_len={}",
+            &body.public_key[..body.public_key.len().min(8)],
+            signature.len()
+        );
         return Err(AuthError::Unauthorized("proof_invalid"));
     }
 

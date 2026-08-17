@@ -18,7 +18,7 @@ use sea_orm::{
 };
 
 use crate::auth::AuthError;
-use crate::auth::extract::session_binding;
+use crate::auth::extract::{binding_error, session_binding};
 use key::DeviceKey;
 use proof::{PROOF_HEADER, request_url};
 
@@ -186,29 +186,65 @@ impl Devices {
     }
 
     async fn check(&self, parts: &mut Parts) -> Result<(), AuthError> {
-        let (_, bound) = session_binding(parts)
-            .await?
-            .ok_or(AuthError::Unauthorized("unauthorized"))?;
+        let path = parts.uri.path().to_owned();
+        let short = |key: &str| key[..key.len().min(8)].to_owned();
 
-        let invalid = AuthError::Unauthorized("proof_invalid");
-        let header = parts
+        let bound = match session_binding(parts).await? {
+            Some((_, bound)) => bound,
+            None => return Err(binding_error(parts).await),
+        };
+
+        let Some(header) = parts
             .headers
             .get(PROOF_HEADER)
             .and_then(|value| value.to_str().ok())
-            .ok_or(AuthError::Unauthorized("proof_required"))?;
-        let proof = proof::parse(header).ok_or(invalid)?;
+        else {
+            eprintln!(
+                "devices: proof_required path={path} bound={}",
+                short(&bound)
+            );
+            return Err(AuthError::Unauthorized("proof_required"));
+        };
+
+        let Some(proof) = proof::parse(header) else {
+            eprintln!(
+                "devices: proof_unparseable path={path} bound={} len={}",
+                short(&bound),
+                header.len()
+            );
+            return Err(AuthError::Unauthorized("proof_invalid"));
+        };
 
         if proof.key.hex() != bound {
+            eprintln!(
+                "devices: device_mismatch path={path} bound={} proof={}",
+                short(&bound),
+                short(proof.key.hex())
+            );
             return Err(AuthError::Unauthorized("device_mismatch"));
         }
 
-        let url = request_url(&parts.uri, &parts.headers).ok_or(invalid)?;
         let now = proof::now();
+        let Some(url) = request_url(&parts.uri, &parts.headers) else {
+            eprintln!("devices: no_request_url path={path}");
+            return Err(AuthError::Unauthorized("proof_invalid"));
+        };
+
         if !proof.claims.covers(&parts.method, &url, now) {
-            return Err(invalid);
+            eprintln!(
+                "devices: proof_scope path={path} htm={} htu={} url={url} skew={}",
+                proof.claims.htm,
+                proof.claims.htu,
+                now - proof.claims.iat
+            );
+            return Err(AuthError::Unauthorized("proof_invalid"));
         }
 
         if !self.claim_jti(&proof.claims.jti, now).await? {
+            eprintln!(
+                "devices: proof_replayed path={path} jti={}",
+                proof.claims.jti
+            );
             return Err(AuthError::Unauthorized("proof_replayed"));
         }
 

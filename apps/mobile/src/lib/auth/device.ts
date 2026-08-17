@@ -49,6 +49,16 @@ export function devicePublicKey(): Promise<string> {
   return cached;
 }
 
+export async function resetDeviceKey(): Promise<void> {
+  cached = null;
+
+  try {
+    await CryptoApi.deleteKey({ tag: KEY_TAG, algorithm: "ecdsa" });
+  } catch (error) {
+    console.error("device key reset failed", error);
+  }
+}
+
 async function sign(message: string): Promise<Uint8Array> {
   const { signature } = await CryptoApi.sign({ tag: KEY_TAG, data: message });
 
@@ -68,6 +78,21 @@ export async function signMessage(message: string): Promise<string> {
   return base64url(await sign(message));
 }
 
+let drift = 0;
+
+export function noteServerTime(header: string | null): void {
+  if (header === null) return;
+
+  const stamp = Date.parse(header);
+  if (!Number.isFinite(stamp)) return;
+
+  drift = stamp - Date.now();
+}
+
+function serverSeconds(): number {
+  return Math.floor((Date.now() + drift) / 1000);
+}
+
 /** Per-request proof: an ES256 JWT the middleware matches to the session. */
 export async function deviceProof(method: string, url: string): Promise<string> {
   const part = (value: unknown): string => base64url(utf8.encode(JSON.stringify(value)));
@@ -79,7 +104,7 @@ export async function deviceProof(method: string, url: string): Promise<string> 
       pk: await devicePublicKey(),
       htm: method.toUpperCase(),
       htu: `${target.origin}${target.pathname}`,
-      iat: Math.floor(Date.now() / 1000),
+      iat: serverSeconds(),
       jti: hex(crypto.getRandomValues(new Uint8Array(16))),
     }),
   ].join(".");

@@ -239,10 +239,8 @@ impl IdClaims {
     }
 
     pub fn andrew_id(&self) -> Option<String> {
-        self.email
+        self.preferred_username
             .as_deref()
-            .and_then(|email| email.split('@').next())
-            .or(self.preferred_username.as_deref())
             .map(str::to_owned)
             .filter(|id| !id.is_empty())
     }

@@ -746,6 +746,7 @@ export interface components {
       location?: null | components["schemas"]["Location"];
       name: string;
       open_from: string;
+      secret: boolean;
       tagline: string;
     };
     Column: {

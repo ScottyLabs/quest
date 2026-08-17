@@ -84,8 +84,8 @@ fn page(title: &str, markdown: &str) -> String {
 <footer>
 <a href="/support">Support</a> &middot;
 <a href="/privacy-policy">Privacy Policy</a> &middot;
-<a href="/terms-of-service">Terms of Service</a>
-<a href="/faq">FAQ</a> &middot;
+<a href="/terms-of-service">Terms of Service</a> &middot;
+<a href="/faq">FAQ</a>;
 </footer>
 </body>
 </html>

@@ -36,7 +36,7 @@ pub async fn bearer_id(mut request: Request, next: Next) -> Response {
         })
         .and_then(|id| HeaderValue::from_str(&format!("{COOKIE_NAME}={id}")).ok())
     {
-        request.headers_mut().append(COOKIE, header);
+        request.headers_mut().insert(COOKIE, header);
     }
 
     next.run(request).await
@@ -86,10 +86,43 @@ pub async fn session_binding(
     Ok(user.zip(device))
 }
 
+pub async fn binding_error(parts: &mut Parts) -> AuthError {
+    let path = parts.uri.path().to_owned();
+    let presented = bearer(&parts.headers).is_some();
+    let cookied = parts.headers.get(COOKIE).is_some();
+
+    let Ok(session) = session_of(parts).await else {
+        eprintln!(
+            "auth: unauthorized path={path} bearer={presented} cookie={cookied} session=unreadable"
+        );
+        return AuthError::Unauthorized("unauthorized");
+    };
+
+    let user = session.get::<SessionUser>(USER_KEY).await.ok().flatten();
+    let device = session.get::<String>(DEVICE_KEY).await.ok().flatten();
+    let found = session
+        .id()
+        .map(|id| id.to_string())
+        .map(|id| id[..id.len().min(6)].to_owned());
+
+    eprintln!(
+        "auth: unauthorized path={path} bearer={presented} cookie={cookied} session={found:?} \
+         andrew={:?} device={}",
+        user.as_ref().map(|row| row.andrew_id.as_str()),
+        device.is_some()
+    );
+
+    match user {
+        Some(_) => AuthError::Unauthorized("device_required"),
+        None => AuthError::Unauthorized("unauthorized"),
+    }
+}
+
 async fn current(parts: &mut Parts) -> Result<(SessionUser, String), AuthError> {
-    session_binding(parts)
-        .await?
-        .ok_or(AuthError::Unauthorized("unauthorized"))
+    match session_binding(parts).await? {
+        Some(bound) => Ok(bound),
+        None => Err(binding_error(parts).await),
+    }
 }
 
 impl<S> FromRequestParts<S> for CurrentUser

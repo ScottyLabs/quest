@@ -15,11 +15,10 @@ export interface Quest {
   state: QuestState;
   category: string;
   opensAt: string;
+  secret: boolean;
 }
 
 export type ChallengeView = components["schemas"]["ChallengeView"];
-
-type BoardBody = components["schemas"]["Board"];
 
 export type Registered = components["schemas"]["Registered"];
 
@@ -40,7 +39,7 @@ export async function registerTap(url: string): Promise<Registered> {
   throw new TapError(error?.error ?? "unknown");
 }
 
-export const CATEGORIES: string[] = Object.keys(THEMES);
+export const CATEGORIES: string[] = Object.keys(THEMES).filter((id) => id !== "secrets");
 
 export function toQuest(row: ChallengeView): Quest {
   return {
@@ -52,12 +51,11 @@ export function toQuest(row: ChallengeView): Quest {
     state: row.cleared ? "done" : "open",
     category: row.category,
     opensAt: row.open_from,
+    secret: row.secret,
   };
 }
 
 const TTL = 15 * 60 * 1000;
-
-type DailyBody = components["schemas"]["DailyView"];
 
 export const assignment = $state<{ day: string | null; quest: Quest | null }>({
   day: null,
@@ -67,25 +65,22 @@ export const assignment = $state<{ day: string | null; quest: Quest | null }>({
 async function refreshDaily(): Promise<void> {
   try {
     const { data, response } = await api.GET("/api/users/me/daily");
-    if (!response.ok) return;
+    if (!response.ok || data === undefined) return;
 
-    const body = (data ?? null) as DailyBody | null;
-    if (body === null) return;
-
-    assignment.day = body.day;
-    assignment.quest = body.challenge ? toQuest(body.challenge) : null;
+    assignment.day = data.day;
+    assignment.quest = data.challenge ? toQuest(data.challenge) : null;
   } catch {
-    return;
+    // Keep the previous daily assignment if refresh fails.
   }
 }
 
 async function board(): Promise<Quest[]> {
   const { data, response } = await api.GET("/api/challenges");
-  if (!response.ok) throw new Error(`challenges responded ${response.status}`);
+  if (!response.ok || data === undefined) {
+    throw new Error(`challenges responded ${response.status}`);
+  }
 
-  const body = data as BoardBody;
-
-  return body.challenges.map(toQuest);
+  return data.challenges.map(toQuest);
 }
 
 async function load(): Promise<Quest[]> {
@@ -94,8 +89,34 @@ async function load(): Promise<Quest[]> {
   return rows;
 }
 
+function isQuest(raw: unknown): raw is Quest {
+  return (
+    typeof raw === "object" &&
+    raw !== null &&
+    "id" in raw &&
+    typeof raw.id === "string" &&
+    "title" in raw &&
+    typeof raw.title === "string" &&
+    "detail" in raw &&
+    typeof raw.detail === "string" &&
+    "description" in raw &&
+    typeof raw.description === "string" &&
+    "reward" in raw &&
+    typeof raw.reward === "number" &&
+    "state" in raw &&
+    (raw.state === "open" || raw.state === "done") &&
+    "category" in raw &&
+    typeof raw.category === "string" &&
+    "opensAt" in raw &&
+    typeof raw.opensAt === "string" &&
+    "secret" in raw &&
+    typeof raw.secret === "boolean"
+  );
+}
+
 function revive(raw: unknown): Quest[] | null {
-  return Array.isArray(raw) ? (raw as Quest[]) : null;
+  if (!Array.isArray(raw) || !raw.every((item) => isQuest(item))) return null;
+  return raw;
 }
 
 export const quests = new Resource<Quest[]>({
@@ -106,7 +127,18 @@ export const quests = new Resource<Quest[]>({
 });
 
 export function inCategory(all: Quest[], id: string): Quest[] {
-  return id === FALLBACK ? all : all.filter((quest) => quest.category === id);
+  if (id === FALLBACK) {
+    const normal = all.filter((quest) => !quest.secret);
+    const secrets = all.filter((quest) => quest.secret);
+
+    return [...normal, ...secrets];
+  }
+
+  return all.filter((quest) => !quest.secret && quest.category === id);
+}
+
+export function countedTotal(list: Quest[]): number {
+  return list.reduce((count, quest) => count + (quest.secret ? 0 : 1), 0);
 }
 
 export function done(list: Quest[]): number {

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import ClaimedCard from "$lib/components/store/ClaimedCard.svelte";
   import OfferCard from "$lib/components/store/OfferCard.svelte";
   import Button from "$lib/components/ui/Button.svelte";
   import PagerDots from "$lib/components/ui/PagerDots.svelte";
@@ -79,7 +78,7 @@
     </div>
 
     <div class="hero">
-      <div class="media">
+      <div class:ticket-media={step.media.kind === "claim"} class="media">
         {#if step.media.kind === "coin"}
           <ScottyCoin size={MEDIA_BOX} />
         {:else if step.media.kind === "offer"}
@@ -91,7 +90,13 @@
             art={step.media.art}
           />
         {:else if step.media.kind === "claim"}
-          <ClaimedCard name={step.media.name} progress={step.media.progress} />
+          <img class="claim" src="/img/quest/ticket.svg" alt="" />
+        {:else if step.media.kind === "tap"}
+          <img class="tap" src="/img/quest/tap.svg" alt="" />
+        {:else if step.media.kind === "gem"}
+          <img class="gem" src="/img/quest/daily-gem.svg" alt="" />
+        {:else if step.media.kind === "cup"}
+          <img class="cup" src="/img/quest/daily-collection.svg" alt="" />
         {:else}
           <img src={step.media.src} alt="" width={step.media.size} height={step.media.size} />
         {/if}
@@ -191,15 +196,34 @@
     height: 163px;
   }
 
+  .media.ticket-media {
+  height: 230px;
+}
+
   .media :global(img) {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    /* a native image drag swallows the pointerup that ends a swipe */
-    pointer-events: none;
-    user-select: none;
-    -webkit-user-drag: none;
-  }
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  /* a native image drag swallows the pointerup that ends a swipe */
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.claim {
+  width: auto;
+  height: 220px;
+}
+
+.gem {
+  width: 115px;
+  height: 115px;
+}
+
+.cup {
+  width: 160px;
+  height: 160px;
+}
 
   .copy {
     display: flex;

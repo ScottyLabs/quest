@@ -1,7 +1,13 @@
 /// <reference types="vite/client" />
 
 import type { components } from "$lib/api/schema";
-import { deviceProof, devicePublicKey, signChallenge } from "./device";
+import {
+  deviceProof,
+  devicePublicKey,
+  noteServerTime,
+  resetDeviceKey,
+  signChallenge,
+} from "./device";
 import { AuthError } from "./types";
 import type { AuthErrorCode, QuestUser } from "./types";
 
@@ -41,6 +47,7 @@ const KNOWN_CODES: readonly AuthErrorCode[] = [
   "proof_required",
   "proof_invalid",
   "proof_replayed",
+  "device_required",
   "device_mismatch",
   "device_owned",
   "device_unverified",
@@ -81,11 +88,15 @@ export async function signed(request: Request, id: string | null): Promise<Respo
     headers.set("x-device-proof", await deviceProof(request.method, request.url));
   }
 
+  let response: Response;
   try {
-    return await fetch(new Request(request, { credentials: "include", headers }));
+    response = await fetch(new Request(request, { credentials: "include", headers }));
   } catch {
     throw new AuthError("network", `could not reach ${apiBase}`);
   }
+
+  noteServerTime(response.headers.get("date"));
+  return response;
 }
 
 export async function send(
@@ -111,7 +122,7 @@ function parseUser(raw: UserBody | undefined): QuestUser {
   };
 }
 
-export async function loginTicket(): Promise<string> {
+async function attest(): Promise<Response> {
   const challenge = await send("/auth/challenge", null);
   if (!challenge.ok) throw new AuthError(await responseError(challenge));
 
@@ -120,7 +131,7 @@ export async function loginTicket(): Promise<string> {
     throw new AuthError("nonce_invalid", "challenge carried no nonce");
   }
 
-  const response = await send("/auth/device", null, {
+  return await send("/auth/device", null, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
@@ -129,6 +140,16 @@ export async function loginTicket(): Promise<string> {
       signature: await signChallenge(nonce),
     }),
   });
+}
+
+export async function loginTicket(): Promise<string> {
+  let response = await attest();
+
+  if (response.status === 401) {
+    await resetDeviceKey();
+    response = await attest();
+  }
+
   if (!response.ok) throw new AuthError(await responseError(response));
 
   const ticket = (await readJson<TicketBody>(response))?.ticket;

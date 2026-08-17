@@ -20,6 +20,7 @@ pub struct Model {
         nullable
     )]
     pub location: Option<Point>,
+    pub secret: bool,
     pub coin_value: i64,
     #[sea_orm(column_type = "Text", nullable, unique)]
     pub code: Option<String>,

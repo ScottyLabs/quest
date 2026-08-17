@@ -67,19 +67,24 @@
   }
 
   function place(): void {
-    void run("place", async () => {
-      const here = await fix();
-      if (!here) throw new Error("no_location_fix");
+  void run("place", async () => {
+    const here = await fix();
 
-      if (here.accuracy === undefined) throw new Error("accuracy_unknown");
-      if (here.accuracy > PRECISE_METRES) {
-        throw new Error(`fix_too_coarse_${Math.round(here.accuracy)}m`);
-      }
+    // Staff card placement requires an actual coordinate fix.
+    // Unlike challenge scans, "location enabled but no fix" is not enough here.
+    if (here.lat === undefined || here.lon === undefined) {
+      throw new Error("no_location_fix");
+    }
 
-      accuracy = here.accuracy;
-      await placeCard(card.card_id, here.lat, here.lon);
-    });
-  }
+    if (here.accuracy === undefined) throw new Error("accuracy_unknown");
+    if (here.accuracy > PRECISE_METRES) {
+      throw new Error(`fix_too_coarse_${Math.round(here.accuracy)}m`);
+    }
+
+    accuracy = here.accuracy;
+    await placeCard(card.card_id, here.lat, here.lon);
+  });
+}
 </script>
 
 <div class="scrim" role="presentation" onclick={onclose}>

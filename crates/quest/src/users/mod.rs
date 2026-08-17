@@ -23,6 +23,7 @@ impl Users {
     pub async fn upsert(&self, user: &SessionUser) -> Result<users::Model, AuthError> {
         let fresh = users::ActiveModel {
             andrew_id: ActiveValue::Set(user.andrew_id.clone()),
+            player: ActiveValue::Set(user.first_year),
             ..Default::default()
         };
 
@@ -36,9 +37,24 @@ impl Users {
             .await
             .map_err(db_down)?;
 
-        self.by_andrew_id(&user.andrew_id)
+        let row = self
+            .by_andrew_id(&user.andrew_id)
             .await?
-            .ok_or(AuthError::Upstream("user_row_missing"))
+            .ok_or(AuthError::Upstream("user_row_missing"))?;
+
+        // grant only so a hand-set flag survives the next login
+        if !user.first_year || row.player {
+            return Ok(row);
+        }
+
+        users::ActiveModel {
+            id: ActiveValue::Unchanged(row.id),
+            player: ActiveValue::Set(true),
+            ..Default::default()
+        }
+        .update(&self.db)
+        .await
+        .map_err(db_down)
     }
 
     async fn by_andrew_id(&self, andrew_id: &str) -> Result<Option<users::Model>, AuthError> {

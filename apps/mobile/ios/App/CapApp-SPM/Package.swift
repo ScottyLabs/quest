@@ -18,6 +18,7 @@ let package = Package(
         .package(name: "CapacitorCamera", path: "../../../../../node_modules/.deno/@capacitor+camera@8.2.2/node_modules/@capacitor/camera"),
         .package(name: "CapacitorFilesystem", path: "../../../../../node_modules/.deno/@capacitor+filesystem@8.1.2/node_modules/@capacitor/filesystem"),
         .package(name: "CapacitorGeolocation", path: "../../../../../node_modules/.deno/@capacitor+geolocation@8.2.0/node_modules/@capacitor/geolocation"),
+        .package(name: "CapacitorSplashScreen", path: "../../../../../node_modules/.deno/@capacitor+splash-screen@8.0.2/node_modules/@capacitor/splash-screen"),
         .package(name: "CapgoCapacitorNfc", path: "../../../../../node_modules/.deno/@capgo+capacitor-nfc@8.2.2/node_modules/@capgo/capacitor-nfc"),
         .package(name: "CapgoCapacitorUpdater", path: "../../../../../node_modules/.deno/@capgo+capacitor-updater@8.51.3/node_modules/@capgo/capacitor-updater"),
         .package(name: "PerfoodCapacitorCryptoApi", path: "../../../../../node_modules/.deno/@perfood+capacitor-crypto-api@8.0.0/node_modules/@perfood/capacitor-crypto-api")
@@ -34,6 +35,7 @@ let package = Package(
                 .product(name: "CapacitorCamera", package: "CapacitorCamera"),
                 .product(name: "CapacitorFilesystem", package: "CapacitorFilesystem"),
                 .product(name: "CapacitorGeolocation", package: "CapacitorGeolocation"),
+                .product(name: "CapacitorSplashScreen", package: "CapacitorSplashScreen"),
                 .product(name: "CapgoCapacitorNfc", package: "CapgoCapacitorNfc"),
                 .product(name: "CapgoCapacitorUpdater", package: "CapgoCapacitorUpdater"),
                 .product(name: "PerfoodCapacitorCryptoApi", package: "PerfoodCapacitorCryptoApi")

@@ -6,6 +6,7 @@
     dismiss = "Not now",
     onconfirm,
     ondismiss,
+    image,
   }: {
     title: string;
     body: string;
@@ -13,6 +14,7 @@
     dismiss?: string;
     onconfirm?: () => void;
     ondismiss: () => void;
+    image?: string;
   } = $props();
 </script>
 
@@ -26,7 +28,11 @@
     tabindex="-1"
     onclick={(event) => event.stopPropagation()}
   >
-    <span class="bang" aria-hidden="true">!</span>
+    {#if image}
+  <img class="dialog-image" src={image} alt="" />
+{:else}
+  <span class="bang" aria-hidden="true">!</span>
+{/if}
 
     <h2>{title}</h2>
     <p>{body}</p>
@@ -60,6 +66,13 @@
     text-align: center;
   }
 
+  .dialog-image {
+    display: block;
+    width: calc(96 * var(--u));
+    height: calc(96 * var(--u));
+    margin: 0 auto calc(14 * var(--u));
+    object-fit: contain;
+  }
   .bang {
     display: grid;
     width: calc(52 * var(--u));

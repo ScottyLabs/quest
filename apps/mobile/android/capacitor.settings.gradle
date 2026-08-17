@@ -20,6 +20,9 @@ project(':capacitor-filesystem').projectDir = new File('../../../node_modules/.d
 include ':capacitor-geolocation'
 project(':capacitor-geolocation').projectDir = new File('../../../node_modules/.deno/@capacitor+geolocation@8.2.0/node_modules/@capacitor/geolocation/android')
 
+include ':capacitor-splash-screen'
+project(':capacitor-splash-screen').projectDir = new File('../../../node_modules/.deno/@capacitor+splash-screen@8.0.2/node_modules/@capacitor/splash-screen/android')
+
 include ':capgo-capacitor-nfc'
 project(':capgo-capacitor-nfc').projectDir = new File('../../../node_modules/.deno/@capgo+capacitor-nfc@8.2.2/node_modules/@capgo/capacitor-nfc/android')
 

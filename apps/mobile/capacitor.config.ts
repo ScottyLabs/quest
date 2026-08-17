@@ -13,11 +13,14 @@ const config: CapacitorConfig = {
   ...(devServer ? { server: { url: devServer, cleartext: true } } : {}),
   plugins: {
     ...(apiBase ? { Quest: { apiBase } } : {}),
+    ...(devServer ? {} : { SplashScreen: { launchAutoHide: false } }),
     CapacitorUpdater: {
       updateUrl: `${updateBase}/api/app/updates`,
       statsUrl: "",
       channelUrl: "",
       autoUpdate: devServer ? "off" : "onLaunch",
+      autoSplashscreen: !devServer,
+      autoSplashscreenLoader: !devServer,
       appReadyTimeout: 15000,
     },
   },

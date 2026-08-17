@@ -746,6 +746,7 @@ export interface components {
       location?: null | components["schemas"]["Location"];
       name: string;
       open_from: string;
+      secret: boolean;
       tagline: string;
     };
     Column: {
@@ -1005,6 +1006,7 @@ export interface components {
       anonymous: boolean;
       created_at: string;
       dorm?: string | null;
+      player: boolean;
     };
     PurchaseView: {
       /** Format: int64 */
@@ -1142,6 +1144,7 @@ export interface components {
       accuracy?: number | null;
       /** Format: double */
       lat?: number | null;
+      location_enabled?: boolean;
       /** Format: double */
       lon?: number | null;
       url: string;

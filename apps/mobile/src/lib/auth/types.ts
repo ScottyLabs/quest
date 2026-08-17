@@ -30,6 +30,7 @@ export type AuthErrorCode =
   | "proof_required"
   | "proof_invalid"
   | "proof_replayed"
+  | "device_required"
   | "device_unknown"
   | "device_mismatch"
   | "device_owned"
@@ -66,6 +67,8 @@ const MESSAGES: Record<AuthErrorCode, string> = {
   proof_required: "This phone isn't verified. Please sign in again.",
   proof_invalid: "Couldn't verify this phone. Please sign in again.",
   proof_replayed: "That request was already sent. Please try again.",
+  device_required:
+    "This phone isn't linked to your account yet. Open Orientation Quest from the app icon and sign in there.",
   device_unknown: "That phone isn't registered to your account.",
   device_mismatch: "This phone doesn't match the one you signed in on. Please sign in again.",
   device_owned:

@@ -2897,7 +2897,8 @@
           "category",
           "coin_value",
           "open_from",
-          "cleared"
+          "cleared",
+          "secret"
         ],
         "properties": {
           "category": {
@@ -2931,6 +2932,9 @@
           },
           "open_from": {
             "type": "string"
+          },
+          "secret": {
+            "type": "boolean"
           },
           "tagline": {
             "type": "string"
@@ -3694,7 +3698,7 @@
       },
       "Profile": {
         "type": "object",
-        "required": ["andrew_id", "anonymous", "created_at"],
+        "required": ["andrew_id", "player", "anonymous", "created_at"],
         "properties": {
           "andrew_id": {
             "type": "string"
@@ -3707,6 +3711,9 @@
           },
           "dorm": {
             "type": ["string", "null"]
+          },
+          "player": {
+            "type": "boolean"
           }
         }
       },
@@ -4128,6 +4135,9 @@
           "lat": {
             "type": ["number", "null"],
             "format": "double"
+          },
+          "location_enabled": {
+            "type": "boolean"
           },
           "lon": {
             "type": ["number", "null"],

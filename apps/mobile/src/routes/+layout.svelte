@@ -1,6 +1,4 @@
 <script lang="ts">
-  import "../app.css";
-  import { Capacitor } from "@capacitor/core";
   import { authMessage, session } from "$lib/auth";
   import { watchCallbacks } from "$lib/auth/callback";
   import DeviceBlocked from "$lib/components/shell/DeviceBlocked.svelte";
@@ -8,10 +6,12 @@
   import { watchTaps } from "$lib/deeplink";
   import { NfcError } from "$lib/nfc";
   import { warn } from "$lib/notice.svelte";
-  import { handleTap } from "$lib/tap";
   import { hideSplash } from "$lib/splash";
+  import { handleTap } from "$lib/tap";
   import { ready } from "$lib/updates";
   import { me } from "$lib/user.svelte";
+  import { Capacitor } from "@capacitor/core";
+  import "../app.css";
 
   const SETTLE_GRACE = 2000;
 

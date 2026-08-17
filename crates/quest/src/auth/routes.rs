@@ -8,13 +8,13 @@ use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{any, get, post};
 use axum::{Extension, Json, Router};
 use axum_oidc::error::MiddlewareError;
-use axum_oidc::{OidcAuthLayer, OidcClaims, OidcLoginLayer, handle_oidc_redirect};
+use axum_oidc::{OidcAuthLayer, OidcClaims, OidcLoginLayer, OidcUserInfo, handle_oidc_redirect};
 use serde::{Deserialize, Serialize};
 use tower::ServiceBuilder;
 use tower_sessions::Session;
 
 use super::extract::CurrentUser;
-use super::oidc::{GroupClaims, IdClaims, SessionWrapper, validate_return};
+use super::oidc::{Class, GroupClaims, IdClaims, SessionWrapper, validate_return};
 use super::session::{DEVICE_KEY, SESSION_TTL, SessionUser, USER_KEY};
 use super::{Auth, AuthError};
 use crate::devices::Devices;
@@ -161,34 +161,59 @@ async fn guard(
     next.run(request).await
 }
 
+fn json<T: Serialize>(value: &T) -> String {
+    serde_json::to_string(value).unwrap_or_else(|err| format!("<unserializable: {err}>"))
+}
+
 async fn login(
     State(auth): State<Arc<Auth>>,
     Extension(users): Extension<Users>,
     Extension(devices): Extension<Devices>,
     claims: OidcClaims<GroupClaims>,
+    user_info: Option<OidcUserInfo<GroupClaims>>,
     session: Session,
     Query(query): Query<LoginQuery>,
 ) -> Result<Response, AuthError> {
     let target = validate_return(query.return_to.as_deref(), auth.app_url())?;
+
+    let from_userinfo = match user_info.as_ref() {
+        Some(info) => {
+            eprintln!("auth: userinfo {}", json(&info.0));
+            info.0.additional_claims.class.clone()
+        }
+        None => {
+            eprintln!("auth: userinfo <absent>");
+            Class::default()
+        }
+    };
+
+    eprintln!("auth: id_token {}", json(&claims.0));
+
     let claims = IdClaims::from(&claims);
 
     let Some(andrew_id) = claims.andrew_id() else {
         return Ok(failed(Some(&target), "no_andrew_id"));
     };
 
+    let first_year = claims.first_year() || from_userinfo.first_year();
+
+    eprintln!(
+        "auth: claims andrew={andrew_id} class={:?} userinfo_class={from_userinfo:?} \
+         first_year={first_year} other={:?}",
+        claims.class, claims.extra
+    );
+
     let user = SessionUser {
         name: claims.display_name(),
         andrew_id,
         admin: auth.is_admin(&claims.groups),
+        first_year,
         email: claims.email,
         groups: claims.groups,
     };
 
     let row = users.upsert(&user).await?;
 
-    // A browser portal session has no enrolled device: it is deliberately
-    // unbound, which keeps it out of every device-proofed route and stops it
-    // from evicting the same person's phone session.
     let device = if query.portal() {
         None
     } else {
@@ -224,9 +249,16 @@ async fn login(
         .ok_or(AuthError::Upstream("session_no_id"))?
         .to_string();
 
-    if device.is_some() {
-        auth.sessions.bind(&andrew_id, &id).await?;
+    if let Some(device) = device.as_deref() {
+        auth.sessions.bind(&andrew_id, device, &id).await?;
     }
+
+    eprintln!(
+        "auth: signed in andrew={andrew_id} session={} device={} portal={}",
+        &id[..id.len().min(6)],
+        device.is_some(),
+        query.portal()
+    );
 
     Ok(handoff(
         &format!(
@@ -370,11 +402,16 @@ async fn logout(
     session: Session,
     CurrentUser(user): CurrentUser,
 ) -> Result<Json<LogoutResponse>, AuthError> {
+    let device = session.get::<String>(DEVICE_KEY).await.ok().flatten();
+
     session
         .flush()
         .await
         .map_err(|_| AuthError::Upstream("session_store_unavailable"))?;
-    auth.sessions.release(&user.andrew_id).await?;
+
+    if let Some(device) = device.as_deref() {
+        auth.sessions.release(&user.andrew_id, device).await?;
+    }
 
     Ok(Json(LogoutResponse {
         end_session_url: auth

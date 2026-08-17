@@ -124,6 +124,22 @@
       "rail": ["#004281", "#024382"],
       "shade": null,
       "logo": "/img/quest/theme/residence_relaxation.svg"
+    },
+    "secrets": {
+      "label": "Secrets",
+      "title": null,
+      "hint": "",
+      "mark": null,
+      "accent": "#111111",
+      "crown": "#111111",
+      "sink": "#000000",
+      "veil": "#111111",
+      "band": "#000000",
+      "canvas": "#4a4a4a",
+      "tint": "#777777",
+      "rail": ["#555555", "#000000"],
+      "shade": "#111111",
+      "logo": null
     }
   }
 }

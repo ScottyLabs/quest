@@ -14,6 +14,7 @@ const POOL: &str = r#"
 SELECT "challenge"."id" AS "id"
 FROM "challenge"
 WHERE "challenge"."open_from" <= $2
+      AND NOT "challenge"."secret"
   AND EXISTS (
       SELECT 1 FROM "challenge_card"
       WHERE "challenge_card"."challenge_id" = "challenge"."id"

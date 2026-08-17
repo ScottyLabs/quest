@@ -176,6 +176,12 @@ async fn login(
         return Ok(failed(Some(&target), "no_andrew_id"));
     };
 
+    eprintln!(
+        "auth: claims andrew={andrew_id} class={:?} first_year={}",
+        claims.class,
+        claims.first_year()
+    );
+
     let user = SessionUser {
         name: claims.display_name(),
         andrew_id,
@@ -187,9 +193,6 @@ async fn login(
 
     let row = users.upsert(&user).await?;
 
-    // A browser portal session has no enrolled device: it is deliberately
-    // unbound, which keeps it out of every device-proofed route and stops it
-    // from evicting the same person's phone session.
     let device = if query.portal() {
         None
     } else {

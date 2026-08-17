@@ -59,11 +59,22 @@ pub enum Class {
 
 pub const FIRST_YEAR: &str = "First-Year";
 
+fn normalized(value: &str) -> String {
+    value
+        .chars()
+        .filter(char::is_ascii_alphanumeric)
+        .map(|letter| letter.to_ascii_lowercase())
+        .collect()
+}
+
 impl Class {
     fn has(&self, want: &str) -> bool {
+        let want = normalized(want);
+        let same = |value: &String| normalized(value) == want;
+
         match self {
-            Self::One(value) => value == want,
-            Self::Many(values) => values.iter().any(|value| value == want),
+            Self::One(value) => same(value),
+            Self::Many(values) => values.iter().any(same),
             Self::Unset | Self::Other(_) => false,
         }
     }

@@ -12,7 +12,7 @@ const PROOF_ALG: &str = "ES256";
 
 const PROOF_TYP: &str = "quest-proof+jwt";
 
-pub const SKEW_SECS: i64 = 60;
+pub const SKEW_SECS: i64 = 300;
 
 pub const JTI_TTL_SECS: i64 = 2 * SKEW_SECS + 60;
 

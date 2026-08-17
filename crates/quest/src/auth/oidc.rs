@@ -86,6 +86,8 @@ pub struct GroupClaims {
     pub groups: Vec<String>,
     #[serde(default)]
     pub class: Class,
+    #[serde(flatten, default)]
+    pub extra: serde_json::Map<String, serde_json::Value>,
 }
 
 impl openidconnect::AdditionalClaims for GroupClaims {}
@@ -208,6 +210,7 @@ pub struct IdClaims {
     pub preferred_username: Option<String>,
     pub groups: Vec<String>,
     pub class: Class,
+    pub extra: Vec<String>,
 }
 
 impl From<&OidcClaims<GroupClaims>> for IdClaims {
@@ -223,6 +226,12 @@ impl From<&OidcClaims<GroupClaims>> for IdClaims {
                 .map(|user| user.as_str().to_owned()),
             groups: claims.additional_claims().groups.clone(),
             class: claims.additional_claims().class.clone(),
+            extra: claims
+                .additional_claims()
+                .extra
+                .keys()
+                .map(String::clone)
+                .collect(),
         }
     }
 }

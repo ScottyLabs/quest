@@ -11,8 +11,6 @@
   import CostPanel from "./CostPanel.svelte";
   import ItemSummary from "./ItemSummary.svelte";
   import OptionField from "./OptionField.svelte";
-  import Stepper from "./Stepper.svelte";
-
   let {
     offer,
     balance,
@@ -50,7 +48,6 @@
   let lift = $state(0);
 
   const gone = $derived(offer.stock <= 0);
-  const ceiling = $derived(Math.max(1, offer.stock));
   const total = $derived(offer.cost * quantity);
   const remaining = $derived(balance - total);
   const short = $derived(remaining < 0);
@@ -189,15 +186,6 @@
                 <p>{failed}</p>
               {/if}
             </div>
-
-            <Stepper
-              value={quantity}
-              max={ceiling}
-              onchange={(next) => {
-                quantity = next;
-                failed = null;
-              }}
-            />
           </div>
         </div>
 

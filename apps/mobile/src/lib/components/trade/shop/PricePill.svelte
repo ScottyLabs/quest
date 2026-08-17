@@ -5,7 +5,7 @@
 </script>
 
 <span class="pill">
-  <CoinAmount amount={cost} />
+  <CoinAmount amount={cost} textSize={13} />
 </span>
 
 <style>

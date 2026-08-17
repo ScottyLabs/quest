@@ -1005,6 +1005,7 @@ export interface components {
       anonymous: boolean;
       created_at: string;
       dorm?: string | null;
+      player: boolean;
     };
     PurchaseView: {
       /** Format: int64 */

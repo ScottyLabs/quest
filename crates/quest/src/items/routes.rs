@@ -211,6 +211,10 @@ async fn buy(
 
     let row = users.row(&user).await?;
 
+    if !row.player {
+        return Err(AuthError::Forbidden("not_a_player"));
+    }
+
     Ok(Json(
         items.purchase(row.id, id, quantity, &chosen).await?.into(),
     ))

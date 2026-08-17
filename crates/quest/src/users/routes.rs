@@ -24,6 +24,7 @@ pub fn router(users: Users) -> OpenApiRouter {
 struct Profile {
     andrew_id: String,
     dorm: Option<String>,
+    player: bool,
     anonymous: bool,
     created_at: String,
 }
@@ -47,6 +48,7 @@ async fn me(
     Ok(Json(Profile {
         andrew_id: row.andrew_id,
         dorm: row.dorm.map(|dorm| dorm.to_value()),
+        player: row.player,
         anonymous: row.anonymous,
         created_at: row.created_at.to_rfc3339(),
     }))

@@ -60,6 +60,10 @@ pub enum Class {
 pub const FIRST_YEAR: &str = "First-Year";
 
 impl Class {
+    pub fn first_year(&self) -> bool {
+        self.has(FIRST_YEAR)
+    }
+
     fn has(&self, want: &str) -> bool {
         match self {
             Self::One(value) => value == want,
@@ -73,7 +77,7 @@ impl Class {
 pub struct GroupClaims {
     #[serde(default)]
     pub groups: Vec<String>,
-    #[serde(default, rename = "Class")]
+    #[serde(default)]
     pub class: Class,
     #[serde(flatten, default)]
     pub extra: serde_json::Map<String, serde_json::Value>,

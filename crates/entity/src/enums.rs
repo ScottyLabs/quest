@@ -38,6 +38,8 @@ pub enum ChallengeCategory {
     MinorMajorGeneral,
     #[sea_orm(string_value = "residence_relaxation")]
     ResidenceAndRelaxation,
+    #[sea_orm(string_value = "secrets")]
+    Secrets,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, EnumIter, DeriveActiveEnum)]

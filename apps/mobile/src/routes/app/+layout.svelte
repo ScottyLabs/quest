@@ -1,56 +1,57 @@
 <script lang="ts">
-  import { card, closeCard } from "$lib/staff.svelte";
-  import { destination, HOME, steer } from "$lib/gate";
+  import { goto, onNavigate } from "$app/navigation";
   import { page } from "$app/state";
-  import BottomNav from "$lib/components/shell/BottomNav.svelte";
+  import { session } from "$lib/auth";
+  import { caution, hush } from "$lib/caution.svelte";
+  import { celebration, closeCelebration } from "$lib/celebrate.svelte";
   import DailyBriefing from "$lib/components/daily/DailyBriefing.svelte";
+  import BottomNav from "$lib/components/shell/BottomNav.svelte";
+  import WarningDialog from "$lib/components/shell/WarningDialog.svelte";
+  import StaffCardSheet from "$lib/components/staff/StaffCardSheet.svelte";
   import NfcSheet from "$lib/components/tap/NfcSheet.svelte";
   import TapFailedSheet from "$lib/components/tap/TapFailedSheet.svelte";
-  import StaffCardSheet from "$lib/components/staff/StaffCardSheet.svelte";
   import TapResultSheet from "$lib/components/tap/TapResultSheet.svelte";
+  import RefundDialog from "$lib/components/trade/receipt/RefundDialog.svelte";
+  import ItemSheet from "$lib/components/trade/shop/ItemSheet.svelte";
+  import PurchasedDialog from "$lib/components/trade/shop/PurchasedDialog.svelte";
   import TicketSheet from "$lib/components/trade/ticket/TicketSheet.svelte";
-  import WarningDialog from "$lib/components/shell/WarningDialog.svelte";
+  import { briefing, greet } from "$lib/daily.svelte";
+  import { destination, HOME, steer } from "$lib/gate";
+  import { permitted } from "$lib/geo";
+  import { currentTab, tabAt, TABS } from "$lib/nav";
+  import { arm, NfcError, showsSystemSheet } from "$lib/nfc";
+  import { warn } from "$lib/notice.svelte";
+  import { cancelScan, scanning } from "$lib/scanning.svelte";
+  import { card, closeCard } from "$lib/staff.svelte";
+  import {
+      swipeCommit,
+      swipeFrom,
+      swipeGlide,
+      swipePeek,
+      swipeShift,
+      TAP_MS,
+      type Gesture,
+      type Origin,
+  } from "$lib/swipe";
+  import { handleTap, tapScan } from "$lib/tap";
+  import { closeTapFail, tapfail } from "$lib/tapfail.svelte";
+  import { FALLBACK, theme, vars } from "$lib/theme";
+  import { active } from "$lib/theme.svelte";
+  import { hideTicket, ticket } from "$lib/ticket.svelte";
+  import {
+      closeBought,
+      closeOffer,
+      closeRefund,
+      sheet,
+      showBought,
+  } from "$lib/trade.svelte";
+  import { me } from "$lib/user.svelte";
+  import { refresh, wallet } from "$lib/wallet.svelte";
   import Board from "./+page.svelte";
   import Info from "./info/+page.svelte";
   import Leaderboard from "./leaderboard/+page.svelte";
   import Profile from "./profile/+page.svelte";
   import Store from "./store/+page.svelte";
-  import { session } from "$lib/auth";
-  import { caution, hush } from "$lib/caution.svelte";
-  import { celebration, closeCelebration } from "$lib/celebrate.svelte";
-  import { briefing, greet } from "$lib/daily.svelte";
-  import { currentTab, TABS, tabAt } from "$lib/nav";
-  import { goto, onNavigate } from "$app/navigation";
-  import {
-    swipeCommit,
-    swipeFrom,
-    swipeGlide,
-    swipePeek,
-    swipeShift,
-    TAP_MS,
-    type Gesture,
-    type Origin,
-  } from "$lib/swipe";
-  import { permitted } from "$lib/geo";
-  import { arm, NfcError, showsSystemSheet } from "$lib/nfc";
-  import { warn } from "$lib/notice.svelte";
-  import { cancelScan, scanning } from "$lib/scanning.svelte";
-  import { handleTap, tapScan } from "$lib/tap";
-  import { closeTapFail, tapfail } from "$lib/tapfail.svelte";
-  import { hideTicket, ticket } from "$lib/ticket.svelte";
-  import {
-    closeBought,
-    closeOffer,
-    closeRefund,
-    sheet,
-    showBought,
-  } from "$lib/trade.svelte";
-  import { refresh, wallet } from "$lib/wallet.svelte";
-  import ItemSheet from "$lib/components/trade/shop/ItemSheet.svelte";
-  import PurchasedDialog from "$lib/components/trade/shop/PurchasedDialog.svelte";
-  import RefundDialog from "$lib/components/trade/receipt/RefundDialog.svelte";
-  import { FALLBACK, theme, vars } from "$lib/theme";
-  import { active } from "$lib/theme.svelte";
 
   let { children } = $props();
 
@@ -240,6 +241,7 @@
     <ItemSheet
       offer={sheet.picked}
       balance={wallet.scottycoins}
+      player={me.current?.player ?? false}
       onclose={closeOffer}
       onbought={(done) => {
         showBought(done);

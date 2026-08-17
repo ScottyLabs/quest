@@ -62,8 +62,15 @@ SELECT
     target."day"::TEXT AS "day",
     (COALESCE((SELECT SUM("coin_value") FROM earned), 0) - spent."total")::BIGINT
         AS "scottycoins",
-    (COALESCE((SELECT SUM("stones") FROM capped), 0) + bonus."stones")::BIGINT
-        AS "thistlestones"
+    CASE
+        WHEN COALESCE(
+            (SELECT "player" FROM "users" WHERE "id" = $1),
+            FALSE
+        )
+        THEN
+            (COALESCE((SELECT SUM("stones") FROM capped), 0) + bonus."stones")::BIGINT
+        ELSE 0::BIGINT
+    END AS "thistlestones"
 FROM target, spent, bonus
 "#
     )

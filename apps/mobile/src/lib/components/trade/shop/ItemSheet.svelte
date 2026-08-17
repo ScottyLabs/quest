@@ -1,26 +1,28 @@
 <script lang="ts">
+  import {
+      purchase,
+      TradeError,
+      type Answer,
+      type Bought,
+      type ItemOption,
+      type Offer,
+  } from "$lib/trade.svelte";
   import { SvelteMap } from "svelte/reactivity";
   import CostPanel from "./CostPanel.svelte";
   import ItemSummary from "./ItemSummary.svelte";
   import OptionField from "./OptionField.svelte";
   import Stepper from "./Stepper.svelte";
-  import {
-    purchase,
-    TradeError,
-    type Answer,
-    type Bought,
-    type ItemOption,
-    type Offer,
-  } from "$lib/trade.svelte";
 
   let {
     offer,
     balance,
+    player,
     onclose,
     onbought,
   }: {
     offer: Offer;
     balance: number;
+    player: boolean;
     onclose: () => void;
     onbought: (bought: Bought) => void;
   } = $props();
@@ -36,6 +38,7 @@
     option_answer_too_long: "Keep that answer to 120 characters or fewer.",
     option_unknown: "This item's choices just changed. Close and open it again.",
     option_id_invalid: "This item's choices just changed. Close and open it again.",
+    not_a_player: "You are not a first year! No prizes for you >:D"
   };
 
   const answers = new SvelteMap<string, string>();
@@ -51,6 +54,7 @@
   const total = $derived(offer.cost * quantity);
   const remaining = $derived(balance - total);
   const short = $derived(remaining < 0);
+  const blocked = $derived(!player);
 
   const picks = $derived(
     offer.options
@@ -109,7 +113,7 @@
   });
 
   async function buy(): Promise<void> {
-    if (busy || gone || short || nagging !== null) {
+    if (busy || blocked || gone || short || nagging !== null) {
       return;
     }
 
@@ -166,7 +170,9 @@
 
           <div class="tally">
             <div class="notes">
-              {#if gone}
+              {#if blocked}
+                <p>Not a First Year!</p>
+              {:else if gone}
                 <p>Not Enough Stock</p>
               {:else if short}
                 <p>Not Enough Scotty Coins</p>
@@ -199,10 +205,10 @@
       <button
         class="buy"
         type="button"
-        disabled={gone || short || busy || nagging !== null}
+        disabled={blocked || gone || short || busy || nagging !== null}
         onclick={buy}
       >
-        {busy ? "Purchasing…" : "Purchase"}
+        {busy ? "Purchasing..." : "Purchase"}
       </button>
     </div>
   </div>

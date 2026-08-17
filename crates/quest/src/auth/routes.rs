@@ -177,9 +177,10 @@ async fn login(
     };
 
     eprintln!(
-        "auth: claims andrew={andrew_id} class={:?} first_year={}",
+        "auth: claims andrew={andrew_id} class={:?} first_year={} other={:?}",
         claims.class,
-        claims.first_year()
+        claims.first_year(),
+        claims.extra
     );
 
     let user = SessionUser {

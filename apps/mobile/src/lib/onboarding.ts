@@ -137,6 +137,19 @@ export const STEPS: Step[] = [
     ],
     media: { kind: "cup" },
   },
+  {
+    title: "A Word of Warning",
+    body: [
+      {
+        text: "In the spirit of the game, completing challenges while ",
+      },
+      { text: "on a tour given by RAs/OCs", strong: true },
+      { text: " is not permitted. Doing so could result in " },
+      { text: "punitive measures", strong: true },
+      { text: ", such as removal of gemstones." },
+    ],
+    media: { kind: "image", src: "/img/quest/warning.svg", size: 140 },
+  },
 ];
 
 export const MEDIA_BOX = 163;

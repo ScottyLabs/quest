@@ -32,8 +32,9 @@ earned AS (
             ((to_timestamp("tap_events"."time") AT TIME ZONE 'America/New_York')
                 - INTERVAL '12 hours')::DATE AS "day"
         FROM "tap_events"
-        JOIN "challenge" ON "challenge"."id" = "tap_events"."challenge_id"
-        WHERE "tap_events"."user_id" = $1
+JOIN "challenge" ON "challenge"."id" = "tap_events"."challenge_id"
+WHERE "tap_events"."user_id" = $1
+  AND NOT "challenge"."secret"
     ) tap
     CROSS JOIN target
     WHERE target."day" IS NULL OR target."day" = tap."day"

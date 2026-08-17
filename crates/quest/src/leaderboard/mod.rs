@@ -45,6 +45,9 @@ WITH taps AS (
         "tap_events"."challenge_id" AS "challenge_id",
         {tap_day} AS "day"
     FROM "tap_events"
+    JOIN "challenge"
+      ON "challenge"."id" = "tap_events"."challenge_id"
+    WHERE NOT "challenge"."secret"
 ),
 capped AS (
     SELECT taps."user_id" AS "user_id", LEAST(COUNT(*), $1)::BIGINT AS "stones"
@@ -69,6 +72,7 @@ coins AS (
     SELECT "tap_events"."user_id" AS "user_id", SUM("challenge"."coin_value")::BIGINT AS "coins"
     FROM "tap_events"
     JOIN "challenge" ON "challenge"."id" = "tap_events"."challenge_id"
+    WHERE NOT "challenge"."secret"
     GROUP BY "tap_events"."user_id"
 ),
 spent AS (

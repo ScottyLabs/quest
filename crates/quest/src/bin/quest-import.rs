@@ -85,6 +85,7 @@ struct Row {
     description: String,
     category: ChallengeCategory,
     open_from: chrono::DateTime<FixedOffset>,
+    secret: bool,
 }
 
 fn parse(path: &str, zone: FixedOffset) -> (Vec<Row>, Vec<String>) {
@@ -136,12 +137,24 @@ fn parse(path: &str, zone: FixedOffset) -> (Vec<Row>, Vec<String>) {
             continue;
         };
 
+        let secret = match field("Secret").to_ascii_lowercase().as_str() {
+            "" | "false" | "no" | "0" => false,
+            "true" | "yes" | "1" => true,
+            other => {
+                skipped.push(format!(
+                    "line {line} ({name}): invalid Secret value {other:?}"
+                ));
+                continue;
+            }
+        };
+
         rows.push(Row {
             name,
             tagline: field("Tagline"),
             description: field("Description"),
             category,
             open_from,
+            secret,
         });
     }
 
@@ -159,7 +172,8 @@ async fn upsert(db: &DatabaseConnection, row: &Row, coins: i64) -> Result<bool, 
         tagline: ActiveValue::Set(row.tagline.clone()),
         description: ActiveValue::Set(row.description.clone()),
         category: ActiveValue::Set(row.category.clone()),
-        coin_value: ActiveValue::Set(coins),
+        secret: ActiveValue::Set(row.secret),
+        coin_value: ActiveValue::Set(if row.secret { 0 } else { coins }),
         open_from: ActiveValue::Set(row.open_from.into()),
         ..Default::default()
     };

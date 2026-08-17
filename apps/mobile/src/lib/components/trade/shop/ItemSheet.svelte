@@ -54,7 +54,11 @@
   const total = $derived(offer.cost * quantity);
   const remaining = $derived(balance - total);
   const short = $derived(remaining < 0);
-  const blocked = $derived(!player);
+
+  // TEMP JUST FOR MAINTENANCE
+  const SHOP_OPEN = false;
+
+  const blocked = $derived(!SHOP_OPEN || !player);
 
   const picks = $derived(
     offer.options
@@ -170,7 +174,9 @@
 
           <div class="tally">
             <div class="notes">
-              {#if blocked}
+              {#if !SHOP_OPEN}
+                <p>Terrier Trade is currently down for repairs!</p>
+              {:else if blocked}
                 <p>Not a First Year!</p>
               {:else if gone}
                 <p>Not Enough Stock</p>

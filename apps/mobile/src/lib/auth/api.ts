@@ -1,7 +1,13 @@
 /// <reference types="vite/client" />
 
 import type { components } from "$lib/api/schema";
-import { deviceProof, devicePublicKey, resetDeviceKey, signChallenge } from "./device";
+import {
+  deviceProof,
+  devicePublicKey,
+  noteServerTime,
+  resetDeviceKey,
+  signChallenge,
+} from "./device";
 import { AuthError } from "./types";
 import type { AuthErrorCode, QuestUser } from "./types";
 
@@ -82,11 +88,15 @@ export async function signed(request: Request, id: string | null): Promise<Respo
     headers.set("x-device-proof", await deviceProof(request.method, request.url));
   }
 
+  let response: Response;
   try {
-    return await fetch(new Request(request, { credentials: "include", headers }));
+    response = await fetch(new Request(request, { credentials: "include", headers }));
   } catch {
     throw new AuthError("network", `could not reach ${apiBase}`);
   }
+
+  noteServerTime(response.headers.get("date"));
+  return response;
 }
 
 export async function send(

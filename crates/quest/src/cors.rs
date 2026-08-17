@@ -16,6 +16,7 @@ pub fn layer() -> CorsLayer {
         ])
         .allow_headers(crate::auth::routes::ALLOWED_HEADERS)
         .expose_headers([
+            HeaderName::from_static("date"),
             HeaderName::from_static("x-pass-serial"),
             HeaderName::from_static("x-pass-issued"),
             HeaderName::from_static("x-pass-token"),

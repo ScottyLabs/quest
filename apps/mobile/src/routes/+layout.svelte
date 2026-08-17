@@ -3,7 +3,6 @@
   import { watchCallbacks } from "$lib/auth/callback";
   import DeviceBlocked from "$lib/components/shell/DeviceBlocked.svelte";
   import Toast from "$lib/components/shell/Toast.svelte";
-  import WarningDialog from "$lib/components/shell/WarningDialog.svelte";
   import { watchTaps } from "$lib/deeplink";
   import { NfcError } from "$lib/nfc";
   import { warn } from "$lib/notice.svelte";
@@ -79,8 +78,6 @@
       unwatch?.();
     };
   });
-  // TEMP ANNOUNCEMENT DUE TO RAIN
-  let announcementOpen = $state(true);
 </script>
 
 {#if session.phase === "restoring"}
@@ -89,16 +86,6 @@
   <DeviceBlocked onSignOut={() => session.clear()} />
 {:else}
   {@render children()}
-{/if}
-
-{#if session.phase !== "restoring" && announcementOpen}
-    <WarningDialog
-      image="/img/weather_delay.svg"
-      title="O-Quest Weather Update"
-      body="Due to inclement weather, O-Quest commencement is delayed to 12:00 PM Monday, August 17."
-      dismiss="Got it"
-      ondismiss={() => (announcementOpen = false)}
-/>
 {/if}
 
 <Toast />

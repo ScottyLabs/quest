@@ -29,6 +29,17 @@ function fit(live: SVGSVGElement): boolean {
   return true;
 }
 
+export function rasterWrapped(text: string): boolean {
+  const source = root(text);
+
+  if (source === null) return false;
+
+  const images = source.getElementsByTagName("image").length;
+  const patterns = source.getElementsByTagName("pattern").length;
+
+  return images > 0 && patterns > 0;
+}
+
 export function normalizeSvgText(text: string): string | null {
   const source = root(text);
 

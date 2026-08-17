@@ -41,8 +41,8 @@ pub struct Sessions {
     secure_cookies: bool,
 }
 
-fn active_key(andrew_id: &str) -> String {
-    format!("quest:user:session:{andrew_id}")
+fn active_key(andrew_id: &str, device: &str) -> String {
+    format!("quest:user:session:{andrew_id}:{device}")
 }
 
 impl Sessions {
@@ -70,18 +70,17 @@ impl Sessions {
             .with_secure(self.secure_cookies)
             .with_same_site(SameSite::Lax)
             .with_expiry(Expiry::OnInactivity(SESSION_TTL))
-            .with_always_save(true)
     }
 
     pub fn pool(&self) -> Pool {
         self.pool.clone()
     }
 
-    pub async fn bind(&self, andrew_id: &str, id: &str) -> Result<(), AuthError> {
+    pub async fn bind(&self, andrew_id: &str, device: &str, id: &str) -> Result<(), AuthError> {
         let evicted: Option<String> = self
             .pool
             .set(
-                active_key(andrew_id),
+                active_key(andrew_id, device),
                 id,
                 Some(Expiration::EX(SESSION_TTL.whole_seconds())),
                 None,
@@ -96,8 +95,8 @@ impl Sessions {
         }
     }
 
-    pub async fn release(&self, andrew_id: &str) -> Result<(), AuthError> {
-        self.del(&active_key(andrew_id)).await
+    pub async fn release(&self, andrew_id: &str, device: &str) -> Result<(), AuthError> {
+        self.del(&active_key(andrew_id, device)).await
     }
 
     async fn del(&self, key: &str) -> Result<(), AuthError> {

@@ -2897,7 +2897,8 @@
           "category",
           "coin_value",
           "open_from",
-          "cleared"
+          "cleared",
+          "secret"
         ],
         "properties": {
           "category": {
@@ -2931,6 +2932,9 @@
           },
           "open_from": {
             "type": "string"
+          },
+          "secret": {
+            "type": "boolean"
           },
           "tagline": {
             "type": "string"

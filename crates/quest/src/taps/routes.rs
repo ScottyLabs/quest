@@ -126,7 +126,7 @@ async fn register(
     )?;
 
     Ok(Json(Registered {
-        challenge: ChallengeView::new(challenge, true),
+        challenge: ChallengeView::new(challenge, true, false),
         place: done.place,
         first: done.first,
         current_scottycoins: purse.scottycoins,

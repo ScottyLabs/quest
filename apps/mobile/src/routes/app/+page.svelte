@@ -6,17 +6,18 @@
   import WaveEdge from "$lib/components/ui/WaveEdge.svelte";
   import { bucket, filters } from "$lib/filters.svelte";
   import {
-    assignment,
-    CATEGORIES,
-    done,
-    inCategory,
-    nextUnlock,
-    quests,
-    type Quest,
+      assignment,
+      CATEGORIES,
+      countedTotal,
+      done,
+      inCategory,
+      nextUnlock,
+      quests,
+      type Quest,
   } from "$lib/quests.svelte";
   import { matches, search } from "$lib/search.svelte";
   import { tapScan } from "$lib/tap";
-  import { FALLBACK, theme } from "$lib/theme";
+  import { FALLBACK, theme, vars } from "$lib/theme";
   import { active } from "$lib/theme.svelte";
   import { gemDay, refresh, wallet } from "$lib/wallet.svelte";
 
@@ -44,6 +45,10 @@
         matches(quest, search.query),
     ),
   );
+
+  const normalVisible = $derived(visible.filter((quest) => !quest.secret));
+const secretVisible = $derived(visible.filter((quest) => quest.secret));
+
   const completed = $derived(done(shown));
   const cold = $derived(quests.data === null);
 
@@ -102,7 +107,7 @@
   current={active.id}
   onpick={(id) => (active.id = id)}
   done={completed}
-  total={shown.length}
+  total={countedTotal(shown)}
   balance={wallet.scottycoins}
   gems={wallet.gems}
   onfilter={() => (filtering = !filtering)}
@@ -123,7 +128,15 @@
     {:else if cold && quests.error !== null}
       <p class="note">Couldn't reach the Orientation Quest server. Pull again in a moment.</p>
     {:else}
-      <QuestList quests={visible} {daily} onscan={beginScan} />
+      <QuestList quests={normalVisible} {daily} onscan={beginScan} />
+
+{#if active.id === FALLBACK && secretVisible.length > 0}
+  <div class="secret-gap" aria-hidden="true"></div>
+
+  <div class="secret-list" style={vars(theme("secrets"))}>
+    <QuestList quests={secretVisible} daily={null} onscan={beginScan} />
+  </div>
+{/if}
       {#if visible.length === 0}
         <p class="note">
           {shown.length === 0 ? "No challenges here yet." : "Nothing matches those filters."}
@@ -223,4 +236,16 @@
     font-weight: 600;
     text-align: center;
   }
+
+  .secret-gap {
+  height: 85vh;
+}
+
+.secret-list {
+  --highlight: #111111;
+  --quest-done: #111111;
+  --quest-done-ink: #ffffff;
+
+  padding-top: calc(8 * var(--u));
+}
 </style>

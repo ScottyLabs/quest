@@ -46,7 +46,7 @@ async fn today(
         Some(challenge) => {
             let cleared = challenges.cleared(row.id).await?;
             let done = cleared.contains(&challenge.id);
-            Some(ChallengeView::new(challenge, done))
+            Some(ChallengeView::new(challenge, done, user.staff()))
         }
         None => None,
     };

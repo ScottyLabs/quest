@@ -40,13 +40,20 @@ pub struct ChallengeView {
     location: Option<Location>,
     open_from: String,
     cleared: bool,
+    secret: bool,
 }
 
 impl ChallengeView {
-    pub fn new(row: challenge::Model, cleared: bool) -> Self {
+    pub fn new(row: challenge::Model, cleared: bool, reveal_secret: bool) -> Self {
+        let name = if row.secret && !cleared && !reveal_secret {
+            "?????".to_owned()
+        } else {
+            row.name.clone()
+        };
+
         Self {
             id: row.id.to_string(),
-            name: row.name,
+            name,
             tagline: row.tagline,
             description: row.description,
             category: row.category.to_value(),
@@ -57,12 +64,13 @@ impl ChallengeView {
             }),
             open_from: row.open_from.to_rfc3339(),
             cleared,
+            secret: row.secret,
         }
     }
 
-    fn from_set(row: challenge::Model, cleared: &HashSet<Uuid>) -> Self {
+    fn from_set(row: challenge::Model, cleared: &HashSet<Uuid>, reveal_secret: bool) -> Self {
         let done = cleared.contains(&row.id);
-        Self::new(row, done)
+        Self::new(row, done, reveal_secret)
     }
 }
 
@@ -105,6 +113,7 @@ async fn list(
         ),
     };
 
+    let reveal_secret = user.staff();
     let row = users.row(&user).await?;
     let cleared = challenges.cleared(row.id).await?;
 
@@ -112,12 +121,12 @@ async fn list(
         .list(category)
         .await?
         .into_iter()
-        .map(|found| ChallengeView::from_set(found, &cleared))
+        .map(|found| ChallengeView::from_set(found, &cleared, reveal_secret))
         .collect();
 
     Ok(Json(Board {
         cleared: views.iter().filter(|view| view.cleared).count(),
-        total: views.len(),
+        total: views.iter().filter(|view| !view.secret).count(),
         challenges: views,
     }))
 }
@@ -142,11 +151,13 @@ async fn one(
 ) -> Result<Json<ChallengeView>, AuthError> {
     let id = Uuid::parse_str(&id).map_err(|_| AuthError::BadRequest("challenge_id_invalid"))?;
 
+    let reveal_secret = user.staff();
     let row = users.row(&user).await?;
     let cleared = challenges.cleared(row.id).await?;
 
     Ok(Json(ChallengeView::from_set(
         challenges.one(id).await?,
         &cleared,
+        reveal_secret,
     )))
 }

@@ -17,7 +17,7 @@
   } from "$lib/quests.svelte";
   import { matches, search } from "$lib/search.svelte";
   import { tapScan } from "$lib/tap";
-  import { FALLBACK, theme, vars } from "$lib/theme";
+  import { FALLBACK, theme } from "$lib/theme";
   import { active } from "$lib/theme.svelte";
   import { gemDay, refresh, wallet } from "$lib/wallet.svelte";
 
@@ -133,7 +133,7 @@ const secretVisible = $derived(visible.filter((quest) => quest.secret));
 {#if active.id === FALLBACK && secretVisible.length > 0}
   <div class="secret-gap" aria-hidden="true"></div>
 
-  <div class="secret-list" style={vars(theme("secrets"))}>
+  <div class="secret-list">
     <QuestList quests={secretVisible} daily={null} onscan={beginScan} />
   </div>
 {/if}
@@ -237,14 +237,12 @@ const secretVisible = $derived(visible.filter((quest) => quest.secret));
     text-align: center;
   }
 
-  .secret-gap {
-  height: 85vh;
+.secret-gap {
+  height: 300vh;
 }
 
 .secret-list {
-  --highlight: #111111;
-  --quest-done: #111111;
-  --quest-done-ink: #ffffff;
+  --accent: #000000;
 
   padding-top: calc(8 * var(--u));
 }

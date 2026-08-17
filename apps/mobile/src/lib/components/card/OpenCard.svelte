@@ -14,17 +14,22 @@
   } = $props();
 
   const found = $derived(theme(quest.category));
+
+  const tile = $derived(quest.secret ? "#000000" : found.accent);
+  const edge = $derived(quest.secret ? "#000000" : "var(--accent)");
+  const icon = $derived(
+    quest.secret
+      ? "/img/quest/theme/secrets.svg"
+      : (found.logo ?? "/img/quest/theme/all.svg"),
+  );
 </script>
 
 <CardShell
   surface="var(--highlight)"
-  edge="var(--accent)"
+  {edge}
   label={quest.title}
   onclick={() => onscan?.(quest)}
 >
-  <QuestArt
-    fill={found.accent}
-    icon={found.logo ?? "/img/quest/theme/all.svg"}
-  />
+  <QuestArt fill={tile} {icon} />
   <QuestCopy title={quest.title} detail={quest.detail} />
 </CardShell>

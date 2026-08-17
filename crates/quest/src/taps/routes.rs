@@ -26,6 +26,8 @@ struct TapBody {
     lat: Option<f64>,
     lon: Option<f64>,
     accuracy: Option<f32>,
+    #[serde(default)]
+    location_enabled: bool,
 }
 
 #[derive(Serialize, ToSchema)]
@@ -104,7 +106,7 @@ async fn register(
         return Err(taps.rejected(&attempt, shut).await);
     }
 
-    match proximity(challenge.location, attempt.fix) {
+    match proximity(challenge.location, attempt.fix, body.location_enabled) {
         Proximity::Accept => {}
         Proximity::Reject(reason) => {
             let out = AuthError::BadRequest(reason);

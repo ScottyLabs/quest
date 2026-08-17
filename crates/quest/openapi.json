@@ -4136,6 +4136,9 @@
             "type": ["number", "null"],
             "format": "double"
           },
+          "location_enabled": {
+            "type": "boolean"
+          },
           "lon": {
             "type": ["number", "null"],
             "format": "double"

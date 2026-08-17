@@ -1144,6 +1144,7 @@ export interface components {
       accuracy?: number | null;
       /** Format: double */
       lat?: number | null;
+      location_enabled?: boolean;
       /** Format: double */
       lon?: number | null;
       url: string;

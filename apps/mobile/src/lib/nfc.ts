@@ -75,8 +75,10 @@ type Waiter = { resolve: (url: string | null) => void; reject: (error: unknown) 
 
 const onAndroid = () => Capacitor.getPlatform() === "android";
 
+const hasQuestNfc = () => onAndroid() && Capacitor.isPluginAvailable("QuestNfc");
+
 async function startScanning(options: StartScanningOptions): Promise<void> {
-  if (onAndroid()) {
+  if (hasQuestNfc()) {
     await QuestNfc.startScanning();
     return;
   }
@@ -85,7 +87,7 @@ async function startScanning(options: StartScanningOptions): Promise<void> {
 }
 
 async function stopScanning(): Promise<void> {
-  if (onAndroid()) {
+  if (hasQuestNfc()) {
     await QuestNfc.stopScanning();
     return;
   }
@@ -163,7 +165,7 @@ function listen(): Promise<void> {
      * In foreground reader mode, Android Quest scans come
      * through our raw ISO-DEP implementation instead.
      */
-    if (onAndroid()) {
+    if (hasQuestNfc()) {
       await QuestNfc.addListener("ndef", ({ ndefMessage }) => {
         deliver(tapUrl(ndefMessage));
       });

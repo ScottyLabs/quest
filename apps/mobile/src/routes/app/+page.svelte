@@ -238,7 +238,7 @@ const secretVisible = $derived(visible.filter((quest) => quest.secret));
   }
 
 .secret-gap {
-  height: 300vh;
+  height: 1000vh;
 }
 
 .secret-list {

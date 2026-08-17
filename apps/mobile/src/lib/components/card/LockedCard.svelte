@@ -1,7 +1,7 @@
 <script lang="ts">
+  import { unlockedAt, type Quest } from "$lib/quests.svelte";
   import CardShell from "./CardShell.svelte";
   import QuestArt from "./QuestArt.svelte";
-  import { unlockedAt, type Quest } from "$lib/quests.svelte";
 
   let { quest, onscan }: { quest: Quest; onscan?: (quest: Quest) => void } = $props();
 </script>
@@ -12,7 +12,7 @@
   label={onscan === undefined ? undefined : `Provision ${quest.title}`}
   onclick={onscan === undefined ? undefined : () => onscan(quest)}
 >
-  <QuestArt fill="#000000" />
+  <QuestArt fill="#000000" icon="/img/quest/lock_challenge.svg" />
 
   <span class="copy">
     <span class="title">????</span>

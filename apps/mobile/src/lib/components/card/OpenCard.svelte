@@ -1,13 +1,19 @@
 <script lang="ts">
+  import type { Quest } from "$lib/quests.svelte";
+  import { theme } from "$lib/theme";
   import CardShell from "./CardShell.svelte";
   import QuestArt from "./QuestArt.svelte";
   import QuestCopy from "./QuestCopy.svelte";
-  import type { Quest } from "$lib/quests.svelte";
-  import { theme } from "$lib/theme";
 
-  let { quest, onscan }: { quest: Quest; onscan?: (quest: Quest) => void } = $props();
+  let {
+    quest,
+    onscan,
+  }: {
+    quest: Quest;
+    onscan?: (quest: Quest) => void;
+  } = $props();
 
-  const tile = $derived(theme(quest.category).accent);
+  const found = $derived(theme(quest.category));
 </script>
 
 <CardShell
@@ -16,6 +22,9 @@
   label={quest.title}
   onclick={() => onscan?.(quest)}
 >
-  <QuestArt fill={tile} />
+  <QuestArt
+    fill={found.accent}
+    icon={found.logo ?? "/img/quest/theme/all.svg"}
+  />
   <QuestCopy title={quest.title} detail={quest.detail} />
 </CardShell>

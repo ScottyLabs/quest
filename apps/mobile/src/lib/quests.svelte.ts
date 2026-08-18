@@ -142,7 +142,10 @@ export function countedTotal(list: Quest[]): number {
 }
 
 export function done(list: Quest[]): number {
-  return list.reduce((count, quest) => count + (quest.state === "done" ? 1 : 0), 0);
+  return list.reduce(
+    (count, quest) => count + (!quest.secret && quest.state === "done" ? 1 : 0),
+    0,
+  );
 }
 
 export function nextUnlock(list: Quest[], now: number): number | null {

@@ -18,9 +18,11 @@ export interface Diagnosis {
 function pluginRegistered(name: string): boolean {
   const root: unknown = globalThis;
   if (!(root !== null && typeof root === "object" && "Capacitor" in root)) return false;
+
   const capacitor: unknown = root.Capacitor;
   if (!(capacitor !== null && typeof capacitor === "object" && "Plugins" in capacitor))
     return false;
+
   const plugins: unknown = capacitor.Plugins;
   return plugins !== null && typeof plugins === "object" && name in plugins;
 }

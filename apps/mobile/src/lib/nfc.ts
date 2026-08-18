@@ -2,18 +2,15 @@ import { Capacitor, type PluginListenerHandle, registerPlugin } from "@capacitor
 import type { NdefRecord, NfcSessionEndEvent } from "@capgo/capacitor-nfc";
 import { CapacitorNfc, type StartScanningOptions } from "@capgo/capacitor-nfc";
 
-interface QuestNfcDeviceInfo {
-  manufacturer: string;
-  model: string;
-  osVersion: string;
-  sdkInt: number;
-}
-
 interface QuestNfcEvent {
   ndefMessage: NdefRecord[];
 }
 
-interface QuestNfcReadFailure extends QuestNfcDeviceInfo {
+interface QuestNfcReadFailure {
+  manufacturer: string;
+  model: string;
+  osVersion: string;
+  sdkInt: number;
   stage: string;
   error: string;
 }
@@ -21,8 +18,6 @@ interface QuestNfcReadFailure extends QuestNfcDeviceInfo {
 interface QuestNfcPlugin {
   startScanning(): Promise<void>;
   stopScanning(): Promise<void>;
-
-  getDeviceInfo(): Promise<QuestNfcDeviceInfo>;
 
   addListener(
     eventName: "ndef",
@@ -221,7 +216,27 @@ const IOS_TAG_SESSION: StartScanningOptions = {
   iosSessionType: "tag",
   iosPollingOptions: ["iso14443"],
 };
+async function startScanSession(prompt: string): Promise<void> {
+  try {
+    await startScanning({
+      alertMessage: prompt,
+      ...IOS_TAG_SESSION,
+    });
+  } catch {
+    await new Promise<void>((done) => {
+      setTimeout(done, 400);
+    });
 
+    try {
+      await startScanning({
+        alertMessage: prompt,
+        ...IOS_TAG_SESSION,
+      });
+    } catch {
+      throw new NfcError("The scanner is still closing. Try that again.");
+    }
+  }
+}
 export async function arm(handler: (url: string) => void): Promise<() => void> {
   ambient = handler;
   await listen();
@@ -250,32 +265,17 @@ export async function scan(prompt: string, signal?: AbortSignal): Promise<string
 
   const { promise, resolve, reject } = Promise.withResolvers<string | null>();
   const mine: Waiter = { resolve, reject };
+
   const cancel = () => {
     if (waiter === mine) waiter = null;
     resolve(null);
   };
+
   signal?.addEventListener("abort", cancel, { once: true });
 
   try {
     if (!armed) {
-      try {
-        await startScanning({
-          alertMessage: prompt,
-          ...IOS_TAG_SESSION,
-        });
-      } catch {
-        await new Promise<void>((done) => {
-          setTimeout(done, 400);
-        });
-        try {
-          await startScanning({
-            alertMessage: prompt,
-            ...IOS_TAG_SESSION,
-          });
-        } catch {
-          throw new NfcError("The scanner is still closing. Try that again.");
-        }
-      }
+      await startScanSession(prompt);
       sessionOpen = true;
     }
 
@@ -284,7 +284,9 @@ export async function scan(prompt: string, signal?: AbortSignal): Promise<string
     return await promise;
   } finally {
     signal?.removeEventListener("abort", cancel);
+
     if (waiter === mine) waiter = null;
+
     if (!armed) {
       await stopScanning().catch(() => null);
       await settle();
@@ -293,7 +295,6 @@ export async function scan(prompt: string, signal?: AbortSignal): Promise<string
     }
   }
 }
-
 export async function openSettings(): Promise<void> {
   await CapacitorNfc.showSettings().catch(() => null);
 }

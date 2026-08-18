@@ -87,7 +87,7 @@ export const HOUSES: House[] = [
         dorm: "stever",
         home: "Stever",
         name: "Stever the Cactus",
-        quote: '"Brrr...It\'s Cold in here... There must be some Stever in the Atmosphere"',
+        quote: '"I think we got a case of... STEVER FEVER."',
         fill: "#189846",
         edge: "#06794a",
         shade: "#06794a",

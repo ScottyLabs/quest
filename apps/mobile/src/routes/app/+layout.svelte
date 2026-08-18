@@ -1,6 +1,11 @@
 <script lang="ts">
   import { goto, onNavigate } from "$app/navigation";
   import { page } from "$app/state";
+  import {
+      announcement,
+      closeAnnouncement,
+      showAnnouncementOnce,
+  } from "$lib/announcement.svelte";
   import { session } from "$lib/auth";
   import { caution, hush } from "$lib/caution.svelte";
   import { celebration, closeCelebration } from "$lib/celebrate.svelte";
@@ -75,6 +80,12 @@
     if (error instanceof NfcError) warn(error.message);
     else warn("Couldn't register that tap.");
   }
+
+  $effect(() => {
+    if (session.phase === "signedIn") {
+        showAnnouncementOnce();
+    }
+});
 
   async function retryLocation(): Promise<void> {
     if (await permitted()) hush();
@@ -228,6 +239,15 @@
     </div>
   {/if}
   <BottomNav />
+<!-- TEMP ANNOUNCEMENT -->
+{#if announcement.open && !briefing.open}
+  <WarningDialog
+    title="Terrier Trade Update"
+    body="Terrier Trade will open at noon on Wed 08/19. We're sorry for the delay!"
+    dismiss="Yippee!"
+    ondismiss={closeAnnouncement}
+  />
+{/if}
 
   {#if scanning.label !== null && !showsSystemSheet}
     <NfcSheet title={scanning.label} oncancel={cancelScan} />

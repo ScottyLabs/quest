@@ -75,13 +75,6 @@ coins AS (
     WHERE NOT "challenge"."secret"
     GROUP BY "tap_events"."user_id"
 ),
-spent AS (
-    SELECT "purchases"."user_id" AS "user_id",
-           SUM("purchases"."quantity" * "items"."cost")::BIGINT AS "spent"
-    FROM "purchases"
-    JOIN "items" ON "items"."id" = "purchases"."item_id"
-    GROUP BY "purchases"."user_id"
-),
 totals AS (
     SELECT
         "users"."id" AS "id",
@@ -89,12 +82,11 @@ totals AS (
         "users"."dorm" AS "community",
         "users"."anonymous" AS "anonymous",
         (COALESCE(earned."stones", 0) + COALESCE(bonus."stones", 0))::BIGINT AS "thistlestones",
-        (COALESCE(coins."coins", 0) - COALESCE(spent."spent", 0))::BIGINT AS "scottycoins"
+        COALESCE(coins."coins", 0)::BIGINT AS "scottycoins"
     FROM "users"
     LEFT JOIN earned ON earned."user_id" = "users"."id"
     LEFT JOIN bonus ON bonus."user_id" = "users"."id"
     LEFT JOIN coins ON coins."user_id" = "users"."id"
-    LEFT JOIN spent ON spent."user_id" = "users"."id"
     WHERE "users"."player"
 ),
 scored AS (

@@ -9,6 +9,7 @@ import android.nfc.Tag;
 import android.nfc.tech.IsoDep;
 import android.os.Bundle;
 import android.util.Log;
+import android.os.Build;
 
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
@@ -53,6 +54,21 @@ public class QuestNfcPlugin extends Plugin {
     private static final byte[] SELECT_NDEF =
         hex("00A4020C02E10400");
 
+    private static JSObject deviceInfo() {
+    JSObject result = new JSObject();
+
+    result.put("manufacturer", Build.MANUFACTURER);
+    result.put("model", Build.MODEL);
+    result.put("osVersion", Build.VERSION.RELEASE);
+    result.put("sdkInt", Build.VERSION.SDK_INT);
+
+    return result;
+}
+
+@PluginMethod
+public void getDeviceInfo(PluginCall call) {
+    call.resolve(deviceInfo());
+}
     private final ExecutorService executor =
         Executors.newSingleThreadExecutor();
 
@@ -226,89 +242,103 @@ private void disableReaderMode(PluginCall call) {
         }
     });
 }
+private void emitReadFailure(
+    String stage,
+    Exception exception
+) {
+    JSObject event = deviceInfo();
+
+    event.put("stage", stage);
+    event.put(
+        "error",
+        exception.getClass().getSimpleName()
+    );
+
+    Activity activity = getActivity();
+
+    if (activity == null) {
+        return;
+    }
+
+    activity.runOnUiThread(
+        () -> notifyListeners("readFailure", event)
+    );
+}
 
     private void readTag(Tag tag) {
-        if (!readerModeRequested) {
-            return;
-        }
+    if (!readerModeRequested) {
+        return;
+    }
 
-        IsoDep iso = IsoDep.get(tag);
+    IsoDep iso = IsoDep.get(tag);
 
-        if (iso == null) {
-            // Not a Type-4/ISO-DEP tag.
-            return;
-        }
+    if (iso == null) {
+        return;
+    }
 
-        try {
-            iso.connect();
-            iso.setTimeout(3000);
+    String stage = "connect";
 
-            // Select the NTAG 424 application.
-            exchange(iso, SELECT_APPLICATION);
+    try {
+        iso.connect();
+        iso.setTimeout(3000);
 
-            // Select its NDEF file.
-            exchange(iso, SELECT_NDEF);
+        stage = "select_application";
+        exchange(iso, SELECT_APPLICATION);
 
-            /*
-             * Type-4 NDEF begins with a two-byte big-endian NLEN.
-             *
-             * Read NLEN first rather than requesting the entire
-             * 256-byte file in one APDU.
-             */
-            byte[] lengthBytes = readBinary(iso, 0, 2);
+        stage = "select_ndef";
+        exchange(iso, SELECT_NDEF);
 
-            if (lengthBytes.length != 2) {
-                throw new IOException(
-                    "NDEF length read returned " +
-                    lengthBytes.length +
-                    " bytes"
-                );
-            }
+        stage = "read_nlen";
+        byte[] lengthBytes = readBinary(iso, 0, 2);
 
-            int ndefLength =
-                ((lengthBytes[0] & 0xff) << 8) |
-                (lengthBytes[1] & 0xff);
-
-            /*
-             * E104 is 256 bytes total.
-             * Two bytes are occupied by NLEN, so NDEF <= 254.
-             */
-            if (ndefLength <= 0 || ndefLength > 254) {
-                throw new IOException(
-                    "Invalid NDEF length: " + ndefLength
-                );
-            }
-
-            byte[] rawNdef =
-                readBinary(iso, 2, ndefLength);
-
-            NdefMessage message =
-                new NdefMessage(rawNdef);
-
-            if (readerModeRequested) {
-                emit(message);
-            }
-        } catch (
-            IOException |
-            FormatException |
-            SecurityException exception
-        ) {
-            /*
-             * Don't turn this into a fatal scan result.
-             * Let the user move/re-present the card and retry.
-             */
-            Log.w(
-                TAG,
-                "Failed to read Quest NFC tag",
-                exception
+        if (lengthBytes.length != 2) {
+            throw new IOException(
+                "NDEF length read returned " +
+                lengthBytes.length +
+                " bytes"
             );
-        } finally {
-            try {
-                iso.close();
-            } catch (IOException ignored) {
-            }
+        }
+
+        int ndefLength =
+            ((lengthBytes[0] & 0xff) << 8) |
+            (lengthBytes[1] & 0xff);
+
+        if (ndefLength <= 0 || ndefLength > 254) {
+            throw new IOException(
+                "Invalid NDEF length: " + ndefLength
+            );
+        }
+
+        stage = "read_ndef";
+        byte[] rawNdef =
+            readBinary(iso, 2, ndefLength);
+
+        stage = "parse_ndef";
+        NdefMessage message =
+            new NdefMessage(rawNdef);
+
+        if (readerModeRequested) {
+            emit(message);
+        }
+    } catch (
+        IOException |
+        FormatException |
+        SecurityException exception
+    ) {
+        Log.w(
+            TAG,
+            "Failed to read Quest NFC tag",
+            exception
+        );
+
+        emitReadFailure(stage, exception);
+    } finally {
+        try {
+            iso.close();
+        } catch (IOException ignored) {
         }
     }
+}
 
     private static byte[] readBinary(
         IsoDep iso,

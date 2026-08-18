@@ -1,7 +1,7 @@
-import { devicePublicKey } from "$lib/auth";
-import { fix } from "$lib/geo";
 import { Capacitor } from "@capacitor/core";
 import { CryptoApi } from "@perfood/capacitor-crypto-api";
+import { devicePublicKey } from "$lib/auth";
+import { fix } from "$lib/geo";
 
 const TAG = "org.scottylabs.quest.device";
 
@@ -17,6 +17,7 @@ export interface Diagnosis {
 
 function pluginRegistered(name: string): boolean {
   const root: unknown = globalThis;
+
   if (!(root !== null && typeof root === "object" && "Capacitor" in root)) return false;
 
   const capacitor: unknown = root.Capacitor;
@@ -25,6 +26,7 @@ function pluginRegistered(name: string): boolean {
 
   const plugins: unknown = capacitor.Plugins;
   return plugins !== null && typeof plugins === "object" && name in plugins;
+
 }
 
 const reason = (error: unknown): string => (error instanceof Error ? error.message : String(error));
@@ -71,9 +73,13 @@ export async function diagnose(): Promise<Diagnosis> {
   result.location =
     where.lat !== undefined && where.lon !== undefined
       ? `${where.lat.toFixed(5)}, ${where.lon.toFixed(5)} ±${where.accuracy ?? "?"}m`
+<<<<<<< HEAD
       : where.location_enabled
         ? "enabled, no fix"
         : "disabled";
+=======
+      : "unavailable";
+>>>>>>> 27db38f (fix: handle unavailable location coordinates)
 
   return result;
 }

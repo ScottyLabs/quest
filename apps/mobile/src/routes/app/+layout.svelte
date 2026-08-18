@@ -4,7 +4,7 @@
   import {
       announcement,
       closeAnnouncement,
-      showAnnouncementOnce,
+      showAnnouncement,
   } from "$lib/announcement.svelte";
   import { session } from "$lib/auth";
   import { caution, hush } from "$lib/caution.svelte";
@@ -81,12 +81,11 @@
     else warn("Couldn't register that tap.");
   }
 
-  $effect(() => {
+$effect(() => {
     if (session.phase === "signedIn") {
-        showAnnouncementOnce();
+        showAnnouncement();
     }
 });
-
   async function retryLocation(): Promise<void> {
     if (await permitted()) hush();
   }

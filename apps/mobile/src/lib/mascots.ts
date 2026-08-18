@@ -114,14 +114,14 @@ export const HOUSES: House[] = [
   },
   {
     id: "res-fifth",
-    label: "Res on Fifth",
+    label: "RANCH",
     band: "#efc3ea",
     strip: "#f7e1f4",
     mascots: [
       {
         slug: "flamingo",
         dorm: "res",
-        home: "Res on Fifth",
+        home: "RANCH",
         name: "Ranch the Flamingo",
         quote: '"Party on what ave?! Fifth Ave!!"',
         credit: "~Fifth and Clyde",

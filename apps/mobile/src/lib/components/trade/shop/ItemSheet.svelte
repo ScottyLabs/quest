@@ -36,7 +36,8 @@
     option_answer_too_long: "Keep that answer to 120 characters or fewer.",
     option_unknown: "This item's choices just changed. Close and open it again.",
     option_id_invalid: "This item's choices just changed. Close and open it again.",
-    not_a_player: "You are not a first year! No prizes for you >:D"
+    not_a_player: "You are not a first year! No prizes for you >:D",
+    purchase_limit_reached: "You can only purchase one of each reward.",
   };
 
   const answers = new SvelteMap<string, string>();

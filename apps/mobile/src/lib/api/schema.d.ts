@@ -876,7 +876,6 @@ export interface components {
     /** @enum {string} */
     Level: "none" | "read" | "edit" | "full";
     Library: {
-      accepts: string[];
       assets: components["schemas"]["AssetView"][];
       kinds: string[];
       /** Format: int64 */

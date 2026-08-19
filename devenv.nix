@@ -129,8 +129,13 @@ in
             echo "backend: $VITE_QUEST_API_BASE"
             deno task cap:sync android
             (cd android && ./gradlew assembleRelease bundleRelease)
-            echo "apk: android/app/build/outputs/apk/release/ (unsigned without a keystore)"
-            echo "aab: android/app/build/outputs/bundle/release/"
+            apk_dir=android/app/build/outputs/apk/release
+            if [ -f "$apk_dir/app-release.apk" ]; then
+              echo "apk: $apk_dir/app-release.apk (signed)"
+            else
+              echo "apk: $apk_dir/app-release-unsigned.apk (no keystore: set QUEST_KEYSTORE or quest.keystore in android/local.properties)"
+            fi
+            echo "aab: android/app/build/outputs/bundle/release/app-release.aab"
           else
             export VITE_QUEST_API_BASE="$(api_base "$(lan_ip)")"
             echo "backend: $VITE_QUEST_API_BASE"

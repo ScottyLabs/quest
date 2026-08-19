@@ -1,5 +1,6 @@
-use std::time::Duration;
+use std::{borrow::Cow, time::Duration};
 
+use axum::body::Bytes;
 use entity::asset::Model;
 use hmac::{Hmac, KeyInit, Mac};
 use sea_orm::{
@@ -9,7 +10,7 @@ use sha2::{Digest, Sha256};
 
 use crate::auth::{ConfigError, env_opt, env_required};
 
-pub const MAX_BYTES: usize = 8 * 1024 * 1024;
+pub const MAX_BYTES: usize = 64 * 1024 * 1024;
 
 const REGION: &str = "us-east-1";
 const SERVICE: &str = "s3";
@@ -30,26 +31,48 @@ const TYPES: &[(&str, &str)] = &[
     ("application/json", "json"),
     ("font/woff2", "woff2"),
     ("video/mp4", "mp4"),
+    ("application/vnd.android.package-archive", "apk"),
 ];
+
+const GENERIC: &str = "application/octet-stream";
 
 pub const KIND_LIST: &[&str] = KINDS;
 
-pub fn allowed_types() -> impl Iterator<Item = &'static str> {
-    TYPES.iter().map(|(mime, _)| *mime)
-}
-
-pub fn extension_for(content_type: &str) -> Option<&'static str> {
-    let wanted = content_type
+fn classify(content_type: &str, filename: Option<&str>) -> (&'static str, Cow<'static, str>) {
+    let declared = content_type
         .split(';')
         .next()
         .unwrap_or(content_type)
         .trim()
         .to_ascii_lowercase();
 
-    TYPES
-        .iter()
-        .find(|(mime, _)| *mime == wanted)
-        .map(|(_, extension)| *extension)
+    if declared != GENERIC {
+        if let Some((mime, extension)) = TYPES.iter().find(|(mime, _)| *mime == declared) {
+            return (mime, Cow::Borrowed(extension));
+        }
+    }
+
+    let suffix = suffix(filename);
+
+    match TYPES.iter().find(|(_, extension)| *extension == suffix) {
+        Some((mime, extension)) => (mime, Cow::Borrowed(extension)),
+        None if suffix.is_empty() => (GENERIC, Cow::Borrowed("bin")),
+        None => (GENERIC, Cow::Owned(suffix)),
+    }
+}
+
+fn suffix(filename: Option<&str>) -> String {
+    filename
+        .and_then(|name| name.rsplit_once('.'))
+        .map(|(_, extension)| {
+            extension
+                .chars()
+                .filter(char::is_ascii_alphanumeric)
+                .map(|c| c.to_ascii_lowercase())
+                .take(12)
+                .collect()
+        })
+        .unwrap_or_default()
 }
 
 pub fn known_kind(kind: &str) -> bool {
@@ -134,7 +157,7 @@ impl Assets {
         method: reqwest::Method,
         key: &str,
         mime: Option<&str>,
-        body: Vec<u8>,
+        body: Bytes,
     ) -> Result<(), AssetError> {
         let url = format!("{}/{}/{key}", self.endpoint, self.bucket);
         let host = reqwest::Url::parse(&url)
@@ -220,7 +243,7 @@ impl Assets {
         content_type: &str,
         filename: Option<&str>,
         by: &str,
-        body: Vec<u8>,
+        body: Bytes,
     ) -> Result<Stored, AssetError> {
         if !known_kind(kind) {
             return Err(AssetError::Rejected("asset_kind_unknown"));
@@ -232,19 +255,13 @@ impl Assets {
             return Err(AssetError::Rejected("asset_too_large"));
         }
 
-        let Some(extension) = extension_for(content_type) else {
-            return Err(AssetError::Rejected("asset_type_unsupported"));
-        };
+        let (mime, extension) = classify(content_type, filename);
 
         if !self.configured() {
             return Err(AssetError::Unconfigured);
         }
 
         let key = format!("{kind}/{}.{extension}", uuid::Uuid::new_v4());
-        let mime = TYPES
-            .iter()
-            .find(|(_, ext)| *ext == extension)
-            .map_or(content_type, |(mime, _)| *mime);
         let bytes = body.len() as i64;
 
         self.signed(reqwest::Method::PUT, &key, Some(mime), body)
@@ -308,7 +325,7 @@ impl Assets {
             .map_err(|err| AssetError::Upstream(format!("could not read the asset: {err}")))?
             .ok_or(AssetError::Rejected("asset_unknown"))?;
 
-        self.signed(reqwest::Method::DELETE, &known.key, None, Vec::new())
+        self.signed(reqwest::Method::DELETE, &known.key, None, Bytes::new())
             .await?;
 
         entity::asset::Entity::delete_by_id(&known.key)

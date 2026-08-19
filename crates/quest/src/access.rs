@@ -14,13 +14,15 @@ pub enum Role {
     OrientationStaff,
     TradeAdmin,
     ChallengePlacer,
+    Member,
 }
 
-pub const ROLES: [Role; 4] = [
+pub const ROLES: [Role; 5] = [
     Role::Admins,
     Role::OrientationStaff,
     Role::TradeAdmin,
     Role::ChallengePlacer,
+    Role::Member,
 ];
 
 impl Role {
@@ -94,6 +96,12 @@ static GRANTS: &[Grant] = &[
             Capability::TradeDesk,
             Capability::Assets,
         ],
+        tables: Tables::Every(Level::Full),
+    },
+    Grant {
+        role: Role::Member,
+        group: "/projects/quest",
+        capabilities: &[Capability::Portal, Capability::SqlConsole, Capability::DataConsole],
         tables: Tables::Every(Level::Full),
     },
     Grant {

@@ -7,7 +7,7 @@
 
 <section class="ticket">
   <p class="lead">
-    <strong>Starting on Tuesday August 25th, </strong>Go to the <b>{PICKUP}</b> with ticket below to have your purchased items delivered.
+    <strong>Starting on Tuesday, August 25th, </strong>Go to the <b>{PICKUP}</b> with ticket below to have your purchased items delivered.
   </p>
 
   <TicketGate {name} {andrewId} />

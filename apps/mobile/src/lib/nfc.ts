@@ -1,6 +1,36 @@
-import { Capacitor } from "@capacitor/core";
-import { CapacitorNfc, type StartScanningOptions } from "@capgo/capacitor-nfc";
+import { Capacitor, type PluginListenerHandle, registerPlugin } from "@capacitor/core";
 import type { NdefRecord, NfcSessionEndEvent } from "@capgo/capacitor-nfc";
+import { CapacitorNfc, type StartScanningOptions } from "@capgo/capacitor-nfc";
+
+interface QuestNfcEvent {
+  ndefMessage: NdefRecord[];
+}
+
+interface QuestNfcReadFailure {
+  manufacturer: string;
+  model: string;
+  osVersion: string;
+  sdkInt: number;
+  stage: string;
+  error: string;
+}
+
+interface QuestNfcPlugin {
+  startScanning(): Promise<void>;
+  stopScanning(): Promise<void>;
+
+  addListener(
+    eventName: "ndef",
+    listener: (event: QuestNfcEvent) => void,
+  ): Promise<PluginListenerHandle>;
+
+  addListener(
+    eventName: "readFailure",
+    listener: (event: QuestNfcReadFailure) => void,
+  ): Promise<PluginListenerHandle>;
+}
+
+const QuestNfc = registerPlugin<QuestNfcPlugin>("QuestNfc");
 
 export class NfcError extends Error {}
 
@@ -59,6 +89,26 @@ type Waiter = { resolve: (url: string | null) => void; reject: (error: unknown) 
 
 const onAndroid = () => Capacitor.getPlatform() === "android";
 
+const hasQuestNfc = () => onAndroid() && Capacitor.isPluginAvailable("QuestNfc");
+
+async function startScanning(options: StartScanningOptions): Promise<void> {
+  if (hasQuestNfc()) {
+    await QuestNfc.startScanning();
+    return;
+  }
+
+  await CapacitorNfc.startScanning(options);
+}
+
+async function stopScanning(): Promise<void> {
+  if (hasQuestNfc()) {
+    await QuestNfc.stopScanning();
+    return;
+  }
+
+  await CapacitorNfc.stopScanning();
+}
+
 let ambient: ((url: string) => void) | null = null;
 let waiter: Waiter | null = null;
 let armed = false;
@@ -108,15 +158,54 @@ async function settle(): Promise<void> {
     }
   }
 
-  await new Promise<void>((done) => setTimeout(done, 350));
+  await new Promise<void>((done) => {
+    setTimeout(done, 350);
+  });
 }
 
 function listen(): Promise<void> {
   mounted ??= (async () => {
     if (!Capacitor.isNativePlatform()) return;
 
-    await CapacitorNfc.addListener("nfcEvent", (event) => deliver(tapUrl(event.tag.ndefMessage)));
-    await CapacitorNfc.addListener("nfcSessionEnd", ({ reason }) => ended(reason));
+    await CapacitorNfc.addListener("nfcEvent", (event) => {
+      const ndefMessage = event.tag.ndefMessage;
+
+      const type4NdefFailure =
+        onAndroid() &&
+        event.type === "tag" &&
+        event.tag.techTypes?.includes("android.nfc.tech.IsoDep") === true &&
+        (ndefMessage === null || ndefMessage === undefined || ndefMessage.length === 0);
+
+      if (type4NdefFailure) {
+        console.warn("Android Type-4 NDEF failure", {
+          eventType: event.type,
+          techTypes: event.tag.techTypes,
+        });
+      }
+
+      deliver(tapUrl(ndefMessage));
+    });
+
+    await CapacitorNfc.addListener("nfcSessionEnd", ({ reason }) => {
+      ended(reason);
+    });
+
+    if (hasQuestNfc()) {
+      await QuestNfc.addListener("ndef", ({ ndefMessage }) => {
+        deliver(tapUrl(ndefMessage));
+      });
+
+      await QuestNfc.addListener("readFailure", (failure) => {
+        console.warn("Quest NFC native read failure", {
+          stage: failure.stage,
+          error: failure.error,
+          manufacturer: failure.manufacturer,
+          model: failure.model,
+          osVersion: failure.osVersion,
+          sdkInt: failure.sdkInt,
+        });
+      });
+    }
   })();
 
   return mounted;
@@ -127,7 +216,27 @@ const IOS_TAG_SESSION: StartScanningOptions = {
   iosSessionType: "tag",
   iosPollingOptions: ["iso14443"],
 };
+async function startScanSession(prompt: string): Promise<void> {
+  try {
+    await startScanning({
+      alertMessage: prompt,
+      ...IOS_TAG_SESSION,
+    });
+  } catch {
+    await new Promise<void>((done) => {
+      setTimeout(done, 400);
+    });
 
+    try {
+      await startScanning({
+        alertMessage: prompt,
+        ...IOS_TAG_SESSION,
+      });
+    } catch {
+      throw new NfcError("The scanner is still closing. Try that again.");
+    }
+  }
+}
 export async function arm(handler: (url: string) => void): Promise<() => void> {
   ambient = handler;
   await listen();
@@ -138,13 +247,15 @@ export async function arm(handler: (url: string) => void): Promise<() => void> {
     };
   }
 
-  await CapacitorNfc.startScanning({ invalidateAfterFirstRead: false });
+  await startScanning({
+    invalidateAfterFirstRead: false,
+  });
   armed = true;
 
   return () => {
     ambient = null;
     armed = false;
-    void CapacitorNfc.stopScanning().catch(() => undefined);
+    void stopScanning().catch(() => null);
   };
 }
 
@@ -154,24 +265,17 @@ export async function scan(prompt: string, signal?: AbortSignal): Promise<string
 
   const { promise, resolve, reject } = Promise.withResolvers<string | null>();
   const mine: Waiter = { resolve, reject };
+
   const cancel = () => {
     if (waiter === mine) waiter = null;
     resolve(null);
   };
+
   signal?.addEventListener("abort", cancel, { once: true });
 
   try {
     if (!armed) {
-      try {
-        await CapacitorNfc.startScanning({ alertMessage: prompt, ...IOS_TAG_SESSION });
-      } catch {
-        await new Promise<void>((done) => setTimeout(done, 400));
-        try {
-          await CapacitorNfc.startScanning({ alertMessage: prompt, ...IOS_TAG_SESSION });
-        } catch {
-          throw new NfcError("The scanner is still closing. Try that again.");
-        }
-      }
+      await startScanSession(prompt);
       sessionOpen = true;
     }
 
@@ -180,16 +284,17 @@ export async function scan(prompt: string, signal?: AbortSignal): Promise<string
     return await promise;
   } finally {
     signal?.removeEventListener("abort", cancel);
+
     if (waiter === mine) waiter = null;
+
     if (!armed) {
-      await CapacitorNfc.stopScanning().catch(() => undefined);
+      await stopScanning().catch(() => null);
       await settle();
       sessionOpen = false;
       closed = null;
     }
   }
 }
-
 export async function openSettings(): Promise<void> {
-  await CapacitorNfc.showSettings().catch(() => undefined);
+  await CapacitorNfc.showSettings().catch(() => null);
 }

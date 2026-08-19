@@ -1,13 +1,21 @@
 <script lang="ts">
   import type { Offer } from "$lib/trade.svelte";
 
-  let { offer }: { offer: Offer } = $props();
+  let {
+  offer,
+  stock,
+}: {
+  offer: Offer;
+  stock?: number;
+} = $props();
+
+const shownStock = $derived(stock ?? offer.stock);
 </script>
 
 <div class="summary">
   <div class="well">
     <p class="name">{offer.name}</p>
-    <p class="meta">Items left: <span class="count">{offer.stock}</span></p>
+    <p class="meta">Items left: <span class="count">{shownStock}</span></p>
   </div>
 
   <div class="about">

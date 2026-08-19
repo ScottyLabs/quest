@@ -2958,6 +2958,10 @@
           "image_url": {
             "type": ["string", "null"]
           },
+          "stock": {
+            "type": ["integer", "null"],
+            "format": "int64"
+          },
           "value": {
             "type": "string"
           }

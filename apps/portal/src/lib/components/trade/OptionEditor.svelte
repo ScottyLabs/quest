@@ -6,6 +6,7 @@
   import Dialog from "$lib/components/Dialog.svelte";
   import Empty from "$lib/components/Empty.svelte";
   import Field from "$lib/components/Field.svelte";
+  import ChoiceImagePicker from "$lib/components/trade/ChoiceImagePicker.svelte";
   import { announce } from "$lib/notice.svelte";
   import { untrack } from "svelte";
 
@@ -60,6 +61,7 @@
     option_choice_repeated: "An option lists the same choice twice.",
     item_unknown: "This item is no longer in the catalog. Reload the tab.",
     option_price_invalid: "A choice has an invalid ScottyCoin price.",
+    option_stock_invalid: "A choice has invalid stock.",
   };
 
   let seq = 0;
@@ -175,6 +177,30 @@
       return { text: "Add at least one choice, or switch this to free text.", hard: false };
     }
 
+    for (const choice of draft.choices) {
+  if (
+    choice.cost !== null &&
+    choice.cost !== undefined &&
+    (!Number.isSafeInteger(choice.cost) || choice.cost < 0)
+  ) {
+    return {
+      text: `"${choice.value}" needs a non-negative whole-number ScottyCoin price.`,
+      hard: true,
+    };
+  }
+
+  if (
+    choice.stock !== null &&
+    choice.stock !== undefined &&
+    (!Number.isSafeInteger(choice.stock) || choice.stock < 0)
+  ) {
+    return {
+      text: `"${choice.value}" needs non-negative whole-number stock.`,
+      hard: true,
+    };
+  }
+}
+
     return null;
   }
 
@@ -249,6 +275,14 @@
     draft.choices.splice(index, 1);
   }
 
+  function numberOrNull(input: HTMLInputElement): number | null {
+  if (input.value === "") return null;
+
+  const value = input.valueAsNumber;
+
+  return Number.isNaN(value) ? null : value;
+}
+
   function toBody(draft: Draft): OptionBody {
     return {
       label: draft.label.trim(),
@@ -257,9 +291,10 @@
   draft.kind === "text"
     ? []
     : draft.choices.map((choice) => ({
-        ...choice,
-        value: choice.value.trim(),
-      })),
+    ...choice,
+    value: choice.value.trim(),
+    icon_shade: choice.icon_shade?.trim() || null,
+  })),
       required: draft.required,
     };
   }
@@ -436,26 +471,99 @@
 
                 {#if draft.choices.length > 0}
                   <ul class="picks">
-                    {#each draft.choices as choice, spot (spot)}
-                      <li>
-                        <input
-  bind:value={choice.value}
-  type="text"
-  size="1"
-  aria-label="Choice {spot + 1}"
-  spellcheck="false"
-/>
-                        <button
-                          type="button"
-                          title="Remove this choice"
-                          aria-label="Remove {choice.value || `choice ${spot + 1}`}"
-                          onclick={() => cut(draft, spot)}
-                        >
-                          &times;
-                        </button>
-                      </li>
-                    {/each}
-                  </ul>
+  {#each draft.choices as choice, spot (spot)}
+    <li>
+      <div class="choice-top">
+        <input
+          class="choice-name"
+          bind:value={choice.value}
+          type="text"
+          size="1"
+          aria-label="Choice {spot + 1}"
+          spellcheck="false"
+        />
+
+        <button
+          class="remove-choice"
+          type="button"
+          title="Remove this choice"
+          aria-label="Remove {choice.value || `choice ${spot + 1}`}"
+          onclick={() => cut(draft, spot)}
+        >
+          &times;
+        </button>
+      </div>
+
+      <div class="choice-fields">
+        <label class="choice-field">
+          <span>Cost</span>
+          <input
+            type="number"
+            min="0"
+            step="1"
+            value={choice.cost ?? ""}
+            placeholder="inherit"
+            oninput={(event) => {
+              choice.cost = numberOrNull(event.currentTarget);
+            }}
+          />
+          <em>Blank uses the parent item's price.</em>
+        </label>
+
+        <label class="choice-field">
+          <span>Stock</span>
+          <input
+            type="number"
+            min="0"
+            step="1"
+            value={choice.stock ?? ""}
+            placeholder="inherit"
+            oninput={(event) => {
+              choice.stock = numberOrNull(event.currentTarget);
+            }}
+          />
+          <em>Blank uses only the parent item's stock.</em>
+        </label>
+      </div>
+
+      <div class="choice-art">
+        <ChoiceImagePicker
+          slot="icon"
+          value={choice.image_url}
+          name={choice.value || `choice ${spot + 1}`}
+          onchange={(url) => {
+            choice.image_url = url;
+          }}
+        />
+
+        <ChoiceImagePicker
+          slot="background"
+          value={choice.background_url}
+          name={choice.value || `choice ${spot + 1}`}
+          onchange={(url) => {
+            choice.background_url = url;
+          }}
+        />
+      </div>
+
+      <label class="choice-field shade-field">
+        <span>Icon shade</span>
+        <input
+          type="text"
+          value={choice.icon_shade ?? ""}
+          placeholder={item.icon_shade ?? "inherit"}
+          spellcheck="false"
+          oninput={(event) => {
+            choice.icon_shade = event.currentTarget.value === "" ? null : event.currentTarget.value;
+          }}
+        />
+        <em>
+          Blank inherits the parent item's shade. Hex colours such as #c41230 work.
+        </em>
+      </label>
+    </li>
+  {/each}
+</ul>
                 {/if}
 
                 <div class="entry">
@@ -750,49 +858,125 @@
   }
 
   .picks {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
 
-  .picks li {
-    display: inline-flex;
-    align-items: center;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-pill);
-    background: var(--highlight);
-    overflow: hidden;
-  }
+.picks li {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--highlight);
+}
 
-  .picks input {
-    width: 6.5rem;
-    padding: 4px 2px 4px 12px;
-    border: 0;
-    background: none;
-    font-size: 12px;
-    font-weight: 700;
-  }
+.choice-top {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
 
-  .picks input:focus {
-    outline: none;
-  }
+.choice-name {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--canvas);
+  font-size: 13px;
+  font-weight: 700;
+}
 
-  .picks button {
-    padding: 0 9px 0 4px;
-    border: 0;
-    background: none;
-    color: var(--muted);
-    font-size: 14px;
-    line-height: 1;
-    cursor: pointer;
-  }
+.choice-name:focus {
+  border-color: var(--accent);
+  outline: none;
+}
 
-  .picks button:hover {
-    color: var(--danger);
+.remove-choice {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--canvas);
+  color: var(--muted);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.remove-choice:hover {
+  border-color: var(--danger);
+  background: var(--danger-fill);
+  color: var(--danger);
+}
+
+.choice-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.choice-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.choice-field span {
+  color: var(--ink-shade);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.choice-field input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 7px 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--canvas);
+  font: inherit;
+  font-size: 12px;
+}
+
+.choice-field input:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.choice-field em {
+  color: var(--muted);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.choice-art {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.shade-field {
+  max-width: 22rem;
+}
+
+@media (max-width: 700px) {
+  .choice-fields,
+  .choice-art {
+    grid-template-columns: 1fr;
   }
+}
 
   .entry {
     display: flex;

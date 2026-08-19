@@ -1,0 +1,14 @@
+< [33m28ae63b[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfix/terrierTrade[m[33m)[m feat: portal can customize choices
+< [33m94b7f47[m[33m ([m[1;31mupstream/main[m[33m, [m[1;31mupstream/HEAD[m[33m, [m[1;31morigin/fix/terrierTrade[m[33m)[m feat: terrier trade variants
+< [33mc8e7d39[m feat: terrier trade variants
+< [33m4ca10e5[m fix: handle unavailable location coordinates diagnose.ts is annoying
+< [33m5632245[m fix: limit Terrier Trade rewards to one per user
+< [33mb70570e[m feat: allow apk upload to cdn
+<   [33mb62db2f[m Merge pull request 'fix: NEEDS REBUILD to fix android issue' (#50) from fix/pixel-nfc-rebuild into main
+[32m|[m[33m\[m  
+[32m|[m < [33m1399d76[m[33m ([m[1;31mupstream/fix/pixel-nfc-rebuild[m[33m, [m[1;32mfix/pixel-nfc-rebuild[m[33m)[m Merge remote-tracking branch 'upstream/main' into fix/pixel-nfc-rebuild BREAKING: fix for android if there's a rebuild, maybe
+[32m|[m < [33m4fb9af1[m[33m ([m[1;32mbackup/pixel-nfc-before-merge[m[33m)[m fix: NEEDS REBUILD to fix android issue
+< [33mb6f1fe7[m[33m ([m[1;31morigin/fix/announcement-only[m[33m, [m[1;32mfix/announcement-only[m[33m)[m feat: more annoying announcement
+> [33mc093733[m[33m ([m[1;31mupstream/fix/terrierTrade[m[33m)[m feat: more annoying announcement
+> [33m3460fab[m fix: handle unavailable location coordinates
+> [33ma202a13[m fix: limit Terrier Trade rewards to one per user

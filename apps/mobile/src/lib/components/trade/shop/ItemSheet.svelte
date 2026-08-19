@@ -60,18 +60,18 @@
   return null;
 });
   const cost = $derived(selectedChoice?.cost ?? offer.cost);
-const stock = $derived(selectedChoice?.stock ?? offer.stock);
-const art = $derived(selectedChoice?.image_url ?? offer.art);
-const backdrop = $derived(selectedChoice?.background_url ?? offer.backdrop);
-const shade = $derived(selectedChoice?.icon_shade ?? offer.shade);
+  const stock = $derived(selectedChoice?.stock ?? offer.stock);
+  const art = $derived(selectedChoice?.image_url ?? offer.art);
+  const backdrop = $derived(selectedChoice?.background_url ?? offer.backdrop);
+  const shade = $derived(selectedChoice?.icon_shade ?? offer.shade);
 
-const gone = $derived(stock <= 0);
-const total = $derived(cost * quantity);
+  const gone = $derived(stock <= 0);
+  const total = $derived(cost * quantity);
   const remaining = $derived(balance - total);
   const short = $derived(remaining < 0);
 
   // TEMP JUST FOR MAINTENANCE
-  const SHOP_OPEN = false;
+  const SHOP_OPEN = true;
 
   const blocked = $derived(!SHOP_OPEN || !player);
 

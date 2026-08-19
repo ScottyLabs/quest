@@ -213,8 +213,7 @@ function listen(): Promise<void> {
 
 const IOS_TAG_SESSION: StartScanningOptions = {
   invalidateAfterFirstRead: true,
-  iosSessionType: "tag",
-  iosPollingOptions: ["iso14443"],
+  iosSessionType: "ndef",
 };
 async function startScanSession(prompt: string): Promise<void> {
   try {

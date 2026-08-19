@@ -27,7 +27,7 @@ pub struct OptionView {
     id: String,
     label: String,
     kind: String,
-    choices: Vec<String>,
+    choices: Vec<options::ChoiceDef>,
     required: bool,
 }
 
@@ -37,7 +37,7 @@ impl From<entity::item_option::Model> for OptionView {
             id: row.id.to_string(),
             label: row.label.clone(),
             kind: options::kind_name(row.kind).to_owned(),
-            choices: options::choices_of(&row),
+            choices: options::choice_defs_of(&row),
             required: row.required,
         }
     }

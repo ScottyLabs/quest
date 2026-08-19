@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { untrack } from "svelte";
   import type { OptionBody, ShopItem, ShopOption } from "$lib/api/client";
   import { ApiError, message, setItemOptions } from "$lib/api/client";
   import Button from "$lib/components/Button.svelte";
@@ -8,6 +7,7 @@
   import Empty from "$lib/components/Empty.svelte";
   import Field from "$lib/components/Field.svelte";
   import { announce } from "$lib/notice.svelte";
+  import { untrack } from "svelte";
 
   let {
     item,
@@ -33,14 +33,16 @@
 
   type Kind = (typeof KINDS)[number]["id"];
 
+  type ChoiceDraft = ShopOption["choices"][number];
+
   type Draft = {
-    key: number;
-    label: string;
-    kind: Kind;
-    choices: string[];
-    pending: string;
-    required: boolean;
-  };
+  key: number;
+  label: string;
+  kind: Kind;
+  choices: ChoiceDraft[];
+  pending: string;
+  required: boolean;
+};
 
   type Note = { text: string; hard: boolean };
 
@@ -57,6 +59,7 @@
     option_choice_too_long: `A choice is longer than ${MAX_TEXT} characters.`,
     option_choice_repeated: "An option lists the same choice twice.",
     item_unknown: "This item is no longer in the catalog. Reload the tab.",
+    option_price_invalid: "A choice has an invalid ScottyCoin price.",
   };
 
   let seq = 0;
@@ -78,7 +81,7 @@
       key: stamp(),
       label: option.label,
       kind: readKind(option.kind),
-      choices: [...option.choices],
+      choices: option.choices.map((choice) => ({ ...choice })),
       pending: "",
       required: option.required,
     };
@@ -133,7 +136,10 @@
   }
 
   function weigh(draft: Draft): Note | null {
-    const pool = draft.pending.trim() === "" ? draft.choices : [...draft.choices, draft.pending];
+    const pool =
+  draft.pending.trim() === ""
+    ? draft.choices.map((choice) => choice.value)
+    : [...draft.choices.map((choice) => choice.value), draft.pending];
 
     if (pool.length > MAX_CHOICES) {
       return { text: `That is ${pool.length} choices; the limit is ${MAX_CHOICES}.`, hard: true };
@@ -220,7 +226,7 @@
     for (const part of parts) {
       const value = part.trim();
 
-      if (value !== "") draft.choices.push(value);
+      if (value !== "") draft.choices.push({ value });
     }
 
     draft.pending = tail.replace(/^\s+/u, "");
@@ -247,7 +253,13 @@
     return {
       label: draft.label.trim(),
       kind: draft.kind,
-      choices: draft.kind === "text" ? [] : draft.choices.map((choice) => choice.trim()),
+      choices:
+  draft.kind === "text"
+    ? []
+    : draft.choices.map((choice) => ({
+        ...choice,
+        value: choice.value.trim(),
+      })),
       required: draft.required,
     };
   }
@@ -326,7 +338,7 @@
               {#if draft.kind !== "text"}
                 <div class="chips">
                   {#each draft.choices as choice, index (index)}
-                    <Chip>{choice}</Chip>
+                    <Chip>{choice.value}</Chip>
                   {/each}
                 </div>
               {/if}
@@ -427,16 +439,16 @@
                     {#each draft.choices as choice, spot (spot)}
                       <li>
                         <input
-                          bind:value={draft.choices[spot]}
-                          type="text"
-                          size="1"
-                          aria-label="Choice {spot + 1}"
-                          spellcheck="false"
-                        />
+  bind:value={choice.value}
+  type="text"
+  size="1"
+  aria-label="Choice {spot + 1}"
+  spellcheck="false"
+/>
                         <button
                           type="button"
                           title="Remove this choice"
-                          aria-label="Remove {choice || `choice ${spot + 1}`}"
+                          aria-label="Remove {choice.value || `choice ${spot + 1}`}"
                           onclick={() => cut(draft, spot)}
                         >
                           &times;

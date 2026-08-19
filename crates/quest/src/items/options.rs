@@ -14,10 +14,27 @@ pub const MAX_LABEL: usize = 60;
 pub const MAX_CHOICE: usize = 60;
 pub const MAX_ANSWER: usize = 120;
 
+#[derive(Clone, Debug, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
+pub struct ChoiceDef {
+    pub value: String,
+
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cost: Option<i64>,
+
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub image_url: Option<String>,
+
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub background_url: Option<String>,
+
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub icon_shade: Option<String>,
+}
+
 pub struct Spec {
     pub label: String,
     pub kind: OptionKind,
-    pub choices: Vec<String>,
+    pub choices: Vec<ChoiceDef>,
     pub required: bool,
 }
 
@@ -30,14 +47,27 @@ pub struct Picked {
     pub position: i32,
     pub label: String,
     pub value: String,
+    pub cost: Option<i64>,
 }
 
-pub fn choices_of(row: &item_option::Model) -> Vec<String> {
+pub fn choice_defs_of(row: &item_option::Model) -> Vec<ChoiceDef> {
     row.choices
         .as_array()
         .map(|list| {
             list.iter()
-                .filter_map(|entry| entry.as_str().map(str::to_owned))
+                .filter_map(|entry| {
+                    if let Some(value) = entry.as_str() {
+                        return Some(ChoiceDef {
+                            value: value.to_owned(),
+                            cost: None,
+                            image_url: None,
+                            background_url: None,
+                            icon_shade: None,
+                        });
+                    }
+
+                    serde_json::from_value::<ChoiceDef>(entry.clone()).ok()
+                })
                 .collect()
         })
         .unwrap_or_default()
@@ -144,7 +174,7 @@ pub fn vet(specs: &[Spec]) -> Result<(), AuthError> {
 
         let mut picks: Vec<String> = Vec::with_capacity(spec.choices.len());
         for choice in &spec.choices {
-            let value = choice.trim();
+            let value = choice.value.trim();
             if value.is_empty() {
                 return Err(AuthError::BadRequest("option_choice_empty"));
             }
@@ -155,6 +185,9 @@ pub fn vet(specs: &[Spec]) -> Result<(), AuthError> {
             let folded = value.to_lowercase();
             if picks.contains(&folded) {
                 return Err(AuthError::BadRequest("option_choice_repeated"));
+            }
+            if choice.cost.is_some_and(|cost| cost < 0) {
+                return Err(AuthError::BadRequest("option_price_invalid"));
             }
             picks.push(folded);
         }
@@ -189,12 +222,15 @@ pub async fn replace(
         .map_err(down)?;
 
     for (index, spec) in specs.into_iter().enumerate() {
-        let choices: Vec<String> = if spec.kind == OptionKind::Text {
+        let choices: Vec<ChoiceDef> = if spec.kind == OptionKind::Text {
             Vec::new()
         } else {
             spec.choices
-                .iter()
-                .map(|choice| choice.trim().to_owned())
+                .into_iter()
+                .map(|mut choice| {
+                    choice.value = choice.value.trim().to_owned();
+                    choice
+                })
                 .collect()
         };
 
@@ -250,19 +286,29 @@ pub fn resolve(
                 if given.chars().count() > MAX_ANSWER {
                     return Err(AuthError::BadRequest("option_answer_too_long"));
                 }
+
+                picked.push(Picked {
+                    position: row.position,
+                    label: row.label.clone(),
+                    value: given.to_owned(),
+                    cost: None,
+                });
             }
+
             OptionKind::Select | OptionKind::Dropdown => {
-                if !choices_of(row).iter().any(|choice| choice == given) {
-                    return Err(AuthError::BadRequest("option_answer_invalid"));
-                }
+                let choice = choice_defs_of(row)
+                    .into_iter()
+                    .find(|choice| choice.value == given)
+                    .ok_or(AuthError::BadRequest("option_answer_invalid"))?;
+
+                picked.push(Picked {
+                    position: row.position,
+                    label: row.label.clone(),
+                    value: choice.value,
+                    cost: choice.cost,
+                });
             }
         }
-
-        picked.push(Picked {
-            position: row.position,
-            label: row.label.clone(),
-            value: given.to_owned(),
-        });
     }
 
     Ok(picked)

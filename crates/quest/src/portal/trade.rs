@@ -17,7 +17,7 @@ SELECT p."purchase_id",
        u."andrew_id",
        i."id"                AS "item_id",
        i."name"              AS "item",
-       i."cost",
+       p."unit_cost"         AS "cost",
        p."quantity",
        p."received_item_date"
 FROM "purchases" p

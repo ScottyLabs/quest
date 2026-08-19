@@ -419,7 +419,7 @@ pub struct ShopOption {
     pub id: Uuid,
     pub label: String,
     pub kind: String,
-    pub choices: Vec<String>,
+    pub choices: Vec<options::ChoiceDef>,
     pub required: bool,
 }
 
@@ -429,7 +429,7 @@ impl From<entity::item_option::Model> for ShopOption {
             id: row.id,
             label: row.label.clone(),
             kind: options::kind_name(row.kind).to_owned(),
-            choices: options::choices_of(&row),
+            choices: options::choice_defs_of(&row),
             required: row.required,
         }
     }
@@ -499,7 +499,7 @@ pub struct OptionBody {
     pub label: String,
     pub kind: String,
     #[serde(default)]
-    pub choices: Vec<String>,
+    pub choices: Vec<options::ChoiceDef>,
     #[serde(default = "yes")]
     pub required: bool,
 }

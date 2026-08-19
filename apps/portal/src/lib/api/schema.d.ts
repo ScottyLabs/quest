@@ -749,6 +749,14 @@ export interface components {
       secret: boolean;
       tagline: string;
     };
+    ChoiceDef: {
+      background_url?: string | null;
+      /** Format: int64 */
+      cost?: number | null;
+      icon_shade?: string | null;
+      image_url?: string | null;
+      value: string;
+    };
     Column: {
       default_expr?: string | null;
       generated: boolean;
@@ -896,13 +904,13 @@ export interface components {
       end_session_url?: string | null;
     };
     OptionBody: {
-      choices?: string[];
+      choices?: components["schemas"]["ChoiceDef"][];
       kind: string;
       label: string;
       required?: boolean;
     };
     OptionView: {
-      choices: string[];
+      choices: components["schemas"]["ChoiceDef"][];
       id: string;
       kind: string;
       label: string;
@@ -1107,7 +1115,7 @@ export interface components {
       stock: number;
     };
     ShopOption: {
-      choices: string[];
+      choices: components["schemas"]["ChoiceDef"][];
       /** Format: uuid */
       id: string;
       kind: string;

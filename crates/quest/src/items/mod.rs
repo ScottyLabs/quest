@@ -51,7 +51,7 @@ SELECT
     "purchases"."item_id"                        AS "item_id",
     "items"."name"                               AS "name",
     "purchases"."quantity"                       AS "quantity",
-    "items"."cost"                               AS "cost",
+    "purchases"."unit_cost"                      AS "cost",
     "items"."image_url"                          AS "image_url",
     "purchases"."received_item_date" IS NOT NULL AS "delivered"
 FROM "purchases"
@@ -214,8 +214,16 @@ impl Items {
             return Err(AuthError::Conflict("out_of_stock"));
         }
 
-        let spent = row
-            .cost
+        let defined = options::of_item(&txn, item).await?;
+        let picked = options::resolve(&defined, chosen)?;
+
+        let unit_cost = picked.iter().find_map(|pick| pick.cost).unwrap_or(row.cost);
+
+        if unit_cost < 0 {
+            return Err(AuthError::BadRequest("option_price_invalid"));
+        }
+
+        let spent = unit_cost
             .checked_mul(quantity)
             .ok_or(AuthError::BadRequest("quantity_invalid"))?;
 
@@ -224,13 +232,11 @@ impl Items {
             return Err(AuthError::Conflict("insufficient_coins"));
         }
 
-        let defined = options::of_item(&txn, item).await?;
-        let picked = options::resolve(&defined, chosen)?;
-
         let saved = purchases::ActiveModel {
             user_id: ActiveValue::Set(user),
             item_id: ActiveValue::Set(item),
             quantity: ActiveValue::Set(quantity),
+            unit_cost: ActiveValue::Set(unit_cost),
             ..Default::default()
         }
         .insert(&txn)
@@ -253,7 +259,7 @@ impl Items {
             purchase_id: saved.purchase_id,
             item: row.id,
             name: row.name,
-            cost: row.cost,
+            cost: unit_cost,
             quantity,
             spent,
             stock: stock - quantity,
@@ -312,13 +318,13 @@ impl Items {
             .await
             .map_err(db_down)?;
 
-        let Some(item) = item else {
+        let Some(_item) = item else {
             txn.rollback().await.ok();
             return Err(AuthError::NotFound("item_unknown"));
         };
 
-        let refunded = item
-            .cost
+        let refunded = row
+            .unit_cost
             .checked_mul(quantity)
             .ok_or(AuthError::BadRequest("refund_quantity_invalid"))?;
 

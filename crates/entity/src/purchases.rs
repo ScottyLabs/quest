@@ -8,6 +8,7 @@ pub struct Model {
     pub user_id: Uuid,
     pub item_id: Uuid,
     pub quantity: i64,
+    pub unit_cost: i64,
     pub received_item_date: Option<Date>,
 }
 

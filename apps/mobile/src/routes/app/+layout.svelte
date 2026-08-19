@@ -4,7 +4,7 @@
   import {
       announcement,
       closeAnnouncement,
-      showAnnouncement,
+      showAnnouncementOnce,
   } from "$lib/announcement.svelte";
   import { session } from "$lib/auth";
   import { caution, hush } from "$lib/caution.svelte";
@@ -82,9 +82,9 @@
   }
 
 $effect(() => {
-    if (session.phase === "signedIn") {
-        showAnnouncement();
-    }
+  if (session.phase === "signedIn") {
+    showAnnouncementOnce();
+  }
 });
   async function retryLocation(): Promise<void> {
     if (await permitted()) hush();
@@ -241,8 +241,8 @@ $effect(() => {
 <!-- TEMP ANNOUNCEMENT -->
 {#if announcement.open && !briefing.open}
   <WarningDialog
-    title="Terrier Trade Update"
-    body="Terrier Trade will open at noon on Wed 08/19. We're sorry for the delay!"
+    title="Terrier Trade Is Open!"
+    body="Also, for Pixel a10- users, we have a solution: click the report issues button to see it."
     dismiss="Yippee!"
     ondismiss={closeAnnouncement}
   />

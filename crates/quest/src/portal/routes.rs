@@ -672,7 +672,7 @@ async fn upload(
             content_type,
             query.name.as_deref(),
             &access.user.andrew_id,
-            bytes.to_vec(),
+            bytes,
         )
         .await
         .map_err(asset_failed)?;
@@ -705,7 +705,6 @@ pub struct AssetView {
 pub struct Library {
     pub assets: Vec<AssetView>,
     pub kinds: Vec<String>,
-    pub accepts: Vec<String>,
     pub max_bytes: u64,
     pub ready: bool,
 }
@@ -750,9 +749,6 @@ async fn library(
         kinds: crate::portal::assets::KIND_LIST
             .iter()
             .map(|kind| (*kind).to_owned())
-            .collect(),
-        accepts: crate::portal::assets::allowed_types()
-            .map(str::to_owned)
             .collect(),
         max_bytes: crate::portal::assets::MAX_BYTES as u64,
         ready: console.assets.configured(),

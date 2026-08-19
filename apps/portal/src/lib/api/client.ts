@@ -84,7 +84,7 @@ export type AssetLibrary = Schemas["Library"];
 export type AssetView = Schemas["AssetView"];
 
 export async function uploadAsset(kind: string, file: File): Promise<Uploaded> {
-  const headers = new Headers({ "content-type": file.type });
+  const headers = new Headers({ "content-type": file.type || "application/octet-stream" });
   const id = session.id;
 
   if (id !== null) headers.set("authorization", `Bearer ${id}`);

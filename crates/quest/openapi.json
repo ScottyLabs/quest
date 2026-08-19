@@ -3307,14 +3307,8 @@
       },
       "Library": {
         "type": "object",
-        "required": ["assets", "kinds", "accepts", "max_bytes", "ready"],
+        "required": ["assets", "kinds", "max_bytes", "ready"],
         "properties": {
-          "accepts": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
           "assets": {
             "type": "array",
             "items": {

@@ -23,7 +23,6 @@
   let field = $state<HTMLInputElement | null>(null);
   let queued = $state<{ name: string; state: "sending" | "done" | "failed"; note?: string }[]>([]);
 
-  const accepts = $derived(library?.accepts.join(",") ?? "image/*");
   const cap = $derived(Math.floor((library?.max_bytes ?? 0) / (1024 * 1024)));
 
   const shown = $derived.by(() => {
@@ -184,7 +183,6 @@
         class="file"
         type="file"
         multiple
-        accept={accepts}
         onchange={(event) => void picked(event)}
       />
 
@@ -213,7 +211,7 @@
           <Spinner label="Uploading" />
         {:else}
           <p class="lead">Drop files here</p>
-          <p class="hint">Up to {cap} MB each. {library?.accepts.length ?? 0} types accepted.</p>
+          <p class="hint">Any file type, up to {cap} MB each.</p>
         {/if}
       </div>
 

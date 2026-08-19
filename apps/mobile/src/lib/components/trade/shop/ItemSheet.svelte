@@ -49,7 +49,38 @@
   let lift = $state(0);
 
   const gone = $derived(offer.stock <= 0);
-  const total = $derived(offer.cost * quantity);
+  const selectedChoice = $derived.by(() => {
+  for (const option of offer.options) {
+    const selected = answers.get(option.id)?.trim();
+    if (!selected) continue;
+
+    const choice = option.choices.find((choice) => choice.value === selected);
+    if (
+      choice !== undefined &&
+      (choice.cost != null ||
+        choice.image_url != null ||
+        choice.background_url != null ||
+        choice.icon_shade != null)
+    ) {
+      return choice;
+    }
+  }
+
+  return null;
+});
+  const cost = $derived(selectedChoice?.cost ?? offer.cost);
+
+const art = $derived(selectedChoice?.image_url ?? offer.art);
+
+const backdrop = $derived(
+  selectedChoice?.background_url ?? offer.backdrop,
+);
+
+const shade = $derived(
+  selectedChoice?.icon_shade ?? offer.shade,
+);
+
+const total = $derived(cost * quantity);
   const remaining = $derived(balance - total);
   const short = $derived(remaining < 0);
 
@@ -139,18 +170,18 @@
 <div class="stack" style:--roof="{roof}px" style:--lift="{lift}px">
   <div class="hero">
     <span class="plate"></span>
-    {#if offer.backdrop !== null}
-      <img class="shot" src={offer.backdrop} alt="" />
-    {/if}
+    {#if backdrop !== null}
+  <img class="shot" src={backdrop} alt="" />
+{/if}
 
-    <div class="badge" style:--shade={offer.shade}>
-      {#if offer.art === null}
-        <span class="blank"></span>
-      {:else}
-        <span class="cast"></span>
-        <img class="glyph" src={offer.art} alt="" />
-      {/if}
-    </div>
+<div class="badge" style:--shade={shade}>
+  {#if art === null}
+    <span class="blank"></span>
+  {:else}
+    <span class="cast"></span>
+    <img class="glyph" src={art} alt="" />
+  {/if}
+</div>
   </div>
 
   <div class="sheet" role="dialog" aria-modal="true" aria-label={offer.name} tabindex="-1">

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import SegmentPicker from "./SegmentPicker.svelte";
   import type { ItemOption } from "$lib/trade.svelte";
+  import SegmentPicker from "./SegmentPicker.svelte";
 
   let {
     option,
@@ -19,7 +19,12 @@
   </p>
 
   {#if option.kind === "select"}
-    <SegmentPicker label={option.label} choices={option.choices} {value} {onpick} />
+    <SegmentPicker
+  label={option.label}
+  choices={option.choices.map((choice) => choice.value)}
+  {value}
+  {onpick}
+/>
   {:else if option.kind === "dropdown"}
     <div class="shell">
       <select
@@ -31,9 +36,9 @@
         <option value="" disabled={option.required}>
           {option.required ? `Choose ${option.label.toLowerCase()}` : "No preference"}
         </option>
-        {#each option.choices as choice (choice)}
-          <option value={choice}>{choice}</option>
-        {/each}
+        {#each option.choices as choice (choice.value)}
+  <option value={choice.value}>{choice.value}</option>
+{/each}
       </select>
     </div>
   {:else}

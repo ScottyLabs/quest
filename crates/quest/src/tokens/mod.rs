@@ -40,7 +40,7 @@ WHERE "tap_events"."user_id" = $1
     WHERE target."day" IS NULL OR target."day" = tap."day"
 ),
 spent AS (
-    SELECT COALESCE(SUM("purchases"."quantity" * "items"."cost"), 0)::BIGINT AS "total"
+    SELECT COALESCE(SUM("purchases"."quantity" * "purchases"."unit_cost"), 0)::BIGINT AS "total"
     FROM "purchases"
     JOIN "items" ON "items"."id" = "purchases"."item_id"
     CROSS JOIN target

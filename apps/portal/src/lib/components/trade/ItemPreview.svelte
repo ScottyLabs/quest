@@ -48,7 +48,7 @@
             {/if}
 
             {#each item.options as option (option.id)}
-              {@const choices = option.choices.filter((choice) => choice.trim() !== "")}
+              {@const choices = option.choices.filter((choice) => choice.value.trim() !== "")}
               <div class="ask">
                 <p class="tag quiet">
                   {option.label}:
@@ -67,7 +67,7 @@
                 {:else}
                   <div class="seg">
                     {#each choices as choice, spot (spot)}
-                      <span class:on={spot === 0}>{choice}</span>
+                      <span class:on={spot === 0}>{choice.value}</span>
                     {/each}
                   </div>
                 {/if}

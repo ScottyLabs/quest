@@ -231,6 +231,7 @@ impl Items {
         if spent > balance.scottycoins {
             return Err(AuthError::Conflict("insufficient_coins"));
         }
+        options::take_stock(&txn, &defined, &picked, quantity).await?;
 
         let saved = purchases::ActiveModel {
             user_id: ActiveValue::Set(user),
@@ -327,6 +328,8 @@ impl Items {
             .unit_cost
             .checked_mul(quantity)
             .ok_or(AuthError::BadRequest("refund_quantity_invalid"))?;
+
+        options::restore_stock(&txn, row.item_id, row.purchase_id, quantity).await?;
 
         let remaining = row.quantity - quantity;
         if remaining == 0 {

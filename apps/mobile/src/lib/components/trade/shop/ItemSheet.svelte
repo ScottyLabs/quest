@@ -48,38 +48,24 @@
   let roof = $state(0);
   let lift = $state(0);
 
-  const gone = $derived(offer.stock <= 0);
   const selectedChoice = $derived.by(() => {
   for (const option of offer.options) {
     const selected = answers.get(option.id)?.trim();
     if (!selected) continue;
 
     const choice = option.choices.find((choice) => choice.value === selected);
-    if (
-      choice !== undefined &&
-      (choice.cost != null ||
-        choice.image_url != null ||
-        choice.background_url != null ||
-        choice.icon_shade != null)
-    ) {
-      return choice;
-    }
+    if (choice !== undefined) return choice;
   }
 
   return null;
 });
   const cost = $derived(selectedChoice?.cost ?? offer.cost);
-
+const stock = $derived(selectedChoice?.stock ?? offer.stock);
 const art = $derived(selectedChoice?.image_url ?? offer.art);
+const backdrop = $derived(selectedChoice?.background_url ?? offer.backdrop);
+const shade = $derived(selectedChoice?.icon_shade ?? offer.shade);
 
-const backdrop = $derived(
-  selectedChoice?.background_url ?? offer.backdrop,
-);
-
-const shade = $derived(
-  selectedChoice?.icon_shade ?? offer.shade,
-);
-
+const gone = $derived(stock <= 0);
 const total = $derived(cost * quantity);
   const remaining = $derived(balance - total);
   const short = $derived(remaining < 0);
@@ -186,7 +172,7 @@ const total = $derived(cost * quantity);
 
   <div class="sheet" role="dialog" aria-modal="true" aria-label={offer.name} tabindex="-1">
     <div class="scroll" bind:this={scroller}>
-      <ItemSummary {offer} />
+      <ItemSummary {offer} {stock} />
 
       <div class="choices">
         <div class="pickers">

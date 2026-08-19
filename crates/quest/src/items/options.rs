@@ -3,7 +3,7 @@ use entity::{item_option, purchase_option};
 use sea_orm::prelude::Uuid;
 use sea_orm::{
     ActiveModelTrait, ActiveValue, ColumnTrait, ConnectionTrait, DatabaseConnection, EntityTrait,
-    QueryFilter, QueryOrder, TransactionTrait,
+    QueryFilter, QueryOrder, QuerySelect, TransactionTrait,
 };
 
 use crate::auth::AuthError;
@@ -29,6 +29,9 @@ pub struct ChoiceDef {
 
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub icon_shade: Option<String>,
+
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stock: Option<i64>,
 }
 
 pub struct Spec {
@@ -44,6 +47,7 @@ pub struct Choice {
 }
 
 pub struct Picked {
+    pub option_id: Uuid,
     pub position: i32,
     pub label: String,
     pub value: String,
@@ -60,6 +64,7 @@ pub fn choice_defs_of(row: &item_option::Model) -> Vec<ChoiceDef> {
                         return Some(ChoiceDef {
                             value: value.to_owned(),
                             cost: None,
+                            stock: None,
                             image_url: None,
                             background_url: None,
                             icon_shade: None,
@@ -189,6 +194,9 @@ pub fn vet(specs: &[Spec]) -> Result<(), AuthError> {
             if choice.cost.is_some_and(|cost| cost < 0) {
                 return Err(AuthError::BadRequest("option_price_invalid"));
             }
+            if choice.stock.is_some_and(|stock| stock < 0) {
+                return Err(AuthError::BadRequest("option_stock_invalid"));
+            }
             picks.push(folded);
         }
     }
@@ -206,6 +214,7 @@ pub async fn replace(
     let txn = db.begin().await.map_err(down)?;
 
     let known = entity::items::Entity::find_by_id(item)
+        .lock_exclusive()
         .one(&txn)
         .await
         .map_err(down)?;
@@ -288,6 +297,7 @@ pub fn resolve(
                 }
 
                 picked.push(Picked {
+                    option_id: row.id,
                     position: row.position,
                     label: row.label.clone(),
                     value: given.to_owned(),
@@ -302,6 +312,7 @@ pub fn resolve(
                     .ok_or(AuthError::BadRequest("option_answer_invalid"))?;
 
                 picked.push(Picked {
+                    option_id: row.id,
                     position: row.position,
                     label: row.label.clone(),
                     value: choice.value,
@@ -312,6 +323,88 @@ pub fn resolve(
     }
 
     Ok(picked)
+}
+pub async fn take_stock<C: ConnectionTrait>(
+    db: &C,
+    defined: &[item_option::Model],
+    picked: &[Picked],
+    quantity: i64,
+) -> Result<(), AuthError> {
+    for pick in picked {
+        let Some(row) = defined.iter().find(|row| row.id == pick.option_id) else {
+            return Err(AuthError::BadRequest("option_unknown"));
+        };
+
+        let mut choices = choice_defs_of(row);
+
+        let Some(choice) = choices.iter_mut().find(|choice| choice.value == pick.value) else {
+            // Text options do not have a choice list.
+            continue;
+        };
+
+        let Some(stock) = choice.stock else {
+            // No variant-specific stock configured:
+            // continue using the parent item's stock only.
+            continue;
+        };
+
+        if stock < quantity {
+            return Err(AuthError::Conflict("out_of_stock"));
+        }
+
+        choice.stock = Some(stock - quantity);
+
+        let mut active: item_option::ActiveModel = row.clone().into();
+        active.choices = ActiveValue::Set(serde_json::json!(choices));
+
+        active.update(db).await.map_err(down)?;
+    }
+
+    Ok(())
+}
+
+pub async fn restore_stock<C: ConnectionTrait>(
+    db: &C,
+    item: Uuid,
+    purchase: i64,
+    quantity: i64,
+) -> Result<(), AuthError> {
+    let saved = of_purchases(db, &[purchase]).await?;
+
+    if saved.is_empty() {
+        return Ok(());
+    }
+
+    let defined = of_item(db, item).await?;
+
+    for pick in saved {
+        let Some(row) = defined.iter().find(|row| row.position == pick.position) else {
+            continue;
+        };
+
+        let mut choices = choice_defs_of(row);
+
+        let Some(choice) = choices.iter_mut().find(|choice| choice.value == pick.value) else {
+            continue;
+        };
+
+        let Some(stock) = choice.stock else {
+            continue;
+        };
+
+        choice.stock = Some(
+            stock
+                .checked_add(quantity)
+                .ok_or(AuthError::BadRequest("refund_quantity_invalid"))?,
+        );
+
+        let mut active: item_option::ActiveModel = row.clone().into();
+        active.choices = ActiveValue::Set(serde_json::json!(choices));
+
+        active.update(db).await.map_err(down)?;
+    }
+
+    Ok(())
 }
 
 pub async fn attach<C: ConnectionTrait>(

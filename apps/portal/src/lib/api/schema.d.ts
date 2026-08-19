@@ -755,6 +755,8 @@ export interface components {
       cost?: number | null;
       icon_shade?: string | null;
       image_url?: string | null;
+      /** Format: int64 */
+      stock?: number | null;
       value: string;
     };
     Column: {

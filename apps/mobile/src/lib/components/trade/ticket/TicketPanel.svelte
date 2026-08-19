@@ -1,13 +1,13 @@
 <script lang="ts">
-  import TicketGate from "./TicketGate.svelte";
   import { PICKUP } from "$lib/trade.svelte";
+  import TicketGate from "./TicketGate.svelte";
 
   let { name, andrewId }: { name: string; andrewId: string } = $props();
 </script>
 
 <section class="ticket">
   <p class="lead">
-    Go to the <b>{PICKUP}</b> with ticket below to have your purchased items delivered.
+    <strong>Starting on Tuesday August 25th, </strong>Go to the <b>{PICKUP}</b> with ticket below to have your purchased items delivered.
   </p>
 
   <TicketGate {name} {andrewId} />

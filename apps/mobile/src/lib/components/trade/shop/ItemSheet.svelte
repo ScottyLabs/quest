@@ -64,6 +64,8 @@
   const backdrop = $derived(selectedChoice?.background_url ?? offer.backdrop);
   const shade = $derived(selectedChoice?.icon_shade ?? offer.shade);
 
+  const displayStock = $derived(selectedChoice?.stock ?? offer.stock);
+  
   const itemGone = $derived(offer.stock <= 0);
   const total = $derived(cost * quantity);
   const remaining = $derived(balance - total);
@@ -177,7 +179,7 @@
 
   <div class="sheet" role="dialog" aria-modal="true" aria-label={offer.name} tabindex="-1">
     <div class="scroll" bind:this={scroller}>
-      <ItemSummary {offer} stock={offer.stock} />
+      <ItemSummary {offer} stock={displayStock} />
 
       <div class="choices">
         <div class="pickers">

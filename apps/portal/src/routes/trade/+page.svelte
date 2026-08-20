@@ -4,17 +4,19 @@
   import Empty from "$lib/components/Empty.svelte";
   import OrdersTab from "$lib/components/trade/OrdersTab.svelte";
   import PassTab from "$lib/components/trade/PassTab.svelte";
+  import SalesTab from "$lib/components/trade/SalesTab.svelte";
   import SellTab from "$lib/components/trade/SellTab.svelte";
   import StockTab from "$lib/components/trade/StockTab.svelte";
   import { me } from "$lib/identity.svelte";
   import { announce } from "$lib/notice.svelte";
 
   const TABS = [
-    { id: "pass", label: "Pass" },
-    { id: "stock", label: "Stock" },
-    { id: "orders", label: "Orders" },
-    { id: "sell", label: "Sell" },
-  ] as const;
+  { id: "pass", label: "Pass" },
+  { id: "stock", label: "Stock" },
+  { id: "orders", label: "Orders" },
+  { id: "sales", label: "Sales" },
+  { id: "sell", label: "Sell" },
+] as const;
 
   type Tab = (typeof TABS)[number]["id"];
 
@@ -151,6 +153,8 @@
       onfilters={(next) => (filters = next)}
       onreload={() => loadOrders(query)}
     />
+  {:else if tab === "sales"}
+    <SalesTab />
   {:else}
     <SellTab {items} loading={itemsBusy} fault={itemsFault} onbought={sold} />
   {/if}

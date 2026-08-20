@@ -29,6 +29,36 @@ ORDER BY p."purchase_id" DESC
 LIMIT $3
 "#;
 
+const SALES_TOTALS: &str = r#"
+SELECT
+    i."id" AS "item_id",
+    i."name" AS "item",
+    COALESCE(SUM(p."quantity"), 0)::BIGINT AS "sold"
+FROM "items" i
+LEFT JOIN "purchases" p ON p."item_id" = i."id"
+GROUP BY i."id", i."name"
+ORDER BY i."name"
+"#;
+
+const SALES_OPTIONS: &str = r#"
+SELECT
+    p."item_id" AS "item_id",
+    po."label" AS "label",
+    po."value" AS "value",
+    SUM(p."quantity")::BIGINT AS "sold"
+FROM "purchases" p
+JOIN "purchase_option" po
+    ON po."purchase_id" = p."purchase_id"
+GROUP BY
+    p."item_id",
+    po."label",
+    po."value"
+ORDER BY
+    p."item_id",
+    po."label",
+    po."value"
+"#;
+
 const HOLDER: &str = r#"
 SELECT u."id",
        u."andrew_id",
@@ -56,6 +86,36 @@ struct OrderRow {
     pub cost: i64,
     pub quantity: i64,
     pub received_item_date: Option<Date>,
+}
+
+#[derive(Debug, FromQueryResult)]
+struct SalesTotalRow {
+    item_id: Uuid,
+    item: String,
+    sold: i64,
+}
+
+#[derive(Debug, FromQueryResult)]
+struct SalesOptionRow {
+    item_id: Uuid,
+    label: String,
+    value: String,
+    sold: i64,
+}
+
+#[derive(Debug, Serialize, ToSchema)]
+pub struct SalesOptionView {
+    pub label: String,
+    pub value: String,
+    pub sold: i64,
+}
+
+#[derive(Debug, Serialize, ToSchema)]
+pub struct SalesItemView {
+    pub item_id: Uuid,
+    pub item: String,
+    pub sold: i64,
+    pub options: Vec<SalesOptionView>,
 }
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -210,5 +270,45 @@ impl Desk {
             thistlestones: balances.thistlestones,
             orders: self.orders(Some(andrew_id), None, Some(LEDGER_CAP)).await?,
         })
+    }
+    pub async fn sales(&self) -> Result<Vec<SalesItemView>, PortalError> {
+        let totals = SalesTotalRow::find_by_statement(Statement::from_string(
+            DbBackend::Postgres,
+            SALES_TOTALS,
+        ))
+        .all(&self.db)
+        .await
+        .map_err(sql_failed)?;
+
+        let option_rows = SalesOptionRow::find_by_statement(Statement::from_string(
+            DbBackend::Postgres,
+            SALES_OPTIONS,
+        ))
+        .all(&self.db)
+        .await
+        .map_err(sql_failed)?;
+
+        let mut options: HashMap<Uuid, Vec<SalesOptionView>> = HashMap::new();
+
+        for row in option_rows {
+            options
+                .entry(row.item_id)
+                .or_default()
+                .push(SalesOptionView {
+                    label: row.label,
+                    value: row.value,
+                    sold: row.sold,
+                });
+        }
+
+        Ok(totals
+            .into_iter()
+            .map(|row| SalesItemView {
+                item_id: row.item_id,
+                item: row.item,
+                sold: row.sold,
+                options: options.remove(&row.item_id).unwrap_or_default(),
+            })
+            .collect())
     }
 }

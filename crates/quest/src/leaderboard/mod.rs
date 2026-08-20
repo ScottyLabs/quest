@@ -15,15 +15,15 @@ const DAILY_CAP: i64 = 10;
 const DAILY_BONUS: i64 = 5;
 
 const TARGETS: [(&str, i64); 9] = [
-    ("donner", 18900),
-    ("etower", 15225),
-    ("hammershlag", 11325),
-    ("mcgillboss", 18150),
-    ("morewood", 14250),
-    ("mudge", 21450),
-    ("res", 10875),
-    ("stever", 18300),
-    ("whesco", 14325),
+    ("donner", 7560),
+    ("etower", 6090),
+    ("hammershlag", 4530),
+    ("mcgillboss", 7260),
+    ("morewood", 5700),
+    ("mudge", 8580),
+    ("res", 4350),
+    ("stever", 7320),
+    ("whesco", 5730),
 ];
 
 static TAP_DAY: LazyLock<String> = LazyLock::new(|| {

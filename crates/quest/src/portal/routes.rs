@@ -9,7 +9,7 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::assets::{AssetError, Assets};
-use super::trade::{Desk, DeskPickView, Fulfilled, OrderView, PassHolder};
+use super::trade::{Desk, DeskPickView, Fulfilled, OrderView, PassHolder, SalesItemView};
 use super::{Browse, Column, Outcome, Page, Portal, PortalErrBody, PortalError, Script};
 use crate::access::{Access, CAPABILITIES, Capability, Level, Role};
 use crate::auth::AuthError;
@@ -49,6 +49,7 @@ pub fn router(
         .routes(routes!(trade_orders, trade_buy))
         .routes(routes!(trade_fulfil))
         .routes(routes!(trade_refund))
+        .routes(routes!(trade_sales))
         .layer(axum::extract::DefaultBodyLimit::max(
             crate::portal::assets::MAX_BYTES + 4096,
         ))
@@ -195,6 +196,7 @@ async fn tables(
         (status = NOT_FOUND, body = PortalErrBody),
     ),
 )]
+
 async fn rows(
     State(console): State<Console>,
     access: Access,
@@ -208,6 +210,24 @@ async fn rows(
     let table = catalog.table(&table)?;
 
     Ok(Json(console.portal.rows(table, &browse).await?))
+}
+
+#[utoipa::path(
+    get,
+    path = "/portal/trade/sales",
+    tag = "portal",
+    responses(
+        (status = OK, body = Vec<SalesItemView>),
+        (status = FORBIDDEN, body = PortalErrBody),
+    ),
+)]
+async fn trade_sales(
+    State(console): State<Console>,
+    access: Access,
+) -> Result<Json<Vec<SalesItemView>>, PortalError> {
+    access.require(Capability::TradeDesk)?;
+
+    Ok(Json(console.desk.sales().await?))
 }
 
 #[derive(Deserialize, ToSchema)]

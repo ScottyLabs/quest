@@ -1676,6 +1676,37 @@
         }
       }
     },
+    "/api/portal/trade/sales": {
+      "get": {
+        "tags": ["portal"],
+        "operationId": "trade_sales",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SalesItemView"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/purchases/{id}/refund": {
       "post": {
         "tags": ["items"],
@@ -3893,7 +3924,7 @@
       },
       "Role": {
         "type": "string",
-        "enum": ["admins", "orientation-staff", "trade-admin", "challenge-placer"]
+        "enum": ["admins", "orientation-staff", "trade-admin", "challenge-placer", "member"]
       },
       "Row": {
         "type": "object",
@@ -3928,6 +3959,45 @@
             "propertyNames": {
               "type": "string"
             }
+          }
+        }
+      },
+      "SalesItemView": {
+        "type": "object",
+        "required": ["item_id", "item", "sold", "options"],
+        "properties": {
+          "item": {
+            "type": "string"
+          },
+          "item_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SalesOptionView"
+            }
+          },
+          "sold": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "SalesOptionView": {
+        "type": "object",
+        "required": ["label", "value", "sold"],
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "sold": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "value": {
+            "type": "string"
           }
         }
       },

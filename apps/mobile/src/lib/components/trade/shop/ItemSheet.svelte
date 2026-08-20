@@ -60,15 +60,20 @@
   return null;
 });
   const cost = $derived(selectedChoice?.cost ?? offer.cost);
-  const stock = $derived(selectedChoice?.stock ?? offer.stock);
   const art = $derived(selectedChoice?.image_url ?? offer.art);
   const backdrop = $derived(selectedChoice?.background_url ?? offer.backdrop);
   const shade = $derived(selectedChoice?.icon_shade ?? offer.shade);
 
-  const gone = $derived(stock <= 0);
+  const itemGone = $derived(offer.stock <= 0);
   const total = $derived(cost * quantity);
   const remaining = $derived(balance - total);
   const short = $derived(remaining < 0);
+
+  const choiceGone = $derived(
+  selectedChoice?.stock !== undefined &&
+    selectedChoice.stock !== null &&
+    selectedChoice.stock <= 0,
+);
 
   // TEMP JUST FOR MAINTENANCE
   const SHOP_OPEN = true;
@@ -132,7 +137,7 @@
   });
 
   async function buy(): Promise<void> {
-    if (busy || blocked || gone || short || nagging !== null) {
+    if (busy || blocked || itemGone || choiceGone || short || nagging !== null) {
       return;
     }
 
@@ -172,7 +177,7 @@
 
   <div class="sheet" role="dialog" aria-modal="true" aria-label={offer.name} tabindex="-1">
     <div class="scroll" bind:this={scroller}>
-      <ItemSummary {offer} {stock} />
+      <ItemSummary {offer} stock={offer.stock} />
 
       <div class="choices">
         <div class="pickers">
@@ -193,7 +198,7 @@
                 <p>Terrier Trade is currently down for repairs!</p>
               {:else if blocked}
                 <p>Not a First Year!</p>
-              {:else if gone}
+              {:else if itemGone || choiceGone}
                 <p>Not Enough Stock</p>
               {:else if short}
                 <p>Not Enough Scotty Coins</p>
@@ -217,7 +222,7 @@
       <button
         class="buy"
         type="button"
-        disabled={blocked || gone || short || busy || nagging !== null}
+        disabled={blocked || itemGone || choiceGone || short || busy || nagging !== null}
         onclick={buy}
       >
         {busy ? "Purchasing..." : "Purchase"}

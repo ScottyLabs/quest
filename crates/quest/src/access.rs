@@ -101,7 +101,11 @@ static GRANTS: &[Grant] = &[
     Grant {
         role: Role::Member,
         group: "/projects/quest",
-        capabilities: &[Capability::Portal, Capability::SqlConsole, Capability::DataConsole],
+        capabilities: &[
+            Capability::Portal,
+            Capability::SqlConsole,
+            Capability::DataConsole,
+        ],
         tables: Tables::Every(Level::Full),
     },
     Grant {

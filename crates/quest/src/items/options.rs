@@ -78,6 +78,31 @@ pub fn choice_defs_of(row: &item_option::Model) -> Vec<ChoiceDef> {
         .unwrap_or_default()
 }
 
+pub fn managed_stock(defined: &[item_option::Model]) -> Option<i64> {
+    defined
+        .iter()
+        .filter_map(|row| {
+            if row.kind == OptionKind::Text {
+                return None;
+            }
+
+            let choices = choice_defs_of(row);
+            if choices.is_empty() {
+                return None;
+            }
+
+            let mut total = 0_i64;
+
+            for choice in choices {
+                let stock = choice.stock?;
+                total = total.checked_add(stock)?;
+            }
+
+            Some(total)
+        })
+        .min()
+}
+
 pub fn kind_name(kind: OptionKind) -> &'static str {
     match kind {
         OptionKind::Select => "select",

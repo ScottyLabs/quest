@@ -121,10 +121,25 @@ impl Items {
     }
 
     pub async fn list(&self) -> Result<Vec<Stocked>, AuthError> {
-        Stocked::find_by_statement(Statement::from_string(DbBackend::Postgres, IN_STOCK))
-            .all(&self.db)
-            .await
-            .map_err(db_down)
+        let mut stocked =
+            Stocked::find_by_statement(Statement::from_string(DbBackend::Postgres, IN_STOCK))
+                .all(&self.db)
+                .await
+                .map_err(db_down)?;
+
+        let ids: Vec<Uuid> = stocked.iter().map(|item| item.id).collect();
+        let defined = self.options_of(&ids).await?;
+
+        for item in &mut stocked {
+            if let Some(stock) = defined
+                .get(&item.id)
+                .and_then(|defined| options::managed_stock(defined))
+            {
+                item.stock = stock;
+            }
+        }
+
+        Ok(stocked)
     }
 
     pub async fn options_of(
@@ -199,23 +214,28 @@ impl Items {
             return Err(AuthError::Conflict("purchase_limit_reached"));
         }
 
-        let sold = Sold::find_by_statement(Statement::from_sql_and_values(
-            DbBackend::Postgres,
-            SOLD,
-            [item.into()],
-        ))
-        .one(&txn)
-        .await
-        .map_err(db_down)?
-        .map_or(0, |count| count.sold);
+        let defined = options::of_item(&txn, item).await?;
+        let picked = options::resolve(&defined, chosen)?;
 
-        let stock = (row.quantity_available - sold).max(0);
+        let stock = if let Some(stock) = options::managed_stock(&defined) {
+            stock
+        } else {
+            let sold = Sold::find_by_statement(Statement::from_sql_and_values(
+                DbBackend::Postgres,
+                SOLD,
+                [item.into()],
+            ))
+            .one(&txn)
+            .await
+            .map_err(db_down)?
+            .map_or(0, |count| count.sold);
+
+            (row.quantity_available - sold).max(0)
+        };
+
         if quantity > stock {
             return Err(AuthError::Conflict("out_of_stock"));
         }
-
-        let defined = options::of_item(&txn, item).await?;
-        let picked = options::resolve(&defined, chosen)?;
 
         let unit_cost = picked.iter().find_map(|pick| pick.cost).unwrap_or(row.cost);
 

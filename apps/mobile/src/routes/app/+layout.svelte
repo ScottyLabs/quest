@@ -241,9 +241,9 @@ $effect(() => {
 <!-- TEMP ANNOUNCEMENT -->
 {#if announcement.open && !briefing.open}
   <WarningDialog
-    title="Terrier Trade Is Open!"
-    body="Also, for Pixel a10- users, we have a solution: click the report issues button to see it."
-    dismiss="Yippee!"
+    title="O-Quest is over halfway done!"
+    body="Have you ever wondered why there's so much space under the &quot;All&quot; Category? Try scrolling down for a while..."
+    dismiss="Huh...?"
     ondismiss={closeAnnouncement}
   />
 {/if}

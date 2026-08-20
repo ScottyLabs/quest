@@ -6,6 +6,7 @@
   let { row, metric }: { row: Standing; metric: Metric } = $props();
 
   const house = $derived(mascotFor(row.community)?.home ?? "");
+  const nameColor = $derived(mascotFor(row.community)?.shade ?? "var(--secondary)");
   const icon = $derived(metric === "coins" ? "/img/trade/coin.svg" : "/img/leaderboard/gem.svg");
   const veiled = $derived(row.you && me.anonymous);
   const shown = $derived(veiled ? `Anonymous #${row.rank}` : row.name);
@@ -20,7 +21,7 @@
   }
 </script>
 
-<div class="row" class:you={row.you}>
+<div class="row" class:you={row.you} style:--name-color={nameColor}>
   <div class="inner">
     <span class="rank">{row.rank}.</span>
 
@@ -103,7 +104,7 @@
     align-items: flex-end;
     height: calc(33 * var(--u));
     padding-bottom: calc(2 * var(--u));
-    color: var(--secondary);
+    color: var(--name-color);
     font-size: calc(16 * var(--u));
     font-weight: 700;
     letter-spacing: calc(0.32 * var(--u));

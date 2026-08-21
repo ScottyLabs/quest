@@ -33,13 +33,17 @@
 
   let andrew = $state("");
   let viewed = $state("");
+
   let activity = $state<ActivityDay[]>([]);
   let taps = $state<ActivityTap[]>([]);
+
   let selected = $state<number[]>([]);
   let targetDay = $state("");
 
+  let correcting = $state(false);
   let loading = $state(false);
   let moving = $state(false);
+
   let fault = $state<string | null>(null);
   let notice = $state<string | null>(null);
 
@@ -128,6 +132,106 @@
     void load();
   }
 
+  async function setDayToMax(day: ActivityDay): Promise<void> {
+    if (viewed === "") {
+      return;
+    }
+
+    const entered = window.prompt(
+      `Reason for setting ${formatDay(day.day)} to ${day.max_gemstones} gemstones:`,
+      day.correction_reason ?? "Quest bug correction",
+    );
+
+    if (entered === null) {
+      return;
+    }
+
+    const reason = entered.trim();
+
+    if (reason === "") {
+      fault = "A correction reason is required.";
+      return;
+    }
+
+    correcting = true;
+    fault = null;
+    notice = null;
+
+    try {
+      const result = await unwrap(
+        await api.PUT(
+          "/api/portal/activity/{andrew_id}/days/{day}/gemstones",
+          {
+            params: {
+              path: {
+                andrew_id: viewed,
+                day: day.day,
+              },
+            },
+            body: {
+              target: day.max_gemstones,
+              reason,
+            },
+          },
+        ),
+      );
+
+      await load();
+
+      notice =
+        `${formatDay(day.day)} now has ` +
+        `${result.gemstones} gemstones.`;
+    } catch (error) {
+      fault = message(error);
+    } finally {
+      correcting = false;
+    }
+  }
+
+  async function clearCorrection(day: ActivityDay): Promise<void> {
+    if (viewed === "") {
+      return;
+    }
+
+    const accepted = window.confirm(
+      `Remove the gemstone correction for ${formatDay(day.day)}?`,
+    );
+
+    if (!accepted) {
+      return;
+    }
+
+    correcting = true;
+    fault = null;
+    notice = null;
+
+    try {
+      const result = await unwrap(
+        await api.DELETE(
+          "/api/portal/activity/{andrew_id}/days/{day}/gemstones",
+          {
+            params: {
+              path: {
+                andrew_id: viewed,
+                day: day.day,
+              },
+            },
+          },
+        ),
+      );
+
+      await load();
+
+      notice =
+        `${formatDay(day.day)} now has ` +
+        `${result.gemstones} calculated gemstones.`;
+    } catch (error) {
+      fault = message(error);
+    } finally {
+      correcting = false;
+    }
+  }
+
   async function moveSelected(): Promise<void> {
     if (
       !canEditTaps ||
@@ -198,6 +302,7 @@
   <form class="search" onsubmit={submit}>
     <label>
       <span>Andrew ID</span>
+
       <input
         type="text"
         autocomplete="off"
@@ -245,7 +350,8 @@
     <p class="explain">
       Gem-eligible taps exclude secret challenges. Gemstones use the same
       calculation as the app, including the daily cap and daily-challenge
-      bonus.
+      bonus. Corrections change gemstone totals without creating taps or
+      awarding ScottyCoins.
     </p>
 
     <h2>Daily totals</h2>
@@ -253,7 +359,7 @@
     {#if activity.length === 0}
       <Empty
         title="No activity found"
-        detail={`${viewed} has no successful tap activity.`}
+        detail={`${viewed} has no activity.`}
       />
     {:else}
       <div class="table-wrap">
@@ -264,6 +370,8 @@
               <th>Successful taps</th>
               <th>Gem-eligible taps</th>
               <th>Gemstones earned</th>
+              <th>Correction</th>
+              <th>Actions</th>
             </tr>
           </thead>
 
@@ -274,6 +382,52 @@
                 <td>{day.taps}</td>
                 <td>{day.eligible_taps}</td>
                 <td>{day.gemstones}</td>
+
+                <td>
+                  {#if day.correction_target === null ||
+                    day.correction_target === undefined}
+                    -
+                  {:else}
+                    <strong>Minimum {day.correction_target}</strong>
+
+                    {#if day.correction_reason !== null &&
+                      day.correction_reason !== undefined}
+                      <div class="correction-detail">
+                        {day.correction_reason}
+                      </div>
+                    {/if}
+
+                    {#if day.correction_by !== null &&
+                      day.correction_by !== undefined}
+                      <div class="correction-detail">
+                        by {day.correction_by}
+                      </div>
+                    {/if}
+                  {/if}
+                </td>
+
+                <td>
+                  <div class="correction-actions">
+                    <button
+                      type="button"
+                      disabled={correcting}
+                      onclick={() => void setDayToMax(day)}
+                    >
+                      Set to max ({day.max_gemstones})
+                    </button>
+
+                    {#if day.correction_target !== null &&
+                      day.correction_target !== undefined}
+                      <button
+                        type="button"
+                        disabled={correcting}
+                        onclick={() => void clearCorrection(day)}
+                      >
+                        Remove
+                      </button>
+                    {/if}
+                  </div>
+                </td>
               </tr>
             {/each}
           </tbody>
@@ -334,6 +488,7 @@
               {#if canEditTaps}
                 <th>Select</th>
               {/if}
+
               <th>Eastern time</th>
               <th>Quest day</th>
               <th>Challenge</th>
@@ -474,6 +629,17 @@
     margin-bottom: 16px;
   }
 
+  .correction-detail {
+    margin-top: 3px;
+    color: var(--tertiary);
+    font-size: 11px;
+  }
+
+  .correction-actions {
+    display: flex;
+    gap: 6px;
+  }
+
   .tap-head {
     display: flex;
     align-items: end;
@@ -543,10 +709,17 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .search,
+    .search {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
     .move {
       align-items: stretch;
       grid-template-columns: 1fr;
+    }
+
+    .correction-actions {
       flex-direction: column;
     }
   }

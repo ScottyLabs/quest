@@ -197,6 +197,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/portal/activity/{andrew_id}/days/{day}/gemstones": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put: operations["set_activity_gemstones"];
+    post?: never;
+    delete: operations["clear_activity_gemstones"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/portal/activity/{andrew_id}/taps": {
     parameters: {
       query?: never;
@@ -730,12 +746,18 @@ export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
     ActivityDay: {
+      correction_by?: string | null;
+      correction_reason?: string | null;
+      /** Format: int64 */
+      correction_target?: number | null;
       /** Format: date */
       day: string;
       /** Format: int64 */
       eligible_taps: number;
       /** Format: int64 */
       gemstones: number;
+      /** Format: int64 */
+      max_gemstones: number;
       /** Format: int64 */
       taps: number;
     };
@@ -932,6 +954,17 @@ export interface components {
       refunded: number;
       /** Format: int64 */
       scottycoins: number;
+    };
+    GemstoneCorrectionBody: {
+      reason: string;
+      /** Format: int64 */
+      target: number;
+    };
+    GemstoneCorrectionView: {
+      /** Format: int64 */
+      gemstones: number;
+      /** Format: int64 */
+      target?: number | null;
     };
     Grant: {
       level: components["schemas"]["Level"];
@@ -1801,6 +1834,106 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ActivityDay"][];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+    };
+  };
+  set_activity_gemstones: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Andrew ID */
+        andrew_id: string;
+        /** @description Quest day */
+        day: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["GemstoneCorrectionBody"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["GemstoneCorrectionView"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+    };
+  };
+  clear_activity_gemstones: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Andrew ID */
+        andrew_id: string;
+        /** @description Quest day */
+        day: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["GemstoneCorrectionView"];
         };
       };
       403: {

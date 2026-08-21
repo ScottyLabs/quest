@@ -4,6 +4,7 @@
   import { me } from "$lib/identity.svelte";
 
   type ActivityDay = Schemas["ActivityDay"];
+  type ActivityTap = Schemas["ActivityTap"];
 
   const MONTHS = [
     "Jan",
@@ -28,11 +29,19 @@
       me.allows("daily_challenge", "read"),
   );
 
+  const canEditTaps = $derived(me.allows("tap_events", "edit"));
+
   let andrew = $state("");
   let viewed = $state("");
   let activity = $state<ActivityDay[]>([]);
+  let taps = $state<ActivityTap[]>([]);
+  let selected = $state<string[]>([]);
+  let targetDay = $state("");
+
   let loading = $state(false);
+  let moving = $state(false);
   let fault = $state<string | null>(null);
+  let notice = $state<string | null>(null);
 
   const totalTaps = $derived(
     activity.reduce((total, day) => total + day.taps, 0),
@@ -66,29 +75,48 @@
 
     if (wanted === "") {
       activity = [];
+      taps = [];
       viewed = "";
+      selected = [];
       fault = "Enter an Andrew ID.";
       return;
     }
 
     loading = true;
+    fault = null;
+    notice = null;
 
     try {
-      activity = await unwrap(
-        await api.GET("/api/portal/activity/{andrew_id}", {
-          params: {
-            path: {
-              andrew_id: wanted,
+      const [days, history] = await Promise.all([
+        unwrap(
+          await api.GET("/api/portal/activity/{andrew_id}", {
+            params: {
+              path: {
+                andrew_id: wanted,
+              },
             },
-          },
-        }),
-      );
+          }),
+        ),
+        unwrap(
+          await api.GET("/api/portal/activity/{andrew_id}/taps", {
+            params: {
+              path: {
+                andrew_id: wanted,
+              },
+            },
+          }),
+        ),
+      ]);
 
+      activity = days;
+      taps = history;
       viewed = wanted;
-      fault = null;
+      selected = [];
     } catch (error) {
       activity = [];
+      taps = [];
       viewed = "";
+      selected = [];
       fault = message(error);
     } finally {
       loading = false;
@@ -98,6 +126,58 @@
   function submit(event: SubmitEvent): void {
     event.preventDefault();
     void load();
+  }
+
+  async function moveSelected(): Promise<void> {
+    if (
+      !canEditTaps ||
+      selected.length === 0 ||
+      targetDay === "" ||
+      viewed === ""
+    ) {
+      return;
+    }
+
+    const accepted = window.confirm(
+      `Move ${selected.length} selected tap(s) to Quest day ${targetDay}?`,
+    );
+
+    if (!accepted) {
+      return;
+    }
+
+    moving = true;
+    fault = null;
+    notice = null;
+
+    try {
+      const result = await unwrap(
+        await api.PATCH(
+          "/api/portal/activity/{andrew_id}/taps/day",
+          {
+            params: {
+              path: {
+                andrew_id: viewed,
+              },
+            },
+            body: {
+              tap_ids: selected,
+              day: targetDay,
+            },
+          },
+        ),
+      );
+
+      const moved = result.moved;
+
+      await load();
+
+      notice = `Moved ${moved} tap${moved === 1 ? "" : "s"}.`;
+    } catch (error) {
+      fault = message(error);
+    } finally {
+      moving = false;
+    }
   }
 </script>
 
@@ -133,7 +213,13 @@
 
   {#if fault !== null}
     <p class="fault">{fault}</p>
-  {:else if viewed !== ""}
+  {/if}
+
+  {#if notice !== null}
+    <p class="notice">{notice}</p>
+  {/if}
+
+  {#if viewed !== ""}
     <section class="summary">
       <div>
         <span>Student</span>
@@ -158,8 +244,11 @@
 
     <p class="explain">
       Gem-eligible taps exclude secret challenges. Gemstones use the same
-      calculation as the app, including the daily cap and daily-challenge bonus.
+      calculation as the app, including the daily cap and daily-challenge
+      bonus.
     </p>
+
+    <h2>Daily totals</h2>
 
     {#if activity.length === 0}
       <Empty
@@ -191,6 +280,93 @@
         </table>
       </div>
     {/if}
+
+    <div class="tap-head">
+      <div>
+        <h2>Tap history</h2>
+        <p>
+          Times below are Eastern time. The Quest day column uses the
+          noon-to-noon gemstone boundary.
+        </p>
+      </div>
+
+      <strong>{taps.length} taps</strong>
+    </div>
+
+    {#if canEditTaps && taps.length > 0}
+      <section class="move">
+        <div>
+          <strong>Move taps to another Quest day</strong>
+          <p>
+            Select taps below, choose the Quest day they should count toward,
+            and move them together. Their time within the Quest day is
+            preserved.
+          </p>
+        </div>
+
+        <label>
+          <span>Target Quest day</span>
+          <input type="date" bind:value={targetDay} />
+        </label>
+
+        <button
+          type="button"
+          disabled={moving || selected.length === 0 || targetDay === ""}
+          onclick={moveSelected}
+        >
+          {moving
+            ? "Moving..."
+            : `Move selected (${selected.length})`}
+        </button>
+      </section>
+
+      <p class="warning">
+        Moving a tap changes gemstone accounting. Moving a daily-challenge tap
+        can also add or remove its daily bonus.
+      </p>
+    {/if}
+
+    {#if taps.length > 0}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              {#if canEditTaps}
+                <th>Select</th>
+              {/if}
+              <th>Eastern time</th>
+              <th>Quest day</th>
+              <th>Challenge</th>
+              <th>Gem eligible</th>
+              <th>Daily bonus</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {#each taps as tap (tap.id)}
+              <tr>
+                {#if canEditTaps}
+                  <td>
+                    <input
+                      type="checkbox"
+                      value={tap.id}
+                      bind:group={selected}
+                      aria-label={`Select ${tap.challenge}`}
+                    />
+                  </td>
+                {/if}
+
+                <td>{tap.local_time}</td>
+                <td>{formatDay(tap.day)}</td>
+                <td>{tap.challenge}</td>
+                <td>{tap.gem_eligible ? "Yes" : "No"}</td>
+                <td>{tap.daily_bonus ? "Yes" : "No"}</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    {/if}
   {/if}
 {/if}
 
@@ -206,8 +382,17 @@
     font-weight: 800;
   }
 
+  h2 {
+    margin: 24px 0 10px;
+    font-size: 18px;
+    font-weight: 800;
+  }
+
   .head p,
-  .explain {
+  .explain,
+  .tap-head p,
+  .move p,
+  .warning {
     margin: 0;
     color: var(--tertiary);
     font-size: 13px;
@@ -250,6 +435,12 @@
     font-weight: 600;
   }
 
+  .notice {
+    margin: 12px 0;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
   .summary {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -283,6 +474,35 @@
     margin-bottom: 16px;
   }
 
+  .tap-head {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 30px;
+    margin-bottom: 10px;
+  }
+
+  .tap-head h2 {
+    margin: 0 0 4px;
+  }
+
+  .move {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 180px auto;
+    align-items: end;
+    gap: 12px;
+    margin: 14px 0 8px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--highlight);
+  }
+
+  .warning {
+    margin-bottom: 12px;
+  }
+
   .table-wrap {
     overflow-x: auto;
     border: 1px solid var(--line);
@@ -301,6 +521,7 @@
     padding: 11px 14px;
     text-align: left;
     border-bottom: 1px solid var(--line);
+    white-space: nowrap;
   }
 
   th {
@@ -322,8 +543,10 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .search {
+    .search,
+    .move {
       align-items: stretch;
+      grid-template-columns: 1fr;
       flex-direction: column;
     }
   }

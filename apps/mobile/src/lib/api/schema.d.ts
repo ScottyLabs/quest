@@ -197,6 +197,38 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/portal/activity/{andrew_id}/taps": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["user_activity_taps"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/portal/activity/{andrew_id}/taps/day": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch: operations["move_activity_taps"];
+    trace?: never;
+  };
   "/api/portal/assets": {
     parameters: {
       query?: never;
@@ -707,6 +739,20 @@ export interface components {
       /** Format: int64 */
       taps: number;
     };
+    ActivityTap: {
+      challenge: string;
+      /** Format: uuid */
+      challenge_id: string;
+      daily_bonus: boolean;
+      /** Format: date */
+      day: string;
+      gem_eligible: boolean;
+      /** Format: uuid */
+      id: string;
+      local_time: string;
+      /** Format: int64 */
+      time: number;
+    };
     AnonymousBody: {
       anonymous: boolean;
     };
@@ -947,6 +993,15 @@ export interface components {
     };
     LogoutResponse: {
       end_session_url?: string | null;
+    };
+    MoveTapsBody: {
+      /** Format: date */
+      day: string;
+      tap_ids: string[];
+    };
+    MovedTaps: {
+      /** Format: int64 */
+      moved: number;
     };
     OptionBody: {
       choices?: components["schemas"]["ChoiceDef"][];
@@ -1746,6 +1801,94 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ActivityDay"][];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+    };
+  };
+  user_activity_taps: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Andrew ID */
+        andrew_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ActivityTap"][];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+    };
+  };
+  move_activity_taps: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Andrew ID */
+        andrew_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["MoveTapsBody"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MovedTaps"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
         };
       };
       403: {

@@ -8,7 +8,7 @@ use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::activity::{ActivityDay, ActivityTap};
+use super::activity::{ActivityDay, ActivityTap, GemstoneCorrectionView};
 use super::assets::{AssetError, Assets};
 use super::trade::{Desk, DeskPickView, Fulfilled, OrderView, PassHolder, SalesItemView};
 use super::{Browse, Column, Outcome, Page, Portal, PortalErrBody, PortalError, Script};
@@ -25,6 +25,11 @@ pub struct Console {
     desk: Desk,
     passes: Passes,
     assets: Assets,
+}
+#[derive(Deserialize, ToSchema)]
+pub struct GemstoneCorrectionBody {
+    pub target: i64,
+    pub reason: String,
 }
 
 pub fn router(
@@ -54,6 +59,7 @@ pub fn router(
         .routes(routes!(user_activity))
         .routes(routes!(user_activity_taps))
         .routes(routes!(move_activity_taps))
+        .routes(routes!(set_activity_gemstones, clear_activity_gemstones))
         .layer(axum::extract::DefaultBodyLimit::max(
             crate::portal::assets::MAX_BYTES + 4096,
         ))
@@ -121,6 +127,86 @@ async fn user_activity_taps(
     let user = console.portal.user_id(andrew_id.trim()).await?;
 
     Ok(Json(console.portal.activity_taps(user).await?))
+}
+
+#[utoipa::path(
+    put,
+    path = "/portal/activity/{andrew_id}/days/{day}/gemstones",
+    tag = "portal",
+    params(
+        ("andrew_id" = String, Path, description = "Andrew ID"),
+        ("day" = Date, Path, description = "Quest day"),
+    ),
+    request_body = GemstoneCorrectionBody,
+    responses(
+        (status = OK, body = GemstoneCorrectionView),
+        (status = BAD_REQUEST, body = PortalErrBody),
+        (status = CONFLICT, body = PortalErrBody),
+        (status = FORBIDDEN, body = PortalErrBody),
+        (status = NOT_FOUND, body = PortalErrBody),
+    ),
+)]
+async fn set_activity_gemstones(
+    State(console): State<Console>,
+    access: Access,
+    Path((andrew_id, day)): Path<(String, Date)>,
+    payload: Result<Json<GemstoneCorrectionBody>, JsonRejection>,
+) -> Result<Json<GemstoneCorrectionView>, PortalError> {
+    access.require(Capability::DataConsole)?;
+    access.require_table("users", Level::Read)?;
+    access.require_table("tap_events", Level::Read)?;
+    access.require_table("challenge", Level::Read)?;
+    access.require_table("daily_challenge", Level::Read)?;
+    access.require_table("gemstone_correction", Level::Edit)?;
+
+    let payload = body(payload)?;
+    let user = console.portal.user_id(andrew_id.trim()).await?;
+
+    let correction = console
+        .portal
+        .set_gemstone_correction(
+            user,
+            day,
+            payload.target,
+            &payload.reason,
+            &access.user.andrew_id,
+        )
+        .await?;
+
+    Ok(Json(correction))
+}
+
+#[utoipa::path(
+    delete,
+    path = "/portal/activity/{andrew_id}/days/{day}/gemstones",
+    tag = "portal",
+    params(
+        ("andrew_id" = String, Path, description = "Andrew ID"),
+        ("day" = Date, Path, description = "Quest day"),
+    ),
+    responses(
+        (status = OK, body = GemstoneCorrectionView),
+        (status = FORBIDDEN, body = PortalErrBody),
+        (status = NOT_FOUND, body = PortalErrBody),
+    ),
+)]
+async fn clear_activity_gemstones(
+    State(console): State<Console>,
+    access: Access,
+    Path((andrew_id, day)): Path<(String, Date)>,
+) -> Result<Json<GemstoneCorrectionView>, PortalError> {
+    access.require(Capability::DataConsole)?;
+    access.require_table("users", Level::Read)?;
+    access.require_table("tap_events", Level::Read)?;
+    access.require_table("challenge", Level::Read)?;
+    access.require_table("daily_challenge", Level::Read)?;
+    access.require_table("gemstone_correction", Level::Edit)?;
+
+    let user = console.portal.user_id(andrew_id.trim()).await?;
+
+    Ok(Json(
+        console.portal.clear_gemstone_correction(user, day).await?,
+    ))
 }
 
 #[utoipa::path(

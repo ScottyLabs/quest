@@ -633,6 +633,152 @@
         }
       }
     },
+    "/api/portal/activity/{andrew_id}/days/{day}/gemstones": {
+      "put": {
+        "tags": ["portal"],
+        "operationId": "set_activity_gemstones",
+        "parameters": [
+          {
+            "name": "andrew_id",
+            "in": "path",
+            "description": "Andrew ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "day",
+            "in": "path",
+            "description": "Quest day",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GemstoneCorrectionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GemstoneCorrectionView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["portal"],
+        "operationId": "clear_activity_gemstones",
+        "parameters": [
+          {
+            "name": "andrew_id",
+            "in": "path",
+            "description": "Andrew ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "day",
+            "in": "path",
+            "description": "Quest day",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GemstoneCorrectionView"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/portal/activity/{andrew_id}/taps": {
       "get": {
         "tags": ["portal"],
@@ -2891,8 +3037,18 @@
     "schemas": {
       "ActivityDay": {
         "type": "object",
-        "required": ["day", "taps", "eligible_taps", "gemstones"],
+        "required": ["day", "taps", "eligible_taps", "gemstones", "max_gemstones"],
         "properties": {
+          "correction_by": {
+            "type": ["string", "null"]
+          },
+          "correction_reason": {
+            "type": ["string", "null"]
+          },
+          "correction_target": {
+            "type": ["integer", "null"],
+            "format": "int64"
+          },
           "day": {
             "type": "string",
             "format": "date"
@@ -2902,6 +3058,10 @@
             "format": "int64"
           },
           "gemstones": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "max_gemstones": {
             "type": "integer",
             "format": "int64"
           },
@@ -3469,6 +3629,33 @@
           },
           "scottycoins": {
             "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "GemstoneCorrectionBody": {
+        "type": "object",
+        "required": ["target", "reason"],
+        "properties": {
+          "reason": {
+            "type": "string"
+          },
+          "target": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "GemstoneCorrectionView": {
+        "type": "object",
+        "required": ["gemstones"],
+        "properties": {
+          "gemstones": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "target": {
+            "type": ["integer", "null"],
             "format": "int64"
           }
         }

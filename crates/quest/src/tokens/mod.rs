@@ -29,50 +29,108 @@ earned AS (
         SELECT
             "tap_events"."challenge_id" AS "challenge_id",
             "challenge"."coin_value" AS "coin_value",
-            ((to_timestamp("tap_events"."time") AT TIME ZONE 'America/New_York')
-                - INTERVAL '12 hours')::DATE AS "day"
+            (
+                (
+                    to_timestamp("tap_events"."time")
+                    AT TIME ZONE 'America/New_York'
+                ) - INTERVAL '12 hours'
+            )::DATE AS "day"
         FROM "tap_events"
-JOIN "challenge" ON "challenge"."id" = "tap_events"."challenge_id"
-WHERE "tap_events"."user_id" = $1
-  AND NOT "challenge"."secret"
+        JOIN "challenge"
+            ON "challenge"."id" = "tap_events"."challenge_id"
+        WHERE "tap_events"."user_id" = $1
+          AND NOT "challenge"."secret"
     ) tap
     CROSS JOIN target
-    WHERE target."day" IS NULL OR target."day" = tap."day"
+    WHERE target."day" IS NULL
+       OR target."day" = tap."day"
 ),
 spent AS (
-    SELECT COALESCE(SUM("purchases"."quantity" * "purchases"."unit_cost"), 0)::BIGINT AS "total"
+    SELECT
+        COALESCE(
+            SUM("purchases"."quantity" * "items"."cost"),
+            0
+        )::BIGINT AS "total"
     FROM "purchases"
-    JOIN "items" ON "items"."id" = "purchases"."item_id"
+    JOIN "items"
+        ON "items"."id" = "purchases"."item_id"
     CROSS JOIN target
-    WHERE "purchases"."user_id" = $1 AND target."day" IS NULL
+    WHERE "purchases"."user_id" = $1
+      AND target."day" IS NULL
 ),
 capped AS (
-    SELECT LEAST(COUNT(*), $2)::BIGINT AS "stones"
+    SELECT
+        "day",
+        LEAST(COUNT(*), $2)::BIGINT AS "stones"
     FROM earned
     GROUP BY "day"
 ),
 bonus AS (
-    SELECT (COUNT(*) * $3)::BIGINT AS "stones"
+    SELECT
+        earned."day" AS "day",
+        (COUNT(*) * $3)::BIGINT AS "stones"
     FROM "daily_challenge"
     JOIN earned
         ON earned."challenge_id" = "daily_challenge"."challenge_id"
         AND earned."day" = "daily_challenge"."day"
     WHERE "daily_challenge"."user_id" = $1
+    GROUP BY earned."day"
+),
+corrections AS (
+    SELECT
+        correction."day" AS "day",
+        correction."target"::BIGINT AS "stones"
+    FROM "gemstone_correction" correction
+    CROSS JOIN target
+    WHERE correction."user_id" = $1
+      AND (
+          target."day" IS NULL
+          OR target."day" = correction."day"
+      )
+),
+gem_days AS (
+    SELECT "day" FROM capped
+    UNION
+    SELECT "day" FROM bonus
+    UNION
+    SELECT "day" FROM corrections
+),
+effective AS (
+    SELECT
+        days."day",
+        GREATEST(
+            COALESCE(capped."stones", 0)
+                + COALESCE(bonus."stones", 0),
+            COALESCE(corrections."stones", 0)
+        )::BIGINT AS "stones"
+    FROM gem_days days
+    LEFT JOIN capped
+        ON capped."day" = days."day"
+    LEFT JOIN bonus
+        ON bonus."day" = days."day"
+    LEFT JOIN corrections
+        ON corrections."day" = days."day"
 )
 SELECT
     target."day"::TEXT AS "day",
-    (COALESCE((SELECT SUM("coin_value") FROM earned), 0) - spent."total")::BIGINT
-        AS "scottycoins",
+    (
+        COALESCE(
+            (SELECT SUM("coin_value") FROM earned),
+            0
+        ) - spent."total"
+    )::BIGINT AS "scottycoins",
     CASE
         WHEN COALESCE(
             (SELECT "player" FROM "users" WHERE "id" = $1),
             FALSE
         )
-        THEN
-            (COALESCE((SELECT SUM("stones") FROM capped), 0) + bonus."stones")::BIGINT
+        THEN COALESCE(
+            (SELECT SUM("stones") FROM effective),
+            0
+        )::BIGINT
         ELSE 0::BIGINT
     END AS "thistlestones"
-FROM target, spent, bonus
+FROM target, spent
 "#
     )
 });

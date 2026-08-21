@@ -8,6 +8,7 @@ use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
+use super::activity::ActivityDay;
 use super::assets::{AssetError, Assets};
 use super::trade::{Desk, DeskPickView, Fulfilled, OrderView, PassHolder, SalesItemView};
 use super::{Browse, Column, Outcome, Page, Portal, PortalErrBody, PortalError, Script};
@@ -50,6 +51,7 @@ pub fn router(
         .routes(routes!(trade_fulfil))
         .routes(routes!(trade_refund))
         .routes(routes!(trade_sales))
+        .routes(routes!(user_activity))
         .layer(axum::extract::DefaultBodyLimit::max(
             crate::portal::assets::MAX_BYTES + 4096,
         ))
@@ -77,6 +79,35 @@ pub struct Identity {
 pub struct Grant {
     pub table: String,
     pub level: Level,
+}
+
+#[utoipa::path(
+    get,
+    path = "/portal/activity/{andrew_id}",
+    tag = "portal",
+    params(
+        ("andrew_id" = String, Path, description = "Andrew ID"),
+    ),
+    responses(
+        (status = OK, body = Vec<ActivityDay>),
+        (status = FORBIDDEN, body = PortalErrBody),
+        (status = NOT_FOUND, body = PortalErrBody),
+    ),
+)]
+async fn user_activity(
+    State(console): State<Console>,
+    access: Access,
+    Path(andrew_id): Path<String>,
+) -> Result<Json<Vec<ActivityDay>>, PortalError> {
+    access.require(Capability::DataConsole)?;
+    access.require_table("users", Level::Read)?;
+    access.require_table("tap_events", Level::Read)?;
+    access.require_table("challenge", Level::Read)?;
+    access.require_table("daily_challenge", Level::Read)?;
+
+    let user = console.portal.user_id(andrew_id.trim()).await?;
+
+    Ok(Json(console.portal.daily_activity(user).await?))
 }
 
 #[utoipa::path(

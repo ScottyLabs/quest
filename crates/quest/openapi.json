@@ -581,6 +581,58 @@
         }
       }
     },
+    "/api/portal/activity/{andrew_id}": {
+      "get": {
+        "tags": ["portal"],
+        "operationId": "user_activity",
+        "parameters": [
+          {
+            "name": "andrew_id",
+            "in": "path",
+            "description": "Andrew ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ActivityDay"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/portal/assets": {
       "get": {
         "tags": ["portal"],
@@ -2716,6 +2768,28 @@
   },
   "components": {
     "schemas": {
+      "ActivityDay": {
+        "type": "object",
+        "required": ["day", "taps", "eligible_taps", "gemstones"],
+        "properties": {
+          "day": {
+            "type": "string",
+            "format": "date"
+          },
+          "eligible_taps": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "gemstones": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "taps": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
       "AnonymousBody": {
         "type": "object",
         "required": ["anonymous"],

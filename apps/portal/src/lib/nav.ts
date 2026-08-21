@@ -49,6 +49,17 @@ export const SECTIONS: readonly Section[] = [
     visible: () => me.can("assets"),
   },
   {
+    href: resolve("/activity"),
+    label: "Daily Activity",
+    detail: "Taps and gemstone earnings by Quest day",
+    visible: () =>
+      me.can("data_console") &&
+      me.allows("users", "read") &&
+      me.allows("tap_events", "read") &&
+      me.allows("challenge", "read") &&
+      me.allows("daily_challenge", "read"),
+  },
+  {
     href: resolve("/data"),
     label: "Data",
     detail: "Every table you may reach, row by row",

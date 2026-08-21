@@ -241,9 +241,9 @@ $effect(() => {
 <!-- TEMP ANNOUNCEMENT -->
 {#if announcement.open && !briefing.open}
   <WarningDialog
-    title="O-Quest is over halfway done!"
-    body="Have you ever wondered why there's so much space under the &quot;All&quot; Category? Try scrolling down for a while..."
-    dismiss="Huh...?"
+    title="The Final Rush!"
+    body="Gemstone earning ends at 8PM! Go earn those house points! Also, leaderboard coins are lifetime coins, so go on a spending spree!"
+    dismiss="YEAH!!!"
     ondismiss={closeAnnouncement}
   />
 {/if}

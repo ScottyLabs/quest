@@ -1,4 +1,4 @@
-const ANNOUNCEMENT_ID = "secrets-08-20";
+const ANNOUNCEMENT_ID = "finale-08-21";
 const STAMP = `quest.announcement.seen.${ANNOUNCEMENT_ID}`;
 
 export const announcement = $state({

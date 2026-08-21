@@ -30,10 +30,10 @@ No, your Gemstones will be maintained if you need to switch your selected housin
 
 ## **_Terrier Trade_**
 
-### _Can I still purchase items from the Terrier Trade after gameplay ends?_
+### _Can I still purchase and refund items from the Terrier Trade after gameplay ends?_
 
-Yes, you may continue to purchase items from the Terrier Trade after gameplay ends, up until Friday, September 25, 2026 11:59pm EST. After this point, the in-app Terrier Trade will close, and items can no longer be bought or refunded.
+Yes, you may continue to purchase and refund items from the Terrier Trade after gameplay ends, up until Friday, September 25, 2026 11:59pm EST. After this point, the in-app Terrier Trade will close, and you will no longer be able to purchas or refund items.
 
 ### _Where and when can I redeem my prizes?_
 
-You can start redeeming your prizes on Tuesday, August 25, 2026 at the Community Life Office (during normal business hours). The last day to redeem your prizes is Friday, October 9, 2026 11:59 PM EST.
+You can start redeeming your prizes on Tuesday, August 25, 2026 at the Community Life Office in Morewood Gardens, on Mondays through Fridays from 10:30am-4:00pm. The last day to redeem your prizes is Friday, October 9, 2026 4:00 PM EST. Please note that once an item is redeemed in-person, you may no longer refund it.

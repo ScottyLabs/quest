@@ -1,3 +1,4 @@
+pub mod activity;
 pub mod assets;
 pub mod routes;
 pub mod script;

@@ -633,6 +633,127 @@
         }
       }
     },
+    "/api/portal/activity/{andrew_id}/taps": {
+      "get": {
+        "tags": ["portal"],
+        "operationId": "user_activity_taps",
+        "parameters": [
+          {
+            "name": "andrew_id",
+            "in": "path",
+            "description": "Andrew ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ActivityTap"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/portal/activity/{andrew_id}/taps/day": {
+      "patch": {
+        "tags": ["portal"],
+        "operationId": "move_activity_taps",
+        "parameters": [
+          {
+            "name": "andrew_id",
+            "in": "path",
+            "description": "Andrew ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveTapsBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MovedTaps"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/portal/assets": {
       "get": {
         "tags": ["portal"],
@@ -2790,6 +2911,49 @@
           }
         }
       },
+      "ActivityTap": {
+        "type": "object",
+        "required": [
+          "id",
+          "challenge_id",
+          "challenge",
+          "time",
+          "local_time",
+          "day",
+          "gem_eligible",
+          "daily_bonus"
+        ],
+        "properties": {
+          "challenge": {
+            "type": "string"
+          },
+          "challenge_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "daily_bonus": {
+            "type": "boolean"
+          },
+          "day": {
+            "type": "string",
+            "format": "date"
+          },
+          "gem_eligible": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "local_time": {
+            "type": "string"
+          },
+          "time": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
       "AnonymousBody": {
         "type": "object",
         "required": ["anonymous"],
@@ -3491,6 +3655,34 @@
         "properties": {
           "end_session_url": {
             "type": ["string", "null"]
+          }
+        }
+      },
+      "MoveTapsBody": {
+        "type": "object",
+        "required": ["tap_ids", "day"],
+        "properties": {
+          "day": {
+            "type": "string",
+            "format": "date"
+          },
+          "tap_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        }
+      },
+      "MovedTaps": {
+        "type": "object",
+        "required": ["moved"],
+        "properties": {
+          "moved": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
           }
         }
       },

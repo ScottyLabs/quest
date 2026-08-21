@@ -1,14 +1,14 @@
 use axum::Json;
 use axum::extract::rejection::JsonRejection;
 use axum::extract::{Path, Query, State};
-use sea_orm::prelude::Uuid;
+use sea_orm::prelude::{Date, Uuid};
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::activity::ActivityDay;
+use super::activity::{ActivityDay, ActivityTap};
 use super::assets::{AssetError, Assets};
 use super::trade::{Desk, DeskPickView, Fulfilled, OrderView, PassHolder, SalesItemView};
 use super::{Browse, Column, Outcome, Page, Portal, PortalErrBody, PortalError, Script};
@@ -52,6 +52,8 @@ pub fn router(
         .routes(routes!(trade_refund))
         .routes(routes!(trade_sales))
         .routes(routes!(user_activity))
+        .routes(routes!(user_activity_taps))
+        .routes(routes!(move_activity_taps))
         .layer(axum::extract::DefaultBodyLimit::max(
             crate::portal::assets::MAX_BYTES + 4096,
         ))
@@ -79,6 +81,89 @@ pub struct Identity {
 pub struct Grant {
     pub table: String,
     pub level: Level,
+}
+
+#[derive(Deserialize, ToSchema)]
+pub struct MoveTapsBody {
+    pub tap_ids: Vec<Uuid>,
+    pub day: Date,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct MovedTaps {
+    pub moved: u64,
+}
+
+#[utoipa::path(
+    get,
+    path = "/portal/activity/{andrew_id}/taps",
+    tag = "portal",
+    params(
+        ("andrew_id" = String, Path, description = "Andrew ID"),
+    ),
+    responses(
+        (status = OK, body = Vec<ActivityTap>),
+        (status = FORBIDDEN, body = PortalErrBody),
+        (status = NOT_FOUND, body = PortalErrBody),
+    ),
+)]
+async fn user_activity_taps(
+    State(console): State<Console>,
+    access: Access,
+    Path(andrew_id): Path<String>,
+) -> Result<Json<Vec<ActivityTap>>, PortalError> {
+    access.require(Capability::DataConsole)?;
+    access.require_table("users", Level::Read)?;
+    access.require_table("tap_events", Level::Read)?;
+    access.require_table("challenge", Level::Read)?;
+    access.require_table("daily_challenge", Level::Read)?;
+
+    let user = console.portal.user_id(andrew_id.trim()).await?;
+
+    Ok(Json(console.portal.activity_taps(user).await?))
+}
+
+#[utoipa::path(
+    patch,
+    path = "/portal/activity/{andrew_id}/taps/day",
+    tag = "portal",
+    params(
+        ("andrew_id" = String, Path, description = "Andrew ID"),
+    ),
+    request_body = MoveTapsBody,
+    responses(
+        (status = OK, body = MovedTaps),
+        (status = BAD_REQUEST, body = PortalErrBody),
+        (status = FORBIDDEN, body = PortalErrBody),
+        (status = NOT_FOUND, body = PortalErrBody),
+    ),
+)]
+async fn move_activity_taps(
+    State(console): State<Console>,
+    access: Access,
+    Path(andrew_id): Path<String>,
+    payload: Result<Json<MoveTapsBody>, JsonRejection>,
+) -> Result<Json<MovedTaps>, PortalError> {
+    access.require(Capability::DataConsole)?;
+    access.require_table("users", Level::Read)?;
+    access.require_table("tap_events", Level::Edit)?;
+
+    let payload = body(payload)?;
+
+    if payload.tap_ids.is_empty() || payload.tap_ids.len() > 200 {
+        return Err(PortalError::Auth(AuthError::BadRequest(
+            "tap_selection_invalid",
+        )));
+    }
+
+    let user = console.portal.user_id(andrew_id.trim()).await?;
+
+    let moved = console
+        .portal
+        .move_taps_to_day(user, &payload.tap_ids, payload.day)
+        .await?;
+
+    Ok(Json(MovedTaps { moved }))
 }
 
 #[utoipa::path(

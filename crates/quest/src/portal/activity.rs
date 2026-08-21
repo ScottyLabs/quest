@@ -117,7 +117,7 @@ pub struct ActivityDay {
 
 #[derive(Debug, FromQueryResult, Serialize, ToSchema)]
 pub struct ActivityTap {
-    pub id: Uuid,
+    pub id: i64,
     pub challenge_id: Uuid,
     pub challenge: String,
     pub time: i64,
@@ -169,7 +169,7 @@ impl Portal {
     pub async fn move_taps_to_day(
         &self,
         user: Uuid,
-        tap_ids: &[Uuid],
+        tap_ids: &[i64],
         day: Date,
     ) -> Result<u64, PortalError> {
         let mut tap_ids = tap_ids.to_vec();

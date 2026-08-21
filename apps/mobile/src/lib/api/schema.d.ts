@@ -747,8 +747,8 @@ export interface components {
       /** Format: date */
       day: string;
       gem_eligible: boolean;
-      /** Format: uuid */
-      id: string;
+      /** Format: int64 */
+      id: number;
       local_time: string;
       /** Format: int64 */
       time: number;
@@ -997,7 +997,7 @@ export interface components {
     MoveTapsBody: {
       /** Format: date */
       day: string;
-      tap_ids: string[];
+      tap_ids: number[];
     };
     MovedTaps: {
       /** Format: int64 */

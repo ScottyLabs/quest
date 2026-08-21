@@ -85,7 +85,7 @@ pub struct Grant {
 
 #[derive(Deserialize, ToSchema)]
 pub struct MoveTapsBody {
-    pub tap_ids: Vec<Uuid>,
+    pub tap_ids: Vec<i64>,
     pub day: Date,
 }
 

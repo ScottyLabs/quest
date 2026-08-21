@@ -2942,8 +2942,8 @@
             "type": "boolean"
           },
           "id": {
-            "type": "string",
-            "format": "uuid"
+            "type": "integer",
+            "format": "int64"
           },
           "local_time": {
             "type": "string"
@@ -3669,8 +3669,8 @@
           "tap_ids": {
             "type": "array",
             "items": {
-              "type": "string",
-              "format": "uuid"
+              "type": "integer",
+              "format": "int64"
             }
           }
         }

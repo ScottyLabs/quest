@@ -35,7 +35,7 @@
   let viewed = $state("");
   let activity = $state<ActivityDay[]>([]);
   let taps = $state<ActivityTap[]>([]);
-  let selected = $state<string[]>([]);
+  let selected = $state<number[]>([]);
   let targetDay = $state("");
 
   let loading = $state(false);

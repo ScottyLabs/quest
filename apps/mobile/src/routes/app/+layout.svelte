@@ -241,8 +241,8 @@ $effect(() => {
 <!-- TEMP ANNOUNCEMENT -->
 {#if announcement.open && !briefing.open}
   <WarningDialog
-    title="The Final Rush!"
-    body="Gemstone earning ends at 8PM! Go earn those house points! Also, leaderboard coins are lifetime coins, so go on a spending spree!"
+    title="O-Quest Isn't Over!"
+    body="You can still earn ScottyCoins until Sunday! To encourage questing, you can now buy infinite copies of items!"
     dismiss="YEAH!!!"
     ondismiss={closeAnnouncement}
   />

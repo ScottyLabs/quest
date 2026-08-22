@@ -26,16 +26,16 @@
           "name": "Intermediate Traveler",
           "detail": "Complete 50 Challenges!",
           "at": 50,
-          "art": "/img/badges/challenges-unlocked-2.svg",
-          "locked": "/img/badges/challenges-locked-2.svg"
+          "art": "/img/badges/challenges-unlocked-3.svg",
+          "locked": "/img/badges/challenges-locked-3.svg"
         },
         {
           "id": "adventurer",
           "name": "Experienced Adventurer",
           "detail": "Complete 75 Challenges!",
           "at": 75,
-          "art": "/img/badges/challenges-unlocked-3.svg",
-          "locked": "/img/badges/challenges-locked-3.svg"
+          "art": "/img/badges/challenges-unlocked-2.svg",
+          "locked": "/img/badges/challenges-locked-2.svg"
         },
         {
           "id": "professional",
@@ -49,7 +49,7 @@
           "id": "champion",
           "name": "Challenge Champion",
           "detail": "Completed every challenge!",
-          "at": "all",
+          "at": 124,
           "art": "/img/badges/challenges-unlocked-5.svg",
           "locked": "/img/badges/challenges-locked-5.svg"
         }

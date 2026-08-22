@@ -11,6 +11,7 @@
   import CostPanel from "./CostPanel.svelte";
   import ItemSummary from "./ItemSummary.svelte";
   import OptionField from "./OptionField.svelte";
+  import Stepper from "./Stepper.svelte";
   let {
     offer,
     balance,
@@ -37,50 +38,67 @@
     option_unknown: "This item's choices just changed. Close and open it again.",
     option_id_invalid: "This item's choices just changed. Close and open it again.",
     not_a_player: "You are not a first year! No prizes for you >:D",
-    purchase_limit_reached: "You can only purchase one of each reward.",
   };
 
   const answers = new SvelteMap<string, string>();
-  let quantity = $state(1);
-  let busy = $state(false);
-  let failed = $state<string | null>(null);
-  let scroller = $state<HTMLElement | null>(null);
-  let roof = $state(0);
-  let lift = $state(0);
 
-  const selectedChoice = $derived.by(() => {
+let quantity = $state(1);
+let busy = $state(false);
+let failed = $state<string | null>(null);
+let scroller = $state<HTMLElement | null>(null);
+let roof = $state(0);
+let lift = $state(0);
+
+const selectedChoice = $derived.by(() => {
   for (const option of offer.options) {
     const selected = answers.get(option.id)?.trim();
+
     if (!selected) continue;
 
-    const choice = option.choices.find((choice) => choice.value === selected);
+    const choice = option.choices.find(
+      (choice) => choice.value === selected,
+    );
+
     if (choice !== undefined) return choice;
   }
 
   return null;
 });
-  const cost = $derived(selectedChoice?.cost ?? offer.cost);
-  const art = $derived(selectedChoice?.image_url ?? offer.art);
-  const backdrop = $derived(selectedChoice?.background_url ?? offer.backdrop);
-  const shade = $derived(selectedChoice?.icon_shade ?? offer.shade);
 
-  const displayStock = $derived(selectedChoice?.stock ?? offer.stock);
-  
-  const itemGone = $derived(offer.stock <= 0);
-  const total = $derived(cost * quantity);
-  const remaining = $derived(balance - total);
-  const short = $derived(remaining < 0);
+const cost = $derived(selectedChoice?.cost ?? offer.cost);
+const art = $derived(selectedChoice?.image_url ?? offer.art);
+const backdrop = $derived(
+  selectedChoice?.background_url ?? offer.backdrop,
+);
+const shade = $derived(selectedChoice?.icon_shade ?? offer.shade);
 
-  const choiceGone = $derived(
+const displayStock = $derived(selectedChoice?.stock ?? offer.stock);
+const ceiling = $derived(Math.max(1, displayStock));
+
+$effect(() => {
+  quantity = Math.min(
+    Math.max(quantity, 1),
+    ceiling,
+  );
+});
+
+const itemGone = $derived(offer.stock <= 0);
+
+const choiceGone = $derived(
   selectedChoice?.stock !== undefined &&
     selectedChoice.stock !== null &&
     selectedChoice.stock <= 0,
 );
 
-  // TEMP JUST FOR MAINTENANCE
-  const SHOP_OPEN = true;
+const tooMany = $derived(quantity > displayStock);
 
-  const blocked = $derived(!SHOP_OPEN || !player);
+const total = $derived(cost * quantity);
+const remaining = $derived(balance - total);
+const short = $derived(remaining < 0);
+
+// TEMP JUST FOR MAINTENANCE
+const SHOP_OPEN = true;
+const blocked = $derived(!SHOP_OPEN || !player);
 
   const picks = $derived(
     offer.options
@@ -139,7 +157,7 @@
   });
 
   async function buy(): Promise<void> {
-    if (busy || blocked || itemGone || choiceGone || short || nagging !== null) {
+    if (busy || blocked || itemGone || choiceGone || tooMany || short || nagging !== null) {
       return;
     }
 
@@ -211,6 +229,14 @@
                 <p>{failed}</p>
               {/if}
             </div>
+            <Stepper
+              value={quantity}
+              max={ceiling}
+              onchange={(next) => {
+                quantity = next;
+                failed = null;
+              }}
+            />
           </div>
         </div>
 
@@ -224,7 +250,7 @@
       <button
         class="buy"
         type="button"
-        disabled={blocked || itemGone || choiceGone || short || busy || nagging !== null}
+        disabled={blocked || itemGone || choiceGone || tooMany || short || busy || nagging !== null}
         onclick={buy}
       >
         {busy ? "Purchasing..." : "Purchase"}

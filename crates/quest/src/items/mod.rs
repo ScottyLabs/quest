@@ -38,13 +38,6 @@ FROM "purchases"
 WHERE "item_id" = $1
 "#;
 
-const BOUGHT_BY_USER: &str = r#"
-SELECT COALESCE(SUM("quantity"), 0)::BIGINT AS "sold"
-FROM "purchases"
-WHERE "item_id" = $1
-  AND "user_id" = $2
-"#;
-
 const LEDGER: &str = r#"
 SELECT
     "purchases"."purchase_id"                    AS "purchase_id",
@@ -201,24 +194,6 @@ impl Items {
             .map_err(db_down)?
             .ok_or(AuthError::NotFound("item_unknown"))?;
 
-        if quantity != 1 {
-            return Err(AuthError::BadRequest("quantity_invalid"));
-        }
-
-        let bought = Sold::find_by_statement(Statement::from_sql_and_values(
-            DbBackend::Postgres,
-            BOUGHT_BY_USER,
-            [item.into(), user.into()],
-        ))
-        .one(&txn)
-        .await
-        .map_err(db_down)?
-        .map_or(0, |count| count.sold);
-
-        if bought >= 1 {
-            return Err(AuthError::Conflict("purchase_limit_reached"));
-        }
-
         let defined = options::of_item(&txn, item).await?;
         let picked = options::resolve(&defined, chosen)?;
 
@@ -253,6 +228,7 @@ impl Items {
             .ok_or(AuthError::BadRequest("quantity_invalid"))?;
 
         let balance = balances_of(&txn, user, Scope::Lifetime).await?;
+
         if spent > balance.scottycoins {
             return Err(AuthError::Conflict("insufficient_coins"));
         }

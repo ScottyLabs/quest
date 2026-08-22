@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { SvelteMap } from "svelte/reactivity";
   import type { ShopItem } from "$lib/api/client";
   import { ApiError, api, message, unwrap } from "$lib/api/client";
   import Button from "$lib/components/Button.svelte";
@@ -8,6 +7,7 @@
   import Panel from "$lib/components/Panel.svelte";
   import Spinner from "$lib/components/Spinner.svelte";
   import { announce } from "$lib/notice.svelte";
+  import { SvelteMap } from "svelte/reactivity";
 
   let {
     items,
@@ -38,6 +38,9 @@
   let chosen = $state("");
   let quantity = $state<number | null>(1);
   let busy = $state(false);
+  let balance = $state<number | null>(null);
+  let balanceBusy = $state(false);
+  let balanceFault = $state<string | null>(null);
   const answers = new SvelteMap<string, string>();
 
   const picked = $derived(items.find((item) => item.id === chosen) ?? null);
@@ -51,13 +54,36 @@
     options.filter((option) => option.required && (answers.get(option.id) ?? "").trim() === ""),
   );
 
+  const unavailableChoice = $derived(
+  options.some((option) => {
+    if (option.kind === "text") return false;
+
+    const selected = answers.get(option.id);
+
+    if (selected === undefined || selected === "") {
+      return false;
+    }
+
+    const choice = option.choices.find(
+      (choice) => choice.value === selected,
+    );
+
+    return (
+      choice?.stock !== null &&
+      choice?.stock !== undefined &&
+      choice.stock < wanted
+    );
+  }),
+);
+
   const ready = $derived(
-    andrew.trim().length > 0 &&
-      picked !== null &&
-      picked.stock > 0 &&
-      wanted <= picked.stock &&
-      unanswered.length === 0,
-  );
+  andrew.trim().length > 0 &&
+    picked !== null &&
+    picked.stock > 0 &&
+    wanted <= picked.stock &&
+    unanswered.length === 0 &&
+    !unavailableChoice,
+);
 
   function retarget(): void {
     answers.clear();
@@ -67,6 +93,37 @@
     if (error instanceof ApiError) return REASONS[error.code] ?? message(error);
 
     return message(error);
+  }
+
+  async function loadBalance(): Promise<void> {
+    const wanted = andrew.trim().toLowerCase();
+
+    balance = null;
+    balanceFault = null;
+
+    if (wanted === "") {
+      return;
+    }
+
+    balanceBusy = true;
+
+    try {
+      const result = await unwrap(
+        await api.GET("/api/portal/trade/balance/{andrew_id}", {
+          params: {
+            path: {
+              andrew_id: wanted,
+            },
+          },
+        }),
+      );
+
+      balance = result.scottycoins;
+    } catch (error) {
+      balanceFault = message(error);
+    } finally {
+      balanceBusy = false;
+    }
   }
 
   async function sell(): Promise<void> {
@@ -84,12 +141,13 @@
 
     try {
       const bought = await unwrap(await api.POST("/api/portal/trade/orders", { body: payload }));
+      balance = bought.scottycoins;
       const sold = `${bought.quantity} \u00d7 ${bought.item}`;
       const how =
         bought.options.length > 0
           ? ` (${bought.options.map((pick) => `${pick.label} ${pick.value}`).join(", ")})`
           : "";
-
+      
       announce(
         `Sold ${sold}${how} to ${payload.andrew_id} for ${bought.spent} coins.` +
           ` They have ${bought.scottycoins} ScottyCoins left.`,
@@ -121,7 +179,26 @@
   {:else}
     <div class="form">
       <Field label="Andrew ID" hint="the buyer">
-        <input type="text" bind:value={andrew} spellcheck="false" placeholder="e.g. jdoe" />
+        <input
+          type="text"
+          placeholder="e.g. jdoe"
+          bind:value={andrew}
+          oninput={() => {
+            balance = null;
+            balanceFault = null;
+          }}
+          onblur={() => void loadBalance()}
+        />
+        {#if balanceBusy}
+          <p class="balance">Checking balance...</p>
+        {:else if balance !== null}
+          <p class="balance">
+            Current balance:
+            <strong>{balance} ScottyCoins</strong>
+          </p>
+        {:else if balanceFault !== null}
+          <p class="balance bad">{balanceFault}</p>
+        {/if}
       </Field>
 
       <Field label="Item">
@@ -161,8 +238,18 @@
                 onchange={(event) => answers.set(option.id, event.currentTarget.value)}
               >
                 <option value="">{option.required ? `Choose ${option.label}` : "No preference"}</option>
-                {#each option.choices as choice, index (index)}
-                  <option value={choice}>{choice}</option>
+                {#each option.choices as choice (choice.value)}
+                  <option
+                    value={choice.value}
+                    disabled={choice.stock !== null &&
+                      choice.stock !== undefined &&
+                      choice.stock < wanted}
+                  >
+                    {choice.value}
+                    {#if choice.stock !== null && choice.stock !== undefined}
+                      ({choice.stock} left)
+                    {/if}
+                  </option>
                 {/each}
               </select>
             {/if}
@@ -236,6 +323,21 @@
     font-size: 26px;
     font-weight: 800;
     font-variant-numeric: tabular-nums;
+  }
+
+    .balance {
+    margin: 4px 0 0;
+    color: var(--tertiary);
+    font-size: 12px;
+  }
+
+  .balance strong {
+    color: var(--ink);
+    font-weight: 800;
+  }
+
+  .balance.bad {
+    color: var(--bad);
   }
 
   .coin {

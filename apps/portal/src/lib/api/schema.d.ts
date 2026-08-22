@@ -373,6 +373,22 @@ export interface paths {
     patch: operations["update_row"];
     trace?: never;
   };
+  "/api/portal/trade/balance/{andrew_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["trade_balance"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/portal/trade/items": {
     parameters: {
       query?: never;
@@ -891,6 +907,10 @@ export interface components {
     DailyView: {
       challenge?: null | components["schemas"]["ChallengeView"];
       day: string;
+    };
+    DeskBalance: {
+      /** Format: int64 */
+      scottycoins: number;
     };
     DeskPickBody: {
       /** Format: uuid */
@@ -2532,6 +2552,44 @@ export interface operations {
         };
       };
       403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+    };
+  };
+  trade_balance: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Andrew ID */
+        andrew_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DeskBalance"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PortalErrBody"];
+        };
+      };
+      404: {
         headers: {
           [name: string]: unknown;
         };

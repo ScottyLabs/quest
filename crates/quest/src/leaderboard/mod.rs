@@ -46,32 +46,93 @@ WITH taps AS (
         {tap_day} AS "day"
     FROM "tap_events"
     JOIN "challenge"
-      ON "challenge"."id" = "tap_events"."challenge_id"
+        ON "challenge"."id" = "tap_events"."challenge_id"
     WHERE NOT "challenge"."secret"
 ),
 capped AS (
-    SELECT taps."user_id" AS "user_id", LEAST(COUNT(*), $1)::BIGINT AS "stones"
+    SELECT
+        taps."user_id" AS "user_id",
+        taps."day" AS "day",
+        LEAST(COUNT(*), $1)::BIGINT AS "stones"
     FROM taps
     GROUP BY taps."user_id", taps."day"
 ),
-earned AS (
-    SELECT capped."user_id" AS "user_id", SUM(capped."stones")::BIGINT AS "stones"
-    FROM capped
-    GROUP BY capped."user_id"
-),
 bonus AS (
-    SELECT "daily_challenge"."user_id" AS "user_id", (COUNT(*) * $2)::BIGINT AS "stones"
+    SELECT
+        "daily_challenge"."user_id" AS "user_id",
+        "daily_challenge"."day" AS "day",
+        (COUNT(*) * $2)::BIGINT AS "stones"
     FROM "daily_challenge"
     JOIN taps
         ON taps."user_id" = "daily_challenge"."user_id"
         AND taps."challenge_id" = "daily_challenge"."challenge_id"
         AND taps."day" = "daily_challenge"."day"
-    GROUP BY "daily_challenge"."user_id"
+    GROUP BY
+        "daily_challenge"."user_id",
+        "daily_challenge"."day"
+),
+calculated_days AS (
+    SELECT
+        days."user_id",
+        days."day",
+        (
+            COALESCE(capped."stones", 0)
+            + COALESCE(bonus."stones", 0)
+        )::BIGINT AS "stones"
+    FROM (
+        SELECT "user_id", "day" FROM capped
+        UNION
+        SELECT "user_id", "day" FROM bonus
+    ) days
+    LEFT JOIN capped
+        ON capped."user_id" = days."user_id"
+        AND capped."day" = days."day"
+    LEFT JOIN bonus
+        ON bonus."user_id" = days."user_id"
+        AND bonus."day" = days."day"
+),
+corrections AS (
+    SELECT
+        "user_id",
+        "day",
+        "target"::BIGINT AS "stones"
+    FROM "gemstone_correction"
+),
+gem_days AS (
+    SELECT "user_id", "day" FROM calculated_days
+    UNION
+    SELECT "user_id", "day" FROM corrections
+),
+effective_days AS (
+    SELECT
+        days."user_id",
+        days."day",
+        GREATEST(
+            COALESCE(calculated_days."stones", 0),
+            COALESCE(corrections."stones", 0)
+        )::BIGINT AS "stones"
+    FROM gem_days days
+    LEFT JOIN calculated_days
+        ON calculated_days."user_id" = days."user_id"
+        AND calculated_days."day" = days."day"
+    LEFT JOIN corrections
+        ON corrections."user_id" = days."user_id"
+        AND corrections."day" = days."day"
+),
+earned AS (
+    SELECT
+        effective_days."user_id" AS "user_id",
+        SUM(effective_days."stones")::BIGINT AS "stones"
+    FROM effective_days
+    GROUP BY effective_days."user_id"
 ),
 coins AS (
-    SELECT "tap_events"."user_id" AS "user_id", SUM("challenge"."coin_value")::BIGINT AS "coins"
+    SELECT
+        "tap_events"."user_id" AS "user_id",
+        SUM("challenge"."coin_value")::BIGINT AS "coins"
     FROM "tap_events"
-    JOIN "challenge" ON "challenge"."id" = "tap_events"."challenge_id"
+    JOIN "challenge"
+        ON "challenge"."id" = "tap_events"."challenge_id"
     WHERE NOT "challenge"."secret"
     GROUP BY "tap_events"."user_id"
 ),
@@ -81,18 +142,24 @@ totals AS (
         "users"."andrew_id" AS "andrew_id",
         "users"."dorm" AS "community",
         "users"."anonymous" AS "anonymous",
-        (COALESCE(earned."stones", 0) + COALESCE(bonus."stones", 0))::BIGINT AS "thistlestones",
+        COALESCE(earned."stones", 0)::BIGINT AS "thistlestones",
         COALESCE(coins."coins", 0)::BIGINT AS "scottycoins"
     FROM "users"
-    LEFT JOIN earned ON earned."user_id" = "users"."id"
-    LEFT JOIN bonus ON bonus."user_id" = "users"."id"
-    LEFT JOIN coins ON coins."user_id" = "users"."id"
+    LEFT JOIN earned
+        ON earned."user_id" = "users"."id"
+    LEFT JOIN coins
+        ON coins."user_id" = "users"."id"
     WHERE "users"."player"
 ),
 scored AS (
     SELECT
         totals.*,
-        (CASE WHEN $4 THEN totals."scottycoins" ELSE totals."thistlestones" END)::BIGINT AS "score"
+        (
+            CASE
+                WHEN $4 THEN totals."scottycoins"
+                ELSE totals."thistlestones"
+            END
+        )::BIGINT AS "score"
     FROM totals
 )
 SELECT

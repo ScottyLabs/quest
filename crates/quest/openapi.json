@@ -1578,6 +1578,55 @@
         }
       }
     },
+    "/api/portal/trade/balance/{andrew_id}": {
+      "get": {
+        "tags": ["portal"],
+        "operationId": "trade_balance",
+        "parameters": [
+          {
+            "name": "andrew_id",
+            "in": "path",
+            "description": "Andrew ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeskBalance"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalErrBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/portal/trade/items": {
       "get": {
         "tags": ["portal"],
@@ -3458,6 +3507,16 @@
           },
           "day": {
             "type": "string"
+          }
+        }
+      },
+      "DeskBalance": {
+        "type": "object",
+        "required": ["scottycoins"],
+        "properties": {
+          "scottycoins": {
+            "type": "integer",
+            "format": "int64"
           }
         }
       },

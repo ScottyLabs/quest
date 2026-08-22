@@ -1,0 +1,410 @@
+diff --git a/apps/portal/src/lib/components/trade/SellTab.svelte b/apps/portal/src/lib/components/trade/SellTab.svelte
+index 74977ad..00d2274 100644
+--- a/apps/portal/src/lib/components/trade/SellTab.svelte
++++ b/apps/portal/src/lib/components/trade/SellTab.svelte
+@@ -1,5 +1,4 @@
+ <script lang="ts">
+-  import { SvelteMap } from "svelte/reactivity";
+   import type { ShopItem } from "$lib/api/client";
+   import { ApiError, api, message, unwrap } from "$lib/api/client";
+   import Button from "$lib/components/Button.svelte";
+@@ -8,6 +7,7 @@
+   import Panel from "$lib/components/Panel.svelte";
+   import Spinner from "$lib/components/Spinner.svelte";
+   import { announce } from "$lib/notice.svelte";
++  import { SvelteMap } from "svelte/reactivity";
+ 
+   let {
+     items,
+@@ -38,6 +38,9 @@
+   let chosen = $state("");
+   let quantity = $state<number | null>(1);
+   let busy = $state(false);
++  let balance = $state<number | null>(null);
++  let balanceBusy = $state(false);
++  let balanceFault = $state<string | null>(null);
+   const answers = new SvelteMap<string, string>();
+ 
+   const picked = $derived(items.find((item) => item.id === chosen) ?? null);
+@@ -51,13 +54,36 @@
+     options.filter((option) => option.required && (answers.get(option.id) ?? "").trim() === ""),
+   );
+ 
++  const unavailableChoice = $derived(
++  options.some((option) => {
++    if (option.kind === "text") return false;
++
++    const selected = answers.get(option.id);
++
++    if (selected === undefined || selected === "") {
++      return false;
++    }
++
++    const choice = option.choices.find(
++      (choice) => choice.value === selected,
++    );
++
++    return (
++      choice?.stock !== null &&
++      choice?.stock !== undefined &&
++      choice.stock < wanted
++    );
++  }),
++);
++
+   const ready = $derived(
+-    andrew.trim().length > 0 &&
+-      picked !== null &&
+-      picked.stock > 0 &&
+-      wanted <= picked.stock &&
+-      unanswered.length === 0,
+-  );
++  andrew.trim().length > 0 &&
++    picked !== null &&
++    picked.stock > 0 &&
++    wanted <= picked.stock &&
++    unanswered.length === 0 &&
++    !unavailableChoice,
++);
+ 
+   function retarget(): void {
+     answers.clear();
+@@ -69,6 +95,37 @@
+     return message(error);
+   }
+ 
++  async function loadBalance(): Promise<void> {
++    const wanted = andrew.trim().toLowerCase();
++
++    balance = null;
++    balanceFault = null;
++
++    if (wanted === "") {
++      return;
++    }
++
++    balanceBusy = true;
++
++    try {
++      const result = await unwrap(
++        await api.GET("/api/portal/trade/balance/{andrew_id}", {
++          params: {
++            path: {
++              andrew_id: wanted,
++            },
++          },
++        }),
++      );
++
++      balance = result.scottycoins;
++    } catch (error) {
++      balanceFault = message(error);
++    } finally {
++      balanceBusy = false;
++    }
++  }
++
+   async function sell(): Promise<void> {
+     if (picked === null) return;
+ 
+@@ -84,12 +141,13 @@
+ 
+     try {
+       const bought = await unwrap(await api.POST("/api/portal/trade/orders", { body: payload }));
++      balance = bought.scottycoins;
+       const sold = `${bought.quantity} \u00d7 ${bought.item}`;
+       const how =
+         bought.options.length > 0
+           ? ` (${bought.options.map((pick) => `${pick.label} ${pick.value}`).join(", ")})`
+           : "";
+-
++      
+       announce(
+         `Sold ${sold}${how} to ${payload.andrew_id} for ${bought.spent} coins.` +
+           ` They have ${bought.scottycoins} ScottyCoins left.`,
+@@ -121,7 +179,26 @@
+   {:else}
+     <div class="form">
+       <Field label="Andrew ID" hint="the buyer">
+-        <input type="text" bind:value={andrew} spellcheck="false" placeholder="e.g. jdoe" />
++        <input
++          type="text"
++          placeholder="e.g. jdoe"
++          bind:value={andrew}
++          oninput={() => {
++            balance = null;
++            balanceFault = null;
++          }}
++          onblur={() => void loadBalance()}
++        />
++        {#if balanceBusy}
++          <p class="balance">Checking balance...</p>
++        {:else if balance !== null}
++          <p class="balance">
++            Current balance:
++            <strong>{balance} ScottyCoins</strong>
++          </p>
++        {:else if balanceFault !== null}
++          <p class="balance bad">{balanceFault}</p>
++        {/if}
+       </Field>
+ 
+       <Field label="Item">
+@@ -161,8 +238,18 @@
+                 onchange={(event) => answers.set(option.id, event.currentTarget.value)}
+               >
+                 <option value="">{option.required ? `Choose ${option.label}` : "No preference"}</option>
+-                {#each option.choices as choice, index (index)}
+-                  <option value={choice}>{choice}</option>
++                {#each option.choices as choice (choice.value)}
++                  <option
++                    value={choice.value}
++                    disabled={choice.stock !== null &&
++                      choice.stock !== undefined &&
++                      choice.stock < wanted}
++                  >
++                    {choice.value}
++                    {#if choice.stock !== null && choice.stock !== undefined}
++                      ({choice.stock} left)
++                    {/if}
++                  </option>
+                 {/each}
+               </select>
+             {/if}
+@@ -238,6 +325,21 @@
+     font-variant-numeric: tabular-nums;
+   }
+ 
++    .balance {
++    margin: 4px 0 0;
++    color: var(--tertiary);
++    font-size: 12px;
++  }
++
++  .balance strong {
++    color: var(--ink);
++    font-weight: 800;
++  }
++
++  .balance.bad {
++    color: var(--bad);
++  }
++
+   .coin {
+     width: 13px;
+     height: 13px;
+diff --git a/crates/quest/src/items/mod.rs b/crates/quest/src/items/mod.rs
+index 8b3dc0a..76a506e 100644
+--- a/crates/quest/src/items/mod.rs
++++ b/crates/quest/src/items/mod.rs
+@@ -120,6 +120,13 @@ impl Items {
+         Self { db }
+     }
+ 
++    pub async fn scottycoins(&self, user: Uuid) -> Result<i64, AuthError> {
++        Ok(
++            balances_of(&self.db, user, Scope::Lifetime)
++                .await?
++                .scottycoins,
++        )
++    }
+     pub async fn list(&self) -> Result<Vec<Stocked>, AuthError> {
+         let mut stocked =
+             Stocked::find_by_statement(Statement::from_string(DbBackend::Postgres, IN_STOCK))
+diff --git a/crates/quest/src/leaderboard/mod.rs b/crates/quest/src/leaderboard/mod.rs
+index 5ec5ddd..cf58ecb 100644
+--- a/crates/quest/src/leaderboard/mod.rs
++++ b/crates/quest/src/leaderboard/mod.rs
+@@ -46,32 +46,93 @@ WITH taps AS (
+         {tap_day} AS "day"
+     FROM "tap_events"
+     JOIN "challenge"
+-      ON "challenge"."id" = "tap_events"."challenge_id"
++        ON "challenge"."id" = "tap_events"."challenge_id"
+     WHERE NOT "challenge"."secret"
+ ),
+ capped AS (
+-    SELECT taps."user_id" AS "user_id", LEAST(COUNT(*), $1)::BIGINT AS "stones"
++    SELECT
++        taps."user_id" AS "user_id",
++        taps."day" AS "day",
++        LEAST(COUNT(*), $1)::BIGINT AS "stones"
+     FROM taps
+     GROUP BY taps."user_id", taps."day"
+ ),
+-earned AS (
+-    SELECT capped."user_id" AS "user_id", SUM(capped."stones")::BIGINT AS "stones"
+-    FROM capped
+-    GROUP BY capped."user_id"
+-),
+ bonus AS (
+-    SELECT "daily_challenge"."user_id" AS "user_id", (COUNT(*) * $2)::BIGINT AS "stones"
++    SELECT
++        "daily_challenge"."user_id" AS "user_id",
++        "daily_challenge"."day" AS "day",
++        (COUNT(*) * $2)::BIGINT AS "stones"
+     FROM "daily_challenge"
+     JOIN taps
+         ON taps."user_id" = "daily_challenge"."user_id"
+         AND taps."challenge_id" = "daily_challenge"."challenge_id"
+         AND taps."day" = "daily_challenge"."day"
+-    GROUP BY "daily_challenge"."user_id"
++    GROUP BY
++        "daily_challenge"."user_id",
++        "daily_challenge"."day"
++),
++calculated_days AS (
++    SELECT
++        days."user_id",
++        days."day",
++        (
++            COALESCE(capped."stones", 0)
++            + COALESCE(bonus."stones", 0)
++        )::BIGINT AS "stones"
++    FROM (
++        SELECT "user_id", "day" FROM capped
++        UNION
++        SELECT "user_id", "day" FROM bonus
++    ) days
++    LEFT JOIN capped
++        ON capped."user_id" = days."user_id"
++        AND capped."day" = days."day"
++    LEFT JOIN bonus
++        ON bonus."user_id" = days."user_id"
++        AND bonus."day" = days."day"
++),
++corrections AS (
++    SELECT
++        "user_id",
++        "day",
++        "target"::BIGINT AS "stones"
++    FROM "gemstone_correction"
++),
++gem_days AS (
++    SELECT "user_id", "day" FROM calculated_days
++    UNION
++    SELECT "user_id", "day" FROM corrections
++),
++effective_days AS (
++    SELECT
++        days."user_id",
++        days."day",
++        GREATEST(
++            COALESCE(calculated_days."stones", 0),
++            COALESCE(corrections."stones", 0)
++        )::BIGINT AS "stones"
++    FROM gem_days days
++    LEFT JOIN calculated_days
++        ON calculated_days."user_id" = days."user_id"
++        AND calculated_days."day" = days."day"
++    LEFT JOIN corrections
++        ON corrections."user_id" = days."user_id"
++        AND corrections."day" = days."day"
++),
++earned AS (
++    SELECT
++        effective_days."user_id" AS "user_id",
++        SUM(effective_days."stones")::BIGINT AS "stones"
++    FROM effective_days
++    GROUP BY effective_days."user_id"
+ ),
+ coins AS (
+-    SELECT "tap_events"."user_id" AS "user_id", SUM("challenge"."coin_value")::BIGINT AS "coins"
++    SELECT
++        "tap_events"."user_id" AS "user_id",
++        SUM("challenge"."coin_value")::BIGINT AS "coins"
+     FROM "tap_events"
+-    JOIN "challenge" ON "challenge"."id" = "tap_events"."challenge_id"
++    JOIN "challenge"
++        ON "challenge"."id" = "tap_events"."challenge_id"
+     WHERE NOT "challenge"."secret"
+     GROUP BY "tap_events"."user_id"
+ ),
+@@ -81,18 +142,24 @@ totals AS (
+         "users"."andrew_id" AS "andrew_id",
+         "users"."dorm" AS "community",
+         "users"."anonymous" AS "anonymous",
+-        (COALESCE(earned."stones", 0) + COALESCE(bonus."stones", 0))::BIGINT AS "thistlestones",
++        COALESCE(earned."stones", 0)::BIGINT AS "thistlestones",
+         COALESCE(coins."coins", 0)::BIGINT AS "scottycoins"
+     FROM "users"
+-    LEFT JOIN earned ON earned."user_id" = "users"."id"
+-    LEFT JOIN bonus ON bonus."user_id" = "users"."id"
+-    LEFT JOIN coins ON coins."user_id" = "users"."id"
++    LEFT JOIN earned
++        ON earned."user_id" = "users"."id"
++    LEFT JOIN coins
++        ON coins."user_id" = "users"."id"
+     WHERE "users"."player"
+ ),
+ scored AS (
+     SELECT
+         totals.*,
+-        (CASE WHEN $4 THEN totals."scottycoins" ELSE totals."thistlestones" END)::BIGINT AS "score"
++        (
++            CASE
++                WHEN $4 THEN totals."scottycoins"
++                ELSE totals."thistlestones"
++            END
++        )::BIGINT AS "score"
+     FROM totals
+ )
+ SELECT
+diff --git a/crates/quest/src/portal/routes.rs b/crates/quest/src/portal/routes.rs
+index f0faa86..4f95c59 100644
+--- a/crates/quest/src/portal/routes.rs
++++ b/crates/quest/src/portal/routes.rs
+@@ -32,6 +32,12 @@ pub struct GemstoneCorrectionBody {
+     pub reason: String,
+ }
+ 
++#[derive(Serialize, ToSchema)]
++pub struct DeskBalance {
++    pub scottycoins: i64,
++}
++
++
+ pub fn router(
+     portal: Portal,
+     items: Items,
+@@ -60,6 +66,7 @@ pub fn router(
+         .routes(routes!(user_activity_taps))
+         .routes(routes!(move_activity_taps))
+         .routes(routes!(set_activity_gemstones, clear_activity_gemstones))
++        .routes(routes!(trade_balance))
+         .layer(axum::extract::DefaultBodyLimit::max(
+             crate::portal::assets::MAX_BYTES + 4096,
+         ))
+@@ -176,6 +183,32 @@ async fn set_activity_gemstones(
+     Ok(Json(correction))
+ }
+ 
++#[utoipa::path(
++    get,
++    path = "/portal/trade/balance/{andrew_id}",
++    tag = "portal",
++    params(
++        ("andrew_id" = String, Path, description = "Andrew ID"),
++    ),
++    responses(
++        (status = OK, body = DeskBalance),
++        (status = FORBIDDEN, body = PortalErrBody),
++        (status = NOT_FOUND, body = PortalErrBody),
++    ),
++)]
++async fn trade_balance(
++    State(console): State<Console>,
++    access: Access,
++    Path(andrew_id): Path<String>,
++) -> Result<Json<DeskBalance>, PortalError> {
++    access.require(Capability::TradeDesk)?;
++
++    let user = console.portal.user_id(andrew_id.trim()).await?;
++    let scottycoins = console.items.scottycoins(user).await?;
++
++    Ok(Json(DeskBalance { scottycoins }))
++}
++
+ #[utoipa::path(
+     delete,
+     path = "/portal/activity/{andrew_id}/days/{day}/gemstones",

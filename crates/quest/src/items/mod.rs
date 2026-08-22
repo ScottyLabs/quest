@@ -120,6 +120,11 @@ impl Items {
         Self { db }
     }
 
+    pub async fn scottycoins(&self, user: Uuid) -> Result<i64, AuthError> {
+        Ok(balances_of(&self.db, user, Scope::Lifetime)
+            .await?
+            .scottycoins)
+    }
     pub async fn list(&self) -> Result<Vec<Stocked>, AuthError> {
         let mut stocked =
             Stocked::find_by_statement(Statement::from_string(DbBackend::Postgres, IN_STOCK))

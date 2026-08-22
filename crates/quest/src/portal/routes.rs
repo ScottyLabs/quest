@@ -32,6 +32,11 @@ pub struct GemstoneCorrectionBody {
     pub reason: String,
 }
 
+#[derive(Serialize, ToSchema)]
+pub struct DeskBalance {
+    pub scottycoins: i64,
+}
+
 pub fn router(
     portal: Portal,
     items: Items,
@@ -60,6 +65,7 @@ pub fn router(
         .routes(routes!(user_activity_taps))
         .routes(routes!(move_activity_taps))
         .routes(routes!(set_activity_gemstones, clear_activity_gemstones))
+        .routes(routes!(trade_balance))
         .layer(axum::extract::DefaultBodyLimit::max(
             crate::portal::assets::MAX_BYTES + 4096,
         ))
@@ -174,6 +180,32 @@ async fn set_activity_gemstones(
         .await?;
 
     Ok(Json(correction))
+}
+
+#[utoipa::path(
+    get,
+    path = "/portal/trade/balance/{andrew_id}",
+    tag = "portal",
+    params(
+        ("andrew_id" = String, Path, description = "Andrew ID"),
+    ),
+    responses(
+        (status = OK, body = DeskBalance),
+        (status = FORBIDDEN, body = PortalErrBody),
+        (status = NOT_FOUND, body = PortalErrBody),
+    ),
+)]
+async fn trade_balance(
+    State(console): State<Console>,
+    access: Access,
+    Path(andrew_id): Path<String>,
+) -> Result<Json<DeskBalance>, PortalError> {
+    access.require(Capability::TradeDesk)?;
+
+    let user = console.portal.user_id(andrew_id.trim()).await?;
+    let scottycoins = console.items.scottycoins(user).await?;
+
+    Ok(Json(DeskBalance { scottycoins }))
 }
 
 #[utoipa::path(

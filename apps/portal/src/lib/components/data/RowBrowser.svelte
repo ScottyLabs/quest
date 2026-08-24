@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { Snippet } from "svelte";
   import { message, type TableView } from "$lib/api/client";
   import Button from "$lib/components/Button.svelte";
   import Empty from "$lib/components/Empty.svelte";
@@ -12,6 +11,7 @@
   import { announce } from "$lib/notice.svelte";
   import { listRows, type Query } from "$lib/rows";
   import { rowKey } from "$lib/values";
+  import type { Snippet } from "svelte";
 
   let { table, extras }: { table: TableView; extras?: Snippet } = $props();
 
@@ -103,6 +103,11 @@
     }
   }
 
+  function reverse(): void {
+    desc = !desc;
+    offset = 0;
+  }
+
   function sort(column: string): void {
     if (order === column) {
       desc = !desc;
@@ -129,10 +134,21 @@
 <Panel title={table.name} {detail} flush>
   {#snippet actions()}
     {@render extras?.()}
+
+    <Button
+      tone="line"
+      size="small"
+      onclick={reverse}
+    >
+      Reverse order
+    </Button>
+
     {#if mayCreate}
       <Button size="small" onclick={create}>New row</Button>
     {/if}
   {/snippet}
+
+  
 
   <div class="tools">
     <Field label="Search" hint="every column">
@@ -157,7 +173,7 @@
       title={trimmed === "" ? "No rows yet" : "Nothing matches that search"}
       detail={trimmed === ""
         ? `${table.name} is empty.${mayCreate ? " Use New row to add the first one." : ""}`
-        : `No row in ${table.name} contains “${trimmed}”. Clear the search to see everything.`}
+        : `No row in ${table.name} contains "${trimmed}". Clear the search to see everything.`}
     />
   {:else}
     <div class="rows" class:dim={busy}>

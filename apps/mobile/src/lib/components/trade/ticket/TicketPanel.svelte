@@ -7,9 +7,8 @@
 
 <section class="ticket">
   <p class="lead">
-    <strong>Starting on Tuesday, August 25th, </strong>go to the <b>{PICKUP}</b> with ticket below to have your purchased items delivered, from 10am-4pm.
+    <strong>Starting on Tuesday, August 25th,</strong> go to the <b>{PICKUP}</b> with ticket below to have your purchased items delivered, <strong>from 10am-4pm.</strong>
   </p>
-
   <p class="ticket">
     The last day to pick up your Terrier Trade prizes is September 10.
   </p>

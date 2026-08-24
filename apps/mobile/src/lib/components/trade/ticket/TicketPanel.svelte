@@ -10,7 +10,7 @@
     <strong>Starting on Tuesday, August 25th,</strong> go to the <b>{PICKUP}</b> with ticket below to have your purchased items delivered, <strong>from 10am-4pm.</strong>
   </p>
   <p class="ticket">
-    The last day to pick up your Terrier Trade prizes is September 10.
+    The last day to pick up your Terrier Trade prizes is <strong>September 10</strong>.
   </p>
 
   <TicketGate {name} {andrewId} />

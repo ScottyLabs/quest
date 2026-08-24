@@ -14,6 +14,8 @@ use crate::challenges::routes::ChallengeView;
 use crate::tokens::{Scope, Tokens};
 use crate::users::Users;
 
+const QUEST_OPEN: bool = false;
+
 pub fn router(taps: Taps, tokens: Tokens) -> OpenApiRouter {
     OpenApiRouter::new()
         .routes(routes!(register))
@@ -68,6 +70,10 @@ async fn register(
         device_key: Some(device),
         ..Default::default()
     };
+
+    if !QUEST_OPEN {
+        return Err(AuthError::Conflict("quest_closed"));
+    }
 
     let Json(body) = taps
         .audited(

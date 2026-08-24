@@ -241,9 +241,9 @@ $effect(() => {
 <!-- TEMP ANNOUNCEMENT -->
 {#if announcement.open && !briefing.open}
   <WarningDialog
-    title="O-Quest Isn't Over!"
-    body="You can still earn ScottyCoins until Sunday! To encourage questing, you can now buy infinite copies of items!"
-    dismiss="YEAH!!!"
+    title="Thanks for playing!"
+    body="Orientation Quest gameplay ended on Sunday 08/23 at 6:00pm. Check out the Ticket tab in the shop to learn how to redeem your prizes. Welcome to CMU!"
+    dismiss="Alright!"
     ondismiss={closeAnnouncement}
   />
 {/if}

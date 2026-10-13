@@ -18,10 +18,11 @@ in
 
     deno = {
       enable = true;
-      svelte = {
-        enable = true;
-        dir = "apps/mobile";
-      };
+      svelte.enable = true;
+      dirs = [
+        "apps/mobile"
+        "apps/portal"
+      ];
     };
 
     kennel.services.quest = {
@@ -33,10 +34,6 @@ in
   };
 
   services.postgres.extensions = extensions: [ extensions.postgis ];
-
-  enterShell = ''
-    (cd apps/portal && deno install && deno run -A npm:@sveltejs/kit/svelte-kit sync)
-  '';
 
   processes.portal.exec = "deno task --cwd apps/portal dev";
 

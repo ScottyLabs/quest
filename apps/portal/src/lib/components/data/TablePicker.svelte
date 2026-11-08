@@ -34,7 +34,7 @@
 
   {#if shown.length === 0}
     <p class="none">
-      {tables.length === 0 ? "No table is within your reach." : `Nothing matches “${filter}”.`}
+      {tables.length === 0 ? "No table is within your reach." : `Nothing matches \u201c${filter}\u201d.`}
     </p>
   {:else}
     <ul>

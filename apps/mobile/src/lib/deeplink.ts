@@ -24,7 +24,9 @@ export async function watchTaps(handle: (url: string) => void): Promise<() => vo
   };
 
   const launch = await App.getLaunchUrl().catch(() => null);
-  const listener = await App.addListener("appUrlOpen", ({ url }) => deliver(url));
+  const listener = await App.addListener("appUrlOpen", ({ url }) => {
+    deliver(url);
+  });
   deliver(launch?.url);
 
   return () => void listener.remove();

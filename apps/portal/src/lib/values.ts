@@ -46,25 +46,47 @@ export function fromInput(text: string, column: PortalColumn): Cell {
       if (!Number.isFinite(parsed)) throw new Error(`${column.name} must be a number`);
       return parsed;
     }
-    case "json":
+    case "json": {
+      let parsed: unknown;
       try {
-        return JSON.parse(trimmed) as Cell;
+        parsed = JSON.parse(trimmed);
       } catch {
         throw new Error(`${column.name} must be valid JSON`);
       }
-    default:
-      return text;
+      if (!isCell(parsed)) throw new Error(`${column.name} must be valid JSON`);
+      return parsed;
+    }
+    case "text":
+    case "area":
+    case "timestamp":
+    case "date":
+      break;
   }
+
+  return text;
+}
+
+function isCell(value: unknown): value is Cell {
+  return (
+    value === null ||
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean" ||
+    typeof value === "object"
+  );
 }
 
 export function keyOf(row: Record<string, unknown>, key: string[]): Record<string, Cell> {
   const out: Record<string, Cell> = {};
 
-  for (const column of key) out[column] = (row[column] ?? null) as Cell;
+  for (const column of key) {
+    const value = row[column] ?? null;
+    out[column] = isCell(value) ? value : null;
+  }
 
   return out;
 }
 
 export function rowKey(row: Record<string, unknown>, key: string[]): string {
-  return key.map((column) => display(row[column])).join("\u001f");
+  return key.map((column) => display(row[column])).join("\u001F");
 }

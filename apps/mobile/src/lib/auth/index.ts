@@ -1,6 +1,7 @@
 export { apiBase, apiUrl } from "./api";
 export { deviceProof, devicePublicKey } from "./device";
-export { authRequest, session } from "./session.svelte";
+export { authRequest } from "./request";
+export { session } from "./session.svelte";
 export type { LoginOptions, LogoutOptions, OpenUrl } from "./session.svelte";
 export type { SessionStorage } from "./storage";
 export { AuthError, authMessage } from "./types";

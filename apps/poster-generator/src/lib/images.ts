@@ -16,7 +16,7 @@ function scaleOf(transform: string): { sx: number; sy: number; tx: number; ty: n
   if (transform.startsWith("matrix") && numbers.length >= 6) {
     return { sx: numbers[0] ?? 1, sy: numbers[3] ?? 1, tx: numbers[4] ?? 0, ty: numbers[5] ?? 0 };
   }
-  if (transform.startsWith("scale") && numbers.length >= 1) {
+  if (transform.startsWith("scale") && numbers.length > 0) {
     const sx = numbers[0] ?? 1;
     return { sx, sy: numbers[1] ?? sx, tx: 0, ty: 0 };
   }
@@ -33,8 +33,8 @@ function placement(root: SVGSVGElement, pattern: Element, box: DOMRect): Placeme
 
   const href = image.getAttribute("href") ?? image.getAttributeNS(XLINK_NS, "href");
   const natural = {
-    width: Number.parseFloat(image.getAttribute("width") ?? "0"),
-    height: Number.parseFloat(image.getAttribute("height") ?? "0"),
+    width: Number(image.getAttribute("width") ?? "0"),
+    height: Number(image.getAttribute("height") ?? "0"),
   };
   if (href === null || natural.width === 0 || natural.height === 0) return null;
 
@@ -69,9 +69,11 @@ export function inlineImages(root: SVGSVGElement): void {
     const pattern = root.querySelector(`pattern[id="${id}"]`);
     if (pattern === null) continue;
 
+    if (!(shape instanceof SVGGraphicsElement)) continue;
+
     let box: DOMRect;
     try {
-      box = (shape as SVGGraphicsElement).getBBox();
+      box = shape.getBBox();
     } catch {
       continue;
     }
@@ -80,32 +82,41 @@ export function inlineImages(root: SVGSVGElement): void {
     if (spot === null) continue;
 
     const clipId = `${id}-image-clip`;
-    const clip = document.createElementNS(SVG_NS, "clipPath");
-    clip.setAttribute("id", clipId);
-    clip.setAttribute("clipPathUnits", "userSpaceOnUse");
-
-    const outline = shape.cloneNode(false) as Element;
-    for (const name of ["fill", "fill-opacity", "opacity", "style", DONE])
-      outline.removeAttribute(name);
-    clip.append(outline);
+    const clip = outlineClip(shape, clipId);
+    if (clip === null) continue;
     (root.querySelector("defs") ?? root).append(clip);
 
-    const image = document.createElementNS(SVG_NS, "image");
-    image.setAttribute("href", spot.href);
-    image.setAttributeNS(XLINK_NS, "xlink:href", spot.href);
-    image.setAttribute("x", spot.x.toFixed(3));
-    image.setAttribute("y", spot.y.toFixed(3));
-    image.setAttribute("width", spot.width.toFixed(3));
-    image.setAttribute("height", spot.height.toFixed(3));
-    image.setAttribute("preserveAspectRatio", "none");
-
-    const group = document.createElementNS(SVG_NS, "g");
-    group.setAttribute("clip-path", `url(#${clipId})`);
-    group.append(image);
-
-    const transform = shape.getAttribute("transform");
-    if (transform !== null) group.setAttribute("transform", transform);
-
-    shape.replaceWith(group);
+    shape.replaceWith(clippedImage(spot, clipId, shape.getAttribute("transform")));
   }
+}
+
+function outlineClip(shape: SVGGraphicsElement, clipId: string): SVGClipPathElement | null {
+  const outline = shape.cloneNode(false);
+  if (!(outline instanceof Element)) return null;
+
+  for (const name of ["fill", "fill-opacity", "opacity", "style", DONE])
+    outline.removeAttribute(name);
+
+  const clip = document.createElementNS(SVG_NS, "clipPath");
+  clip.setAttribute("id", clipId);
+  clip.setAttribute("clipPathUnits", "userSpaceOnUse");
+  clip.append(outline);
+  return clip;
+}
+
+function clippedImage(spot: Placement, clipId: string, transform: string | null): SVGGElement {
+  const image = document.createElementNS(SVG_NS, "image");
+  image.setAttribute("href", spot.href);
+  image.setAttributeNS(XLINK_NS, "xlink:href", spot.href);
+  image.setAttribute("x", spot.x.toFixed(3));
+  image.setAttribute("y", spot.y.toFixed(3));
+  image.setAttribute("width", spot.width.toFixed(3));
+  image.setAttribute("height", spot.height.toFixed(3));
+  image.setAttribute("preserveAspectRatio", "none");
+
+  const group = document.createElementNS(SVG_NS, "g");
+  group.setAttribute("clip-path", `url(#${clipId})`);
+  group.append(image);
+  if (transform !== null) group.setAttribute("transform", transform);
+  return group;
 }

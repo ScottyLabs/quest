@@ -3,24 +3,14 @@ import { App } from "@capacitor/app";
 import { Browser } from "@capacitor/browser";
 import { Capacitor } from "@capacitor/core";
 import { openExternal } from "$lib/external";
-import {
-  apiBase,
-  endSession,
-  enrollDevice,
-  errorCode,
-  fetchStatus,
-  loginTicket,
-  responseError,
-  signed,
-} from "./api";
+import { apiBase, endSession, enrollDevice, fetchStatus, loginTicket } from "./api";
+import { parseFragment } from "./fragment";
 import { localSessionStorage } from "./storage";
 import type { SessionStorage } from "./storage";
 import { AuthError } from "./types";
 import type { AuthPhase, QuestUser, Session } from "./types";
 
 const NATIVE_TARGET = "org.scottylabs.quest://oauth";
-
-const FALLBACK_TTL = 90 * 24 * 60 * 60;
 
 export type OpenUrl = (url: string) => void | Promise<void>;
 
@@ -40,24 +30,6 @@ function pause(ms: number): Promise<void> {
   setTimeout(resolve, ms);
 
   return promise;
-}
-
-type Fragment = { id: string; expiresAt: number } | { error: AuthError };
-
-function parseFragment(hash: string): Fragment | null {
-  const params = new URLSearchParams(hash.startsWith("#") ? hash.slice(1) : hash);
-
-  const failure = params.get("error");
-  if (failure !== null) return { error: new AuthError(errorCode(failure)) };
-
-  const id = params.get("session");
-  if (id === null) return null;
-
-  const raw = params.get("expires_in");
-  const expiresIn = raw === null ? NaN : Number(raw);
-  const window = Number.isFinite(expiresIn) && expiresIn > 0 ? expiresIn : FALLBACK_TTL;
-
-  return { id, expiresAt: Date.now() + window * 1000 };
 }
 
 class SessionStore {
@@ -119,23 +91,24 @@ class SessionStore {
   }
 
   async #enrol(id: string): Promise<void> {
-    for (const attempt of [0, 1]) {
-      const enrolled = await enrollDevice(id).catch((error: unknown) => {
-        this.#blocked(error);
-        return false;
-      });
+    if (await this.#tryEnrol(id)) return;
 
-      if (enrolled) {
-        this.#enrolled = true;
-        return;
-      }
-
-      if (this.#deviceOwned) break;
-      if (attempt === 0) await pause(400);
+    if (!this.#deviceOwned) {
+      await pause(400);
+      if (await this.#tryEnrol(id)) return;
     }
 
     this.#enrolled = false;
     console.error("device enrolment failed; signed in but the API will refuse this device");
+  }
+
+  async #tryEnrol(id: string): Promise<boolean> {
+    const enrolled = await enrollDevice(id).catch((error: unknown) => {
+      this.#blocked(error);
+      return false;
+    });
+    if (enrolled) this.#enrolled = true;
+    return enrolled;
   }
 
   #current(stored: Session): boolean {
@@ -161,9 +134,9 @@ class SessionStore {
     this.#adopt({ ...stored, user: fresh });
   }
 
-  async adoptFragment(hash: string): Promise<QuestUser | null> {
+  adoptFragment(hash: string): Promise<QuestUser | null> {
     if (this.#adopting?.hash !== hash) this.#adopting = { hash, user: this.#adoptOnce(hash) };
-    return await this.#adopting.user;
+    return this.#adopting.user;
   }
 
   #blocked(error: unknown): void {
@@ -221,13 +194,15 @@ class SessionStore {
 
     if (!native) {
       location.assign(url);
-      return await new Promise<QuestUser>(() => {});
+      return new Promise<QuestUser>(() => {});
     }
 
-    if (options.signal?.aborted) throw new AuthError("cancelled");
+    if (options.signal?.aborted === true) throw new AuthError("cancelled");
 
     const { promise, resolve, reject } = Promise.withResolvers<string>();
-    const abort = () => reject(new AuthError("cancelled"));
+    const abort = () => {
+      reject(new AuthError("cancelled"));
+    };
     options.signal?.addEventListener("abort", abort, { once: true });
 
     const listener = await App.addListener("appUrlOpen", ({ url: opened }) => {
@@ -249,7 +224,7 @@ class SessionStore {
     } finally {
       options.signal?.removeEventListener("abort", abort);
       await listener.remove();
-      await Browser.close().catch(() => undefined);
+      await Browser.close().catch(() => {});
     }
   }
 
@@ -259,7 +234,9 @@ class SessionStore {
     if (!current) return;
 
     const url = await endSession(current.id).catch(() => null);
-    if (url && options.endSsoSession) await (options.openUrl ?? openExternal)(url);
+    if (url !== null && url !== "" && options.endSsoSession === true) {
+      await (options.openUrl ?? openExternal)(url);
+    }
   }
 
   get id(): string {
@@ -312,18 +289,3 @@ class SessionStore {
 }
 
 export const session = new SessionStore();
-
-export async function authRequest(request: Request): Promise<Response> {
-  const retryable = request.clone();
-  const response = await signed(request, session.id);
-  if (response.status !== 401) return response;
-
-  if (await enrollDevice(session.id).catch(() => false)) {
-    const retried = await signed(retryable, session.id);
-    if (retried.status !== 401) return retried;
-  }
-
-  const code = await responseError(response);
-  session.clear();
-  throw new AuthError(code === "unknown" ? "unauthorized" : code);
-}

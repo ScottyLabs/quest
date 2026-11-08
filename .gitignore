@@ -1,13 +1,7 @@
-# Nix / devenv
-.devenv/
-.devenv.flake.nix
+# Nix
 .pre-commit-config.yaml
 result
 result-*
-
-# AI
-.mcp.json
-.claude
 
 # Rust
 target/
@@ -19,7 +13,7 @@ node_modules/
 .vite/
 build/
 
-# Android (devenv writes these from the nix SDK path)
+# Android (written from the nix SDK path)
 .android/
 local.properties
 .gradle/

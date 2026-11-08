@@ -9,36 +9,35 @@
   };
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    scottylabs = {
-      url = "git+https://git.cmu.dev/ScottyLabs/kennel";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    scottylabs.url = "git+https://git.cmu.dev/ScottyLabs/kennel";
+    nixpkgs.follows = "scottylabs/nixpkgs";
+    flake-parts.follows = "scottylabs/flake-parts";
   };
 
   outputs =
-    {
-      nixpkgs,
-      scottylabs,
-      ...
-    }:
-    let
+    inputs:
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+      imports = [ inputs.scottylabs.flakeModules.default ];
       systems = [
         "x86_64-linux"
         "aarch64-linux"
+        "aarch64-darwin"
       ];
-      forAllSystems = nixpkgs.lib.genAttrs systems;
-    in
-    {
-      packages = forAllSystems (
-        system:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
-          helpers = scottylabs.mkLib pkgs;
 
-          questSrc = pkgs.lib.fileset.toSource {
+      perSystem =
+        {
+          pkgs,
+          lib,
+          helpers,
+          ...
+        }:
+        let
+          android = import ./nix/android.nix { inherit pkgs; };
+          ios = import ./nix/ios-toolchain.nix { inherit pkgs; };
+
+          questSrc = lib.fileset.toSource {
             root = ./.;
-            fileset = pkgs.lib.fileset.unions [
+            fileset = lib.fileset.unions [
               ./Cargo.toml
               ./Cargo.lock
               ./crates/quest
@@ -47,46 +46,19 @@
             ];
           };
 
-          webSrc = pkgs.lib.fileset.toSource {
+          webSrc = lib.fileset.toSource {
             root = ./.;
-            fileset = pkgs.lib.fileset.unions [
+            fileset = lib.fileset.unions [
               ./deno.json
               ./deno.lock
               ./apps/portal
-              (pkgs.lib.fileset.difference ./apps/mobile (
-                pkgs.lib.fileset.unions [
+              (lib.fileset.difference ./apps/mobile (
+                lib.fileset.unions [
                   ./apps/mobile/android
                   ./apps/mobile/ios
                 ]
               ))
             ];
-          };
-
-          quest = helpers.buildRustService {
-            src = ./.;
-            pname = "quest";
-            version = "0.1.0";
-            paths = [
-              "crates/quest"
-              "crates/entity"
-              "crates/migration"
-            ];
-            nativeBuildInputs = [
-              pkgs.pkg-config
-              pkgs.makeWrapper
-            ];
-            buildInputs = [ ];
-            buildArgs = {
-              cargoExtraArgs = "-p quest";
-              src = questSrc;
-              postInstall = ''
-                mkdir -p $out/share/quest
-                cp ${bundle} $out/share/quest/bundle.zip
-                wrapProgram $out/bin/quest \
-                  --set-default QUEST_BUNDLE $out/share/quest/bundle.zip \
-                  --set-default QUEST_PORTAL ${portal}
-              '';
-            };
           };
 
           mobile = helpers.buildDenoTask {
@@ -116,14 +88,85 @@
               '';
         in
         {
-          inherit
-            quest
-            mobile
-            bundle
-            portal
-            ;
-          default = quest;
-        }
-      );
+          scottylabs = {
+            project.name = "quest";
+            rust.enable = true;
+            postgres = {
+              enable = true;
+              extensions = e: [ e.postgis ];
+            };
+            valkey.enable = true;
+
+            deno = {
+              enable = true;
+              svelte.enable = true;
+              dirs = [
+                "apps/mobile"
+                "apps/portal"
+                "apps/poster-generator"
+              ];
+            };
+
+            ricochet = {
+              enable = true;
+              appUrl = "http://localhost:8080";
+            };
+
+            processes.portal.run = "deno task --cwd apps/portal dev";
+
+            shell = {
+              packages =
+                android.packages
+                ++ [
+                  pkgs.libimobiledevice
+                  pkgs.ideviceinstaller
+                  pkgs.unzip
+                ]
+                ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
+                  ios.swift
+                  pkgs.usbmuxd
+                ];
+
+              env = android.env // {
+                # normally logs are scoped to crates
+                RUST_LOG = lib.mkForce "info,quest=debug,ricochet=debug";
+              };
+
+              inherit (android) exports;
+
+              scripts.android = ''exec scripts/android "$@"'';
+            };
+          };
+
+          treefmt.settings.global.excludes = [ "**/node_modules/*" ];
+
+          # legal text and seeded challenge copy keep their typography
+          pre-commit.settings.hooks.block-ai-slop.excludes = [
+            "^crates/quest/src/legal/"
+            "^crates/migration/src/m20260810_000200_seed_challenges\\.rs$"
+          ];
+
+          services.quest = {
+            package = helpers.buildRustService {
+              src = ./.;
+              pname = "quest";
+              version = "0.1.0";
+              paths = [
+                "crates/quest"
+                "crates/entity"
+                "crates/migration"
+              ];
+              buildArgs = {
+                cargoExtraArgs = "--locked -p quest";
+                src = questSrc;
+              };
+            };
+            customDomain = "cmu.quest";
+            env = {
+              QUEST_BUNDLE = "${bundle}";
+              QUEST_PORTAL = "${portal}";
+            };
+          };
+        };
     };
 }

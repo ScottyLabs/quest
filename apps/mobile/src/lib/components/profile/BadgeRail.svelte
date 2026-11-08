@@ -49,7 +49,7 @@
       {@const on = held(row, badge, progress)}
       <button
         type="button"
-        aria-label="{badge.name} — {on ? 'earned' : 'locked'}"
+        aria-label="{badge.name} &mdash; {on ? 'earned' : 'locked'}"
         aria-expanded={open === badge.id}
         aria-describedby={open === badge.id ? `tip-${row.id}` : undefined}
         onpointerdown={(event) => event.stopPropagation()}

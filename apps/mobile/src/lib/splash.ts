@@ -1,9 +1,11 @@
 const FADE = 220;
 
 export function hideSplash(): void {
-  const splash = document.getElementById("splash");
+  const splash = document.querySelector<HTMLElement>("#splash");
   if (splash === null || "leaving" in splash.dataset) return;
 
   splash.dataset.leaving = "";
-  setTimeout(() => splash.remove(), FADE);
+  setTimeout(() => {
+    splash.remove();
+  }, FADE);
 }

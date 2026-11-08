@@ -9,7 +9,7 @@ function hardEdged(shape: Element): boolean {
 
   for (const name of ["fill-opacity", "opacity"]) {
     const value = shape.getAttribute(name);
-    if (value !== null && Number.parseFloat(value) < 1) return false;
+    if (value !== null && Number(value) < 1) return false;
   }
 
   return true;
@@ -26,14 +26,15 @@ export function flattenMasks(root: SVGSVGElement): void {
     if (mask === null) continue;
 
     const shapes = [...mask.children];
-    if (shapes.length === 0 || !shapes.every(hardEdged)) continue;
+    if (shapes.length === 0 || !shapes.every((shape) => hardEdged(shape))) continue;
 
     const clip = document.createElementNS(SVG_NS, "clipPath");
     clip.setAttribute("id", `${id}-as-clip`);
     clip.setAttribute("clipPathUnits", "userSpaceOnUse");
 
     for (const shape of shapes) {
-      const copy = shape.cloneNode(true) as Element;
+      const copy = shape.cloneNode(true);
+      if (!(copy instanceof Element)) continue;
       for (const name of PAINT_ATTRS) copy.removeAttribute(name);
       clip.append(copy);
     }

@@ -13,7 +13,7 @@
 -- tap MAC with it, and crypto.rs verifies against derive_key(master, "K2", uid).
 -- A tag left with a factory K2 reads fine and fails signature checks.
 --
--- Run from inside a quest devenv shell (which provides quest-keys and pm3):
+-- Run from inside a quest dev shell (which provides quest-keys and pm3):
 --     pm3 -l scripts/luascripts/quest_provision.lua -- --factory
 --
 -- Defaults: --master ./master.key, --keys-bin quest-keys (resolved from PATH).

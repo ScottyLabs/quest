@@ -1,0 +1,44 @@
+[[IgnoredVulns]]
+id = "RUSTSEC-2023-0071"
+reason = "Marvin is a timing attack on RSA decryption; rsa only signs Apple Wallet passes through pkpass's cms, and no fixed release exists"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0436"
+reason = "unmaintained advisory for paste, a compile-time proc macro under utoipa-axum with no runtime exposure"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0235"
+reason = "rkyv is only in the lockfile through rust_decimal's optional rkyv feature, which nothing in the workspace enables"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0387"
+reason = "crypto-bigint 0.5 sits under p256 and p384, which quest only uses to verify device and JWT signatures with public keys, and the fix is in the incompatible 0.7 line"
+
+# zip 4 comes from pkpass, which only writes pass archives and has no release on a fixed zip
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0367"
+reason = "extraction only, pkpass writes archives"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0368"
+reason = "extraction only, pkpass writes archives"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0369"
+reason = "extraction only, pkpass writes archives"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0429"
+reason = "extraction only, pkpass writes archives"
+
+[[IgnoredVulns]]
+id = "GHSA-8hxf-qr8p-62x4"
+reason = "AES entry reading only, pkpass writes unencrypted archives"
+
+[[IgnoredVulns]]
+id = "GHSA-m665-v7pm-7grj"
+reason = "parsing only, pkpass writes archives"
+
+[[IgnoredVulns]]
+id = "GHSA-q7v9-x93c-xqv3"
+reason = "extraction only, pkpass writes archives"

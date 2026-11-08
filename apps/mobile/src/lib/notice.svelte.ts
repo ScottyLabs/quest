@@ -6,16 +6,14 @@
  */
 export const notice = $state<{ current: string | null }>({ current: null });
 
-type Timer = number | undefined;
-
-let timer: Timer;
+let timer: ReturnType<typeof setTimeout> | undefined;
 
 export function warn(message: string, ms = 6000): void {
   clearTimeout(timer);
   notice.current = message;
   timer = setTimeout(() => {
     notice.current = null;
-  }, ms) as unknown as number;
+  }, ms);
 }
 
 export function dismiss(): void {

@@ -55,7 +55,7 @@ class Me {
 
   async #fetch(): Promise<void> {
     try {
-      this.#identity = await unwrap(await api.GET("/api/portal/me"));
+      this.#identity = unwrap(await api.GET("/api/portal/me"));
     } finally {
       this.#settled = true;
       this.#loading = null;

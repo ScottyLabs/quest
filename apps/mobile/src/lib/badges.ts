@@ -26,7 +26,20 @@ export interface Progress {
   finished: Set<string>;
 }
 
-export const BADGE_ROWS: BadgeRow[] = doc.rows as BadgeRow[];
+const METRICS: readonly Metric[] = ["challenges", "category", "gems"];
+
+function metric(value: string): Metric {
+  const found = METRICS.find((known) => known === value);
+  if (found === undefined) throw new Error(`unknown badge metric ${value}`);
+  return found;
+}
+
+export const BADGE_ROWS: BadgeRow[] = doc.rows.map((row) => ({
+  id: row.id,
+  label: row.label,
+  metric: metric(row.metric),
+  badges: row.badges,
+}));
 
 export function held(row: BadgeRow, badge: Badge, progress: Progress): boolean {
   if (row.metric === "category") {

@@ -34,6 +34,10 @@ export const metric = $state<{ id: Metric }>({ id: "gems" });
 
 const TTL = 60 * 1000;
 
+function isBoard(raw: unknown): raw is Board {
+  return typeof raw === "object" && raw !== null && "rows" in raw && Array.isArray(raw.rows);
+}
+
 function board(id: Metric): Resource<Board> {
   return new Resource<Board>({
     key: `quest.cache.leaderboard.${id}`,
@@ -44,22 +48,23 @@ function board(id: Metric): Resource<Board> {
       });
       if (!response.ok) throw new Error(`leaderboard responded ${response.status}`);
 
-      const body = data as Board | undefined;
-
       return {
-        metric: body?.metric ?? id,
-        cup: body?.cup ?? null,
-        you: body?.you ?? null,
-        rows: body?.rows ?? [],
+        metric: id,
+        cup: data?.cup ?? null,
+        you:
+          data?.you === undefined || data.you === null
+            ? null
+            : { ...data.you, community: data.you.community ?? null },
+        rows: (data?.rows ?? []).map((row) => ({
+          name: row.name,
+          rank: row.rank,
+          score: row.score,
+          you: row.you,
+          community: row.community ?? null,
+        })),
       };
     },
-    revive: (raw: unknown) => {
-      if (typeof raw !== "object" || raw === null) return null;
-
-      const cached = raw as Board;
-
-      return Array.isArray(cached.rows) ? cached : null;
-    },
+    revive: (raw: unknown) => (isBoard(raw) ? raw : null),
   });
 }
 

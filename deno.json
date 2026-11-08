@@ -1,8 +1,8 @@
 {
-  "workspace": ["./apps/mobile", "./apps/portal"],
+  "workspace": ["./apps/mobile", "./apps/portal", "./apps/poster-generator"],
   "nodeModulesDir": "auto",
   "tasks": {
-    "check": "deno task --cwd apps/mobile check && deno task --cwd apps/portal check",
+    "check": "deno task --cwd apps/mobile check && deno task --cwd apps/portal check && deno task --cwd apps/poster-generator check",
     "build": "deno task --cwd apps/mobile build && deno task --cwd apps/portal build",
     "dev": "deno task --cwd apps/mobile dev",
     "mobile": "deno task --cwd apps/mobile",
@@ -15,7 +15,7 @@
     "openapi-typescript": "npm:openapi-typescript@^7.13.0"
   },
   "exclude": [
-    ".devenv",
+    ".scottylabs",
     "target",
     "**/node_modules",
     "**/.svelte-kit",

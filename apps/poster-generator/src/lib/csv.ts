@@ -11,13 +11,11 @@ export interface Columns {
   code: string | null;
 }
 
-export function parseCsv(text: string): Sheet {
+function records(source: string): string[][] {
   const rows: string[][] = [];
   let field = "";
   let record: string[] = [];
   let quoted = false;
-
-  const source = text.replace(/^\uFEFF/u, "");
 
   for (let i = 0; i < source.length; i += 1) {
     const char = source[i];
@@ -51,6 +49,11 @@ export function parseCsv(text: string): Sheet {
     rows.push(record);
   }
 
+  return rows;
+}
+
+export function parseCsv(text: string): Sheet {
+  const rows = records(text.replace(/^\uFEFF/u, ""));
   const [head, ...body] = rows.filter((cells) => cells.some((cell) => cell.trim() !== ""));
   if (head === undefined) return { headers: [], rows: [] };
 

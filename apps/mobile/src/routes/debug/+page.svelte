@@ -22,7 +22,7 @@
           .map(([key, value]) => `${key}: ${String(value)}`)
           .join("\n")
       : running
-        ? "running…"
+        ? "running\u2026"
         : "-"}</pre>
 
   <pre>signedIn: {session.signedIn}

@@ -8,14 +8,26 @@ export interface SessionStorage {
 
 const STORAGE_KEY = "quest.session";
 
+function isSession(value: unknown): value is Session {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "id" in value &&
+    typeof value.id === "string" &&
+    "expiresAt" in value &&
+    typeof value.expiresAt === "number" &&
+    "user" in value &&
+    typeof value.user === "object" &&
+    value.user !== null &&
+    "andrewId" in value.user &&
+    typeof value.user.andrewId === "string"
+  );
+}
+
 function parse(raw: string): Session | null {
   try {
-    const parsed = JSON.parse(raw) as Session;
-    const usable =
-      typeof parsed?.id === "string" &&
-      typeof parsed.expiresAt === "number" &&
-      typeof parsed.user?.andrewId === "string";
-    return usable ? parsed : null;
+    const parsed: unknown = JSON.parse(raw);
+    return isSession(parsed) ? parsed : null;
   } catch {
     return null;
   }

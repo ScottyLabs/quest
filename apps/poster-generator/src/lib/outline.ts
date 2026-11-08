@@ -38,7 +38,7 @@ export async function loadFonts(): Promise<void> {
 }
 
 function pick(family: string, weight: number): Font | null {
-  const name = family.split(",")[0]?.trim().replace(/["']/gu, "").toLowerCase() ?? "";
+  const name = family.split(",")[0]?.trim().replaceAll(/["']/gu, "").toLowerCase() ?? "";
   const exact = loaded.get(key(name, weight));
   if (exact !== undefined) return exact;
 
@@ -60,12 +60,12 @@ interface Style {
 
 function styleOf(element: SVGTextElement): Style | null {
   const computed = getComputedStyle(element);
-  const weight = Number.parseInt(computed.fontWeight, 10);
+  const weight = Number(computed.fontWeight);
   const font = pick(computed.fontFamily, Number.isFinite(weight) ? weight : 400);
   if (font === null) return null;
 
-  const size = Number.parseFloat(computed.fontSize);
-  const spacing = Number.parseFloat(computed.letterSpacing);
+  const size = Number(computed.fontSize.replace(/px$/u, ""));
+  const spacing = Number(computed.letterSpacing.replace(/px$/u, ""));
 
   return {
     font,
@@ -104,7 +104,7 @@ export function textWidth(
   const style: Style = { font, size, tracking: 0, fill: "black", opacity: null, anchor: "start" };
   return runWidth(
     style,
-    [...text].map((char) => font.charToGlyph(char)),
+    Array.from(text, (char) => font.charToGlyph(char)),
   );
 }
 
@@ -158,22 +158,22 @@ function outlineStraight(element: SVGTextElement, style: Style): SVGGElement | n
   const spans = element.querySelectorAll("tspan");
   const rows = spans.length === 0 ? [element] : [...spans];
 
-  let cursorY = Number.parseFloat(element.getAttribute("y") ?? "0");
+  let cursorY = Number(element.getAttribute("y") ?? "0");
   let started = false;
 
   for (const row of rows) {
     const text = (row.textContent ?? "").trim();
-    const x = Number.parseFloat(row.getAttribute("x") ?? element.getAttribute("x") ?? "0");
+    const x = Number(row.getAttribute("x") ?? element.getAttribute("x") ?? "0");
     const y = row.getAttribute("y");
     const dy = row.getAttribute("dy");
 
-    if (y !== null) cursorY = Number.parseFloat(y);
-    else if (dy !== null && started) cursorY += Number.parseFloat(dy);
+    if (y !== null) cursorY = Number(y);
+    else if (dy !== null && started) cursorY += Number(dy);
 
     started = true;
     if (text === "") continue;
 
-    const glyphs = [...text].map((char) => style.font.charToGlyph(char));
+    const glyphs = Array.from(text, (char) => style.font.charToGlyph(char));
     const d = runPath(style, glyphs, x + offsetFor(style.anchor, runWidth(style, glyphs)), cursorY);
     if (d === null) return null;
 
@@ -193,9 +193,9 @@ function outlineCurved(
   if (text === "") return group;
 
   const total = path.getTotalLength();
-  const share = Number.parseFloat(element.getAttribute("data-curve-anchor") ?? "50");
+  const share = Number((element.dataset.curveAnchor ?? "50").replace(/%$/u, ""));
   const centre = (total * (Number.isFinite(share) ? share : 50)) / 100;
-  const glyphs = [...text].map((char) => style.font.charToGlyph(char));
+  const glyphs = Array.from(text, (char) => style.font.charToGlyph(char));
 
   let cursor = centre - runWidth(style, glyphs) / 2;
   for (const [index, glyph] of glyphs.entries()) {
@@ -233,7 +233,7 @@ export function outlineText(root: SVGSVGElement): void {
       continue;
     }
 
-    const selector = element.getAttribute("data-curve");
+    const selector = element.dataset.curve ?? null;
     const guide = selector === null ? null : root.querySelector<SVGPathElement>(selector);
     const group =
       guide === null ? outlineStraight(element, style) : outlineCurved(element, style, guide);

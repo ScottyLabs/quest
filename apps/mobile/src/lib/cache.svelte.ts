@@ -9,7 +9,7 @@ export interface ResourceOptions<T> {
   key: string;
   ttl: number;
   load: () => Promise<T>;
-  revive?: (raw: unknown) => T | null;
+  revive: (raw: unknown) => T | null;
 }
 
 export class Resource<T> {
@@ -84,13 +84,14 @@ export class Resource<T> {
     this.#hydrated = true;
 
     const raw = globalThis.localStorage?.getItem(this.#options.key);
-    if (!raw) return;
+    if (raw === undefined || raw === null || raw === "") return;
 
     try {
-      const entry = JSON.parse(raw) as Entry<unknown>;
-      if (typeof entry?.at !== "number") return;
+      const entry: unknown = JSON.parse(raw);
+      if (typeof entry !== "object" || entry === null) return;
+      if (!("at" in entry) || typeof entry.at !== "number" || !("data" in entry)) return;
 
-      const revived = this.#options.revive?.(entry.data) ?? (entry.data as T);
+      const revived = this.#options.revive(entry.data);
       if (revived === null) return;
 
       this.#data = revived;

@@ -1,17 +1,14 @@
-const SVG_NS = "http://www.w3.org/2000/svg";
-
 const HOLD =
   "position:absolute;left:-10000px;top:0;width:1024px;height:1024px;visibility:hidden;overflow:hidden;pointer-events:none";
 
 function root(text: string): SVGSVGElement | null {
   const parsed = new DOMParser().parseFromString(text, "image/svg+xml");
-  const found = parsed.documentElement as Element | null;
+  const found = parsed.documentElement;
 
-  if (found === null) return null;
-  if (parsed.getElementsByTagName("parsererror").length > 0) return null;
-  if (found.namespaceURI !== SVG_NS || found.localName !== "svg") return null;
+  if (parsed.querySelector("parsererror") !== null) return null;
+  if (!(found instanceof SVGSVGElement)) return null;
 
-  return found as SVGSVGElement;
+  return found;
 }
 
 function fit(live: SVGSVGElement): boolean {
@@ -34,8 +31,8 @@ export function rasterWrapped(text: string): boolean {
 
   if (source === null) return false;
 
-  const images = source.getElementsByTagName("image").length;
-  const patterns = source.getElementsByTagName("pattern").length;
+  const images = source.querySelectorAll("image").length;
+  const patterns = source.querySelectorAll("pattern").length;
 
   return images > 0 && patterns > 0;
 }
@@ -52,7 +49,7 @@ export function normalizeSvgText(text: string): string | null {
   document.body.append(hold);
 
   try {
-    const live = document.importNode(source, true) as SVGSVGElement;
+    const live = document.importNode(source, true);
 
     hold.append(live);
 

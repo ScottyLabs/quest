@@ -18,4 +18,3 @@ sea-orm = { version = "=2.0.0-rc.37", default-features = false, features = [
   "with-json",
   "with-uuid",
 ] }
-serde = { version = "1.0.228", features = ["derive"] }

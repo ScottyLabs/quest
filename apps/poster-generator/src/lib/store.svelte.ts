@@ -166,8 +166,10 @@ class Posters {
     if (codes === null) return;
 
     try {
-      for (const [key, code] of Object.entries(JSON.parse(codes) as Record<string, string>)) {
-        this.#codes.set(key, code);
+      const parsed: unknown = JSON.parse(codes);
+      if (typeof parsed !== "object" || parsed === null) return;
+      for (const [key, code] of Object.entries(parsed)) {
+        if (typeof code === "string") this.#codes.set(key, code);
       }
     } catch {}
   }
@@ -228,7 +230,7 @@ class Posters {
   }
 
   #taken(): string[] {
-    return this.challenges.map((challenge) => challenge.code).filter(codeOk);
+    return this.challenges.map((challenge) => challenge.code).filter((code) => codeOk(code));
   }
 
   #persist(): void {

@@ -1,6 +1,11 @@
 const TAG = /^[0-9A-Za-z_]$/u;
 const DIGIT = /^[0-9]$/u;
 
+interface Read {
+  text: string;
+  end: number;
+}
+
 function tagAt(chars: string[], at: number): string | null {
   let end = at + 1;
 
@@ -18,137 +23,151 @@ function tagAt(chars: string[], at: number): string | null {
   return chars.slice(at, end + 1).join("");
 }
 
+function lineCommentEnd(chars: string[], at: number): number {
+  let end = at;
+
+  while (end < chars.length && chars[end] !== "\n") end += 1;
+
+  return end;
+}
+
+function blockCommentEnd(chars: string[], at: number): number {
+  let depth = 1;
+  let end = at + 2;
+
+  while (end < chars.length && depth > 0) {
+    if (chars[end] === "*" && chars[end + 1] === "/") {
+      depth -= 1;
+      end += 2;
+    } else if (chars[end] === "/" && chars[end + 1] === "*") {
+      depth += 1;
+      end += 2;
+    } else {
+      end += 1;
+    }
+  }
+
+  return end;
+}
+
+function readSingleQuoted(chars: string[], at: number, escaped: boolean): Read {
+  let text = "'";
+  let end = at + 1;
+
+  while (end < chars.length) {
+    const inside = chars[end] ?? "";
+
+    if (escaped && inside === "\\" && end + 1 < chars.length) {
+      text += inside + (chars[end + 1] ?? "");
+      end += 2;
+      continue;
+    }
+
+    if (inside === "'") {
+      if (chars[end + 1] !== "'") return { text: `${text}'`, end: end + 1 };
+
+      text += "''";
+      end += 2;
+      continue;
+    }
+
+    text += inside;
+    end += 1;
+  }
+
+  return { text, end };
+}
+
+function readDoubleQuoted(chars: string[], at: number): Read {
+  let text = '"';
+  let end = at + 1;
+
+  while (end < chars.length) {
+    const inside = chars[end] ?? "";
+
+    text += inside;
+    end += 1;
+
+    if (inside !== '"') continue;
+    if (chars[end] !== '"') return { text, end };
+
+    text += '"';
+    end += 1;
+  }
+
+  return { text, end };
+}
+
+function readDollarQuoted(chars: string[], at: number, tag: string): Read {
+  const width = Array.from(tag).length;
+  let text = tag;
+  let end = at + width;
+
+  while (end < chars.length) {
+    if (chars[end] === "$" && chars.slice(end, end + width).join("") === tag) {
+      return { text: text + tag, end: end + width };
+    }
+
+    text += chars[end] ?? "";
+    end += 1;
+  }
+
+  return { text, end };
+}
+
+function readQuoted(chars: string[], at: number, current: string): Read | null {
+  const here = chars[at];
+
+  if (here === "'") {
+    const previous = current.slice(-1);
+    return readSingleQuoted(chars, at, previous === "E" || previous === "e");
+  }
+
+  if (here === '"') return readDoubleQuoted(chars, at);
+
+  if (here === "$") {
+    const tag = tagAt(chars, at);
+    return tag === null ? null : readDollarQuoted(chars, at, tag);
+  }
+
+  return null;
+}
+
 export function split(source: string): string[] {
-  const chars = [...source];
+  const chars = Array.from(source);
   const out: string[] = [];
   let current = "";
   let at = 0;
-  let comments = 0;
+
+  const flush = () => {
+    const statement = current.trim();
+    if (statement !== "") out.push(statement);
+    current = "";
+  };
 
   while (at < chars.length) {
-    const here = chars[at];
+    const here = chars[at] ?? "";
+    const next = chars[at + 1];
 
-    if (here === undefined) break;
-
-    if (comments > 0) {
-      if (here === "*" && chars[at + 1] === "/") {
-        comments -= 1;
-        at += 2;
-        continue;
-      }
-
-      if (here === "/" && chars[at + 1] === "*") {
-        comments += 1;
-        at += 2;
-        continue;
-      }
-
-      at += 1;
+    if (here === "-" && next === "-") {
+      at = lineCommentEnd(chars, at);
       continue;
     }
 
-    if (here === "-" && chars[at + 1] === "-") {
-      while (at < chars.length && chars[at] !== "\n") at += 1;
+    if (here === "/" && next === "*") {
+      at = blockCommentEnd(chars, at);
       continue;
     }
 
-    if (here === "/" && chars[at + 1] === "*") {
-      comments = 1;
-      at += 2;
+    const quoted = readQuoted(chars, at, current);
+    if (quoted !== null) {
+      current += quoted.text;
+      at = quoted.end;
       continue;
-    }
-
-    if (here === "'") {
-      const previous = current.slice(-1);
-      const escaped = previous === "E" || previous === "e";
-
-      current += here;
-      at += 1;
-
-      while (at < chars.length) {
-        const inside = chars[at];
-
-        if (inside === undefined) break;
-
-        if (escaped && inside === "\\" && at + 1 < chars.length) {
-          current += inside + (chars[at + 1] ?? "");
-          at += 2;
-          continue;
-        }
-
-        if (inside === "'") {
-          if (chars[at + 1] === "'") {
-            current += "''";
-            at += 2;
-            continue;
-          }
-
-          current += "'";
-          at += 1;
-          break;
-        }
-
-        current += inside;
-        at += 1;
-      }
-
-      continue;
-    }
-
-    if (here === '"') {
-      current += here;
-      at += 1;
-
-      while (at < chars.length) {
-        const inside = chars[at];
-
-        if (inside === undefined) break;
-
-        current += inside;
-        at += 1;
-
-        if (inside === '"') {
-          if (chars[at] === '"') {
-            current += '"';
-            at += 1;
-            continue;
-          }
-
-          break;
-        }
-      }
-
-      continue;
-    }
-
-    if (here === "$") {
-      const tag = tagAt(chars, at);
-
-      if (tag !== null) {
-        const width = [...tag].length;
-
-        current += tag;
-        at += width;
-
-        while (at < chars.length) {
-          if (chars[at] === "$" && chars.slice(at, at + width).join("") === tag) {
-            current += tag;
-            at += width;
-            break;
-          }
-
-          current += chars[at] ?? "";
-          at += 1;
-        }
-
-        continue;
-      }
     }
 
     if (here === ";") {
-      if (current.trim() !== "") out.push(current.trim());
-
-      current = "";
+      flush();
       at += 1;
       continue;
     }
@@ -157,7 +176,7 @@ export function split(source: string): string[] {
     at += 1;
   }
 
-  if (current.trim() !== "") out.push(current.trim());
+  flush();
 
   return out;
 }

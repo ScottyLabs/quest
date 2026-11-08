@@ -1,6 +1,5 @@
 /// <reference types="vite/client" />
 
-import type { components } from "$lib/api/schema";
 import {
   deviceProof,
   devicePublicKey,
@@ -21,17 +20,7 @@ export const apiBase =
 export const apiUrl = (path: string): string =>
   `${apiBase}${path.startsWith("/") ? path : `/${path}`}`;
 
-type UserBody = components["schemas"]["UserView"];
-
-type LogoutBody = components["schemas"]["LogoutResponse"];
-
-type ErrorBody = components["schemas"]["AuthErrBody"];
-
-type ChallengeBody = components["schemas"]["Challenge"];
-
-type TicketBody = components["schemas"]["Ticket"];
-
-type EnrolledBody = components["schemas"]["Enrolled"];
+type JsonFields = Partial<Record<string, unknown>>;
 
 const KNOWN_CODES: readonly AuthErrorCode[] = [
   "auth_not_configured",
@@ -56,35 +45,40 @@ const KNOWN_CODES: readonly AuthErrorCode[] = [
   "no_andrew_id",
 ];
 
-const UNPROOFED: readonly string[] = [
+const UNPROOFED: ReadonlySet<string> = new Set([
   "/api/health",
   "/auth/challenge",
   "/auth/device",
   "/auth/device/enroll",
   "/auth/login",
-];
+]);
 
-async function readJson<T>(response: Response): Promise<T | undefined> {
+function isFields(value: unknown): value is JsonFields {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+async function readJson(response: Response): Promise<JsonFields | undefined> {
   try {
-    return (await response.json()) as T;
+    const body: unknown = await response.json();
+    return isFields(body) ? body : undefined;
   } catch {
     return undefined;
   }
 }
 
-export function errorCode(raw: string | null | undefined): AuthErrorCode {
+export function errorCode(raw: unknown): AuthErrorCode {
   return KNOWN_CODES.find((known) => known === raw) ?? "unknown";
 }
 
 export async function responseError(response: Response): Promise<AuthErrorCode> {
-  return errorCode((await readJson<ErrorBody>(response))?.error);
+  return errorCode((await readJson(response))?.["error"]);
 }
 
 export async function signed(request: Request, id: string | null): Promise<Response> {
   const headers = new Headers(request.headers);
 
   if (id !== null) headers.set("authorization", `Bearer ${id}`);
-  if (!UNPROOFED.includes(new URL(request.url).pathname)) {
+  if (!UNPROOFED.has(new URL(request.url).pathname)) {
     headers.set("x-device-proof", await deviceProof(request.method, request.url));
   }
 
@@ -99,26 +93,28 @@ export async function signed(request: Request, id: string | null): Promise<Respo
   return response;
 }
 
-export async function send(
-  path: string,
-  id: string | null,
-  init: RequestInit = {},
-): Promise<Response> {
+export function send(path: string, id: string | null, init: RequestInit = {}): Promise<Response> {
   return signed(new Request(apiUrl(path), init), id);
 }
 
-function parseUser(raw: UserBody | undefined): QuestUser {
-  if (typeof raw?.name !== "string" || typeof raw.andrew_id !== "string") {
+function parseUser(raw: JsonFields | undefined): QuestUser {
+  const name = raw?.["name"];
+  const andrewId = raw?.["andrew_id"];
+  if (typeof name !== "string" || typeof andrewId !== "string") {
     throw new AuthError("unknown", "malformed user");
   }
 
+  const email = raw?.["email"];
+  const groups = raw?.["groups"];
   return {
-    name: raw.name,
-    andrewId: raw.andrew_id,
-    email: typeof raw.email === "string" ? raw.email : null,
-    groups: Array.isArray(raw.groups) ? raw.groups : [],
-    admin: raw.admin === true,
-    staff: raw.staff === true,
+    name,
+    andrewId,
+    email: typeof email === "string" ? email : null,
+    groups: Array.isArray(groups)
+      ? groups.filter((group): group is string => typeof group === "string")
+      : [],
+    admin: raw?.["admin"] === true,
+    staff: raw?.["staff"] === true,
   };
 }
 
@@ -126,12 +122,12 @@ async function attest(): Promise<Response> {
   const challenge = await send("/auth/challenge", null);
   if (!challenge.ok) throw new AuthError(await responseError(challenge));
 
-  const nonce = (await readJson<ChallengeBody>(challenge))?.nonce;
+  const nonce = (await readJson(challenge))?.["nonce"];
   if (typeof nonce !== "string" || nonce.length === 0) {
     throw new AuthError("nonce_invalid", "challenge carried no nonce");
   }
 
-  return await send("/auth/device", null, {
+  return send("/auth/device", null, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
@@ -152,7 +148,7 @@ export async function loginTicket(): Promise<string> {
 
   if (!response.ok) throw new AuthError(await responseError(response));
 
-  const ticket = (await readJson<TicketBody>(response))?.ticket;
+  const ticket = (await readJson(response))?.["ticket"];
   if (typeof ticket !== "string" || ticket.length === 0) {
     throw new AuthError("device_unverified", "server issued no ticket");
   }
@@ -168,7 +164,7 @@ export async function enrollDevice(id: string): Promise<boolean> {
   });
 
   if (!response.ok) return false;
-  return (await readJson<EnrolledBody>(response))?.enrolled === true;
+  return (await readJson(response))?.["enrolled"] === true;
 }
 
 export async function fetchStatus(id: string): Promise<QuestUser | null> {
@@ -176,13 +172,13 @@ export async function fetchStatus(id: string): Promise<QuestUser | null> {
   if (response.status === 401) return null;
   if (!response.ok) throw new AuthError(await responseError(response));
 
-  return parseUser(await readJson<UserBody>(response));
+  return parseUser(await readJson(response));
 }
 
 export async function endSession(id: string): Promise<string | null> {
   const response = await send("/auth/logout", id, { method: "POST" });
   if (!response.ok) return null;
 
-  const raw = await readJson<LogoutBody>(response);
-  return typeof raw?.end_session_url === "string" ? raw.end_session_url : null;
+  const endSessionUrl = (await readJson(response))?.["end_session_url"];
+  return typeof endSessionUrl === "string" ? endSessionUrl : null;
 }

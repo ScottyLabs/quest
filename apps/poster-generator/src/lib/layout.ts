@@ -1,8 +1,10 @@
 const DONE = "data-centred";
 
 function box(element: Element): DOMRect | null {
+  if (!(element instanceof SVGGraphicsElement)) return null;
+
   try {
-    return (element as SVGGraphicsElement).getBBox();
+    return element.getBBox();
   } catch {
     return null;
   }

@@ -88,7 +88,7 @@
   <p>
     Every table your roles reach, row by row. Edits go straight to Postgres through the same
     permission checks the app uses, so a wrong value here is a wrong value in the game. Coin values
-    and item costs feed derived balances — changing one rewrites what everybody already earned.
+    and item costs feed derived balances &mdash; changing one rewrites what everybody already earned.
   </p>
 </header>
 

@@ -6,7 +6,7 @@ const SHELF = "commemorations";
 
 async function shelf(): Promise<void> {
   await Filesystem.mkdir({ path: SHELF, directory: Directory.Data, recursive: true }).catch(
-    () => undefined,
+    () => {},
   );
 }
 

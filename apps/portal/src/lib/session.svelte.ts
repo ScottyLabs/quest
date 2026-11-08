@@ -28,9 +28,7 @@ function save(stored: Stored | null): void {
   try {
     if (stored === null) localStorage.removeItem(STORE_KEY);
     else localStorage.setItem(STORE_KEY, JSON.stringify(stored));
-  } catch {
-    return;
-  }
+  } catch {}
 }
 
 class Session {

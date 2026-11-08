@@ -11,7 +11,7 @@
   function oneLine(sql: string): string {
     const flat = sql.replace(/\s+/gu, " ").trim();
 
-    return flat.length > 140 ? `${flat.slice(0, 139)}…` : flat;
+    return flat.length > 140 ? `${flat.slice(0, 139)}\u2026` : flat;
   }
 </script>
 

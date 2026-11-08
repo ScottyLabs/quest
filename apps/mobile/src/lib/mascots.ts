@@ -9,6 +9,18 @@ export type Dorm =
   | "mudge"
   | "res";
 
+export const DORMS: readonly Dorm[] = [
+  "morewood",
+  "etower",
+  "whesco",
+  "mcgillboss",
+  "hammershlag",
+  "donner",
+  "stever",
+  "mudge",
+  "res",
+];
+
 export interface Mascot {
   slug: string;
   dorm: Dorm;

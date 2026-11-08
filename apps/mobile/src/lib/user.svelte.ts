@@ -2,7 +2,7 @@ import { browser } from "$app/environment";
 import { api } from "$lib/api/client";
 import type { components } from "$lib/api/schema";
 import { session } from "$lib/auth";
-import { MASCOTS } from "$lib/mascots";
+import { DORMS, MASCOTS } from "$lib/mascots";
 import type { Dorm } from "$lib/mascots";
 
 export type Profile = Omit<components["schemas"]["Profile"], "dorm"> & {
@@ -85,7 +85,10 @@ class ProfileStore {
 
     try {
       const { data } = await api.GET("/api/users/me");
-      const found = (data as Profile | undefined) ?? null;
+      const found: Profile | null =
+        data === undefined
+          ? null
+          : { ...data, dorm: DORMS.find((dorm) => dorm === data.dorm) ?? null };
 
       this.#profile = found;
       this.#chosen = null;

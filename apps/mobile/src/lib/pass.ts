@@ -70,7 +70,7 @@ export async function passToken(): Promise<string> {
 function base64(bytes: Uint8Array): string {
   let binary = "";
   for (let at = 0; at < bytes.length; at += 8192) {
-    binary += String.fromCharCode(...bytes.subarray(at, at + 8192));
+    binary += String.fromCodePoint(...bytes.subarray(at, at + 8192));
   }
   return btoa(binary);
 }
@@ -83,7 +83,7 @@ async function sha256(bytes: Uint8Array<ArrayBuffer>): Promise<string> {
 function decode(encoded: string): Uint8Array<ArrayBuffer> {
   const binary = atob(encoded);
   const out = new Uint8Array(new ArrayBuffer(binary.length));
-  for (let at = 0; at < binary.length; at += 1) out[at] = binary.charCodeAt(at);
+  for (let at = 0; at < binary.length; at += 1) out[at] = binary.codePointAt(at) ?? 0;
   return out;
 }
 

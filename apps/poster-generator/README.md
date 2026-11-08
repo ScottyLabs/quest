@@ -11,7 +11,7 @@ deno task posters check
 
 ## Templates
 
-One SVG per category in `src/lib/templates/`, named after the **slugified** category — lowercase,
+One SVG per category in `src/lib/templates/`, named after the **slugified** category - lowercase,
 apostrophes dropped, other non-alphanumeric runs collapsed to `-`:
 
 | Category | File |
@@ -27,19 +27,19 @@ A category with no matching file is listed as missing in the UI and never printe
 
 ## Placeholders
 
-Write `{{NAME}}` anywhere in the SVG — text nodes or attribute values. Names are case-insensitive,
+Write `{{NAME}}` anywhere in the SVG - text nodes or attribute values. Names are case-insensitive,
 values are XML-escaped, and unknown placeholders are left untouched so typos stay visible.
 
 | Placeholder | Source |
 | ----------------- | ----------------------------------------- |
 | `{{NAME}}` | `Challenge Name` |
-| `{{CODE}}` | `Code` — four chars, `0-9` and `A-Z` |
+| `{{CODE}}` | `Code` - four chars, `0-9` and `A-Z` |
 | `{{CATEGORY}}` | `Category` |
 | `{{TAGLINE}}` | `Tagline`, when present |
 | `{{LOCATION}}` | `Challenge Marker Location`, when present |
 | `{{DESCRIPTION}}` | `Description`, when present |
 
-The root `<svg width height>` sets the PDF page size — units may be `in`, `mm`, `cm`, `pt` or `px`.
+The root `<svg width height>` sets the PDF page size - units may be `in`, `mm`, `cm`, `pt` or `px`.
 With no width/height the `viewBox` is read as pixels; with neither, pages fall back to 18x24in.
 
 ## CSV
@@ -55,7 +55,7 @@ Note that these four-character codes are the human-facing poster codes, unrelate
 ## Output
 
 **Download PDF** vectorises the SVGs via `svg2pdf.js`. Text stays selectable, but only the standard
-PDF fonts are embedded — convert text to paths in your templates if you use a custom typeface.
+PDF fonts are embedded - convert text to paths in your templates if you use a custom typeface.
 
 **Print** hands the same posters to the browser, which embeds real fonts. It uses the first poster's
 dimensions for `@page`, so mixed template sizes should go through Download instead.

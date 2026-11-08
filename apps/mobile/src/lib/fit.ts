@@ -3,7 +3,7 @@ const FLOOR = 9;
 export function fit(node: HTMLElement, _text: string) {
   const run = () => {
     node.style.removeProperty("font-size");
-    let size = Number.parseFloat(globalThis.getComputedStyle(node).fontSize);
+    let size = Number(globalThis.getComputedStyle(node).fontSize.replace("px", ""));
 
     const spills = () => {
       const range = document.createRange();
@@ -23,7 +23,9 @@ export function fit(node: HTMLElement, _text: string) {
 
   return {
     update: run,
-    destroy: () => globalThis.removeEventListener("resize", run),
+    destroy: () => {
+      globalThis.removeEventListener("resize", run);
+    },
   };
 }
 
@@ -52,7 +54,7 @@ export function arc(node: SVGTextElement, _text: string) {
     const width = node.getComputedTextLength();
     if (room === 0 || width === 0 || width <= room) return;
 
-    const size = Number.parseFloat(globalThis.getComputedStyle(node).fontSize);
+    const size = Number(globalThis.getComputedStyle(node).fontSize.replace("px", ""));
     if (room / width < SQUEEZE) {
       node.style.visibility = "hidden";
       return;
@@ -75,6 +77,8 @@ export function arc(node: SVGTextElement, _text: string) {
 
   return {
     update: run,
-    destroy: () => globalThis.removeEventListener("resize", run),
+    destroy: () => {
+      globalThis.removeEventListener("resize", run);
+    },
   };
 }

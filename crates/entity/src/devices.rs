@@ -7,7 +7,7 @@ pub struct Model {
     pub public_key: String,
     pub user_id: Uuid,
     pub created_at: DateTimeWithTimeZone,
-    /// Display only — client-influenced, nothing keys off it.
+    /// Display only, client-influenced, nothing keys off it.
     #[sea_orm(column_type = "Text", nullable)]
     pub label: Option<String>,
 }

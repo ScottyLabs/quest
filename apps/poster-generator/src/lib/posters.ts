@@ -1,8 +1,8 @@
-const raw = import.meta.glob("./templates/*.svg", {
+const raw = import.meta.glob<string>("./templates/*.svg", {
   query: "?raw",
   import: "default",
   eager: true,
-}) as Record<string, string>;
+});
 
 export const TEMPLATES: Record<string, string> = Object.fromEntries(
   Object.entries(raw).map(([path, svg]) => [
@@ -45,7 +45,7 @@ const TWO_WAY = /\s*<[-\u2010-\u2015]+>\s*/gu;
 export const ARROW_GLYPH = "\u2194";
 
 export function typeset(value: string): string {
-  return value.replace(TWO_WAY, ` ${ARROW_GLYPH} `).replace(/\s+/gu, " ").trim();
+  return value.replaceAll(TWO_WAY, ` ${ARROW_GLYPH} `).replaceAll(/\s+/gu, " ").trim();
 }
 
 export function wrapWords(value: string, fits: (line: string) => boolean): string[] {
@@ -138,9 +138,9 @@ const CODE_SPACE = 36 ** CODE_LENGTH;
 export function slugify(value: string): string {
   return value
     .toLowerCase()
-    .replace(/['\u2019\u02BC]/gu, "")
-    .replace(/[^a-z0-9]+/gu, "-")
-    .replace(/^-+|-+$/gu, "");
+    .replaceAll(/['\u2019\u02BC]/gu, "")
+    .replaceAll(/[^a-z0-9]+/gu, "-")
+    .replaceAll(/^-+|-+$/gu, "");
 }
 
 export function templateFor(category: string): string | null {
@@ -154,7 +154,7 @@ export function codeOk(code: string): boolean {
 export function cleanCode(code: string): string {
   return code
     .toUpperCase()
-    .replace(/[^0-9A-Z]/gu, "")
+    .replaceAll(/[^0-9A-Z]/gu, "")
     .slice(0, CODE_LENGTH);
 }
 
@@ -169,17 +169,17 @@ export function nextCode(taken: Iterable<string>): string {
 
 function escapeXml(value: string): string {
   return value
-    .replace(/&/gu, "&amp;")
-    .replace(/</gu, "&lt;")
-    .replace(/>/gu, "&gt;")
-    .replace(/"/gu, "&quot;")
-    .replace(/'/gu, "&apos;");
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&apos;");
 }
 
 export function fill(svg: string, values: Record<string, string>): string {
   const lookup = new Map(Object.entries(values).map(([key, value]) => [key.toUpperCase(), value]));
 
-  return svg.replace(/\{\{\s*([A-Za-z_][A-Za-z0-9_]*)\s*\}\}/gu, (whole, key: string) => {
+  return svg.replaceAll(/\{\{\s*([A-Za-z_][A-Za-z0-9_]*)\s*\}\}/gu, (whole, key: string) => {
     const value = lookup.get(key.toUpperCase());
     return value === undefined ? whole : escapeXml(value);
   });
@@ -227,8 +227,11 @@ export function pageSize(svg: string): PageSize | null {
   if (open === null) return null;
   const tag = open[0];
 
+  // callers pass literal attribute names
   const attr = (name: string): string | null =>
+    // nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp
     new RegExp(`\\b${name}\\s*=\\s*"([^"]*)"`, "iu").exec(tag)?.[1] ??
+    // nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp
     new RegExp(`\\b${name}\\s*=\\s*'([^']*)'`, "iu").exec(tag)?.[1] ??
     null;
 

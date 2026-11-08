@@ -101,7 +101,21 @@ export async function uploadAsset(kind: string, file: File): Promise<Uploaded> {
     throw failure(response, await response.json().catch(() => null));
   }
 
-  return (await response.json()) as Uploaded;
+  const body: unknown = await response.json();
+  if (!isUploaded(body)) throw failure(response, body);
+
+  return body;
+}
+
+function isUploaded(value: unknown): value is Uploaded {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "key" in value &&
+    typeof value.key === "string" &&
+    "url" in value &&
+    typeof value.url === "string"
+  );
 }
 
 type Result<T> = { data?: T; error?: unknown; response: Response };

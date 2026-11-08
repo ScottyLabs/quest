@@ -69,7 +69,12 @@ function mount(svg: string): { element: SVGSVGElement; dispose: () => void } {
   if (element === null) throw new Error("template has no <svg> root element");
 
   document.body.append(host);
-  return { element, dispose: () => host.remove() };
+  return {
+    element,
+    dispose: () => {
+      host.remove();
+    },
+  };
 }
 
 export async function buildPdf(
@@ -82,9 +87,8 @@ export async function buildPdf(
   const [kit] = await Promise.all([loadKit(), loadFonts()]);
   const doc = kit.create(pageSize(first.svg) ?? FALLBACK_SIZE);
 
-  for (let index = 0; index < posters.length; index += 1) {
-    const poster = posters[index];
-    if (poster === undefined) continue;
+  await posters.reduce(async (previous, poster, index) => {
+    await previous;
 
     const size = pageSize(poster.svg) ?? FALLBACK_SIZE;
     if (index > 0) doc.addPage([size.width, size.height], orientationOf(size));
@@ -102,7 +106,7 @@ export async function buildPdf(
 
     onProgress?.({ done: index + 1, total: posters.length });
     await yieldToPaint();
-  }
+  }, Promise.resolve());
 
   return doc.output("blob");
 }
@@ -113,7 +117,9 @@ export function download(blob: Blob, filename: string): void {
   link.href = url;
   link.download = filename;
   link.click();
-  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+  }, 10_000);
 }
 
 export function printPosters(posters: readonly Poster[]): void {
@@ -132,22 +138,21 @@ export function printPosters(posters: readonly Poster[]): void {
     return;
   }
 
-  doc.open();
-  doc.write(`<!doctype html><html><head><meta charset="utf-8"><style>
+  doc.head.innerHTML = `<meta charset="utf-8"><style>
     @page { size: ${size.width}pt ${size.height}pt; margin: 0; }
     html, body { margin: 0; padding: 0; }
     .sheet { break-after: page; page-break-after: always; overflow: hidden; }
     .sheet:last-child { break-after: auto; page-break-after: auto; }
     .sheet svg { display: block; width: 100%; height: 100%; }
-  </style></head><body>${posters
-    .map((poster) => `<div class="sheet">${poster.svg}</div>`)
-    .join("")}</body></html>`);
-  doc.close();
+  </style>`;
+  doc.body.innerHTML = posters.map((poster) => `<div class="sheet">${poster.svg}</div>`).join("");
 
   const run = () => {
     frame.contentWindow?.focus();
     frame.contentWindow?.print();
-    setTimeout(() => frame.remove(), 60_000);
+    setTimeout(() => {
+      frame.remove();
+    }, 60_000);
   };
 
   if (doc.readyState === "complete") run();

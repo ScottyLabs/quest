@@ -35,23 +35,14 @@
           android = import ./nix/android.nix { inherit pkgs; };
           ios = import ./nix/ios-toolchain.nix { inherit pkgs; };
 
-          questSrc = lib.fileset.toSource {
-            root = ./.;
-            fileset = lib.fileset.unions [
-              ./Cargo.toml
-              ./Cargo.lock
-              ./crates/quest
-              ./crates/entity
-              ./crates/migration
-            ];
-          };
-
           webSrc = lib.fileset.toSource {
             root = ./.;
             fileset = lib.fileset.unions [
               ./deno.json
               ./deno.lock
               ./apps/portal
+              # workspace member, so deno.lock lists its dependencies
+              ./apps/poster-generator/deno.json
               (lib.fileset.difference ./apps/mobile (
                 lib.fileset.unions [
                   ./apps/mobile/android
@@ -157,10 +148,13 @@
                 "crates/entity"
                 "crates/migration"
               ];
-              buildArgs = {
-                cargoExtraArgs = "--locked -p quest";
-                src = questSrc;
-              };
+              extraSources = [
+                "crates/quest/src/landing"
+                "crates/quest/src/legal"
+                "crates/quest/src/passes/assets"
+                "crates/quest/src/portal/unbuilt.html"
+              ];
+              buildArgs.cargoExtraArgs = "--locked -p quest";
             };
             customDomain = "cmu.quest";
             env = {

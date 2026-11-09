@@ -42,3 +42,7 @@ reason = "parsing only, pkpass writes archives"
 [[IgnoredVulns]]
 id = "GHSA-q7v9-x93c-xqv3"
 reason = "extraction only, pkpass writes archives"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0459"
+reason = "SQLx's SQLite driver is locked but never compiled. sqlx-sqlite 0.9.0 caps libsqlite3-sys below the fixed 0.39.0."

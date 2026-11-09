@@ -358,7 +358,6 @@ impl Portal {
         .all(&self.db)
         .await
         .map_err(db_down)
-        .map_err(PortalError::from)
     }
 
     pub async fn move_taps_to_day(

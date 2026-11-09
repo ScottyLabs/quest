@@ -266,9 +266,7 @@ impl Taps {
         }
     }
 
-    /// Deliberately on the pool, not a caller transaction: the replay branch
-    /// rolls back, which would take the audit row with it. Insert failures are
-    /// logged and swallowed so a lost row can't turn a 4xx into a 502.
+    /// Deliberately on the pool, not a caller transaction: the replay branch rolls back, which would take the audit row with it. Insert failures are logged and swallowed so a lost row can't turn a 4xx into a 502.
     pub async fn rejected(&self, attempt: &Attempt, error: AuthError) -> AuthError {
         let reason = error.code();
         if !REASONS.contains(&reason) {

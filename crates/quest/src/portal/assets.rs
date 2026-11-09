@@ -46,10 +46,10 @@ fn classify(content_type: &str, filename: Option<&str>) -> (&'static str, Cow<'s
         .trim()
         .to_ascii_lowercase();
 
-    if declared != GENERIC {
-        if let Some((mime, extension)) = TYPES.iter().find(|(mime, _)| *mime == declared) {
-            return (mime, Cow::Borrowed(extension));
-        }
+    if declared != GENERIC
+        && let Some((mime, extension)) = TYPES.iter().find(|(mime, _)| *mime == declared)
+    {
+        return (mime, Cow::Borrowed(extension));
     }
 
     let suffix = suffix(filename);

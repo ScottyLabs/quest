@@ -121,6 +121,7 @@
                   pkgs.libimobiledevice
                   pkgs.ideviceinstaller
                   pkgs.unzip
+                  pkgs.sea-orm-cli
                 ]
                 ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
                   ios.swift

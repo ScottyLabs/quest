@@ -49,8 +49,7 @@ fn main() {
         .try_into()
         .unwrap_or_else(|_| die("master must decode to 32 bytes"));
 
-    // `k0_old` and `k1_old` are the UID-diversified values a blank tag ships
-    // with; `k1_new` is the non-diversified production K1 the reader uses.
+    // `k0_old` and `k1_old` are the UID-diversified values a blank tag ships with; `k1_new` is the non-diversified production K1 the reader uses.
     let k0_old = derive_key(&master, b"K0", Some(&uid));
     let k1_old = derive_key(&master, b"K1", Some(&uid));
     let k1_new = derive_key(&master, b"K1", None);

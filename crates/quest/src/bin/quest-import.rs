@@ -174,7 +174,7 @@ async fn upsert(db: &DatabaseConnection, row: &Row, coins: i64) -> Result<bool, 
         category: ActiveValue::Set(row.category.clone()),
         secret: ActiveValue::Set(row.secret),
         coin_value: ActiveValue::Set(if row.secret { 0 } else { coins }),
-        open_from: ActiveValue::Set(row.open_from.into()),
+        open_from: ActiveValue::Set(row.open_from),
         ..Default::default()
     };
 

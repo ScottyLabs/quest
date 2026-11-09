@@ -29,8 +29,7 @@ pub struct SessionUser {
 }
 
 impl SessionUser {
-    /// Whether this user may work the NFC card desk in the mobile app. Resolved
-    /// through `crate::access`, which owns every group-to-right mapping.
+    /// Whether this user may work the NFC card desk in the mobile app. Resolved through `crate::access`, which owns every group-to-right mapping.
     pub fn staff(&self) -> bool {
         crate::access::allows(self, crate::access::Capability::CardDesk)
     }

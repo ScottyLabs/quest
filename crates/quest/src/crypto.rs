@@ -31,11 +31,9 @@ fn hmac_sha256(key: &[u8], data: &[u8]) -> [u8; 32] {
 }
 
 /// Every tag key is `HMAC-SHA256(master, label ‖ uid?)` truncated to 16 bytes.
-/// `uid` is `None` for the non-diversified production K1, which the reader
-/// needs before it has decrypted the UID out of the PICC data.
+/// `uid` is `None` for the non-diversified production K1, which the reader needs before it has decrypted the UID out of the PICC data.
 ///
-/// Provisioning derives the same four keys from here, so the labels live in
-/// one place: changing one silently stops every provisioned card verifying.
+/// Provisioning derives the same four keys from here, so the labels live in one place: changing one silently stops every provisioned card verifying.
 pub fn derive_key(master: &[u8; 32], label: &[u8; 2], uid: Option<&[u8; 7]>) -> [u8; 16] {
     let mut input = [0u8; 9];
     input[..2].copy_from_slice(label);

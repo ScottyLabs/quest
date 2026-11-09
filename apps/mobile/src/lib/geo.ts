@@ -64,8 +64,7 @@ export async function fix(): Promise<Fix> {
       ...(usable ? { accuracy: coords.accuracy } : {}),
     };
   } catch {
-    // Distinguish "GPS is on but couldn't get a fix" from
-    // "Location Services were turned off while we were waiting."
+    // Distinguish "GPS is on but couldn't get a fix" from "Location Services were turned off while we were waiting."
     return { location_enabled: await permitted() };
   }
 }
